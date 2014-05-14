@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+   
+<title>No Title</title>
+
+
+<center><font size="+1">Stat 133, Spring 2011<br />
+Homework 2: Data in R and Regular Expressions<br />
+Due Friday, Mar. 4 at 11:59 PM<br />
+</font></center>
+<br />
+
+<table align="center" border="0"><tr><td>
+<font size="+2">Reading Data from Web Pages Using R</font></td></tr></table><!--hboxt-->
+
+
+<div class="p"><!----></div>
+In this assignment, you will write programs to gather data from 
+various websites.  As a courtesy to the maintainers of the web sites,
+I ask that you download a local copy of the web page to work with, but
+make sure that when your program is completed, it can successfully extract
+the data directly from the web page.  You may find it convenient to use the
+R function <tt>download.file</tt> to make a local copy of the pages.
+
+<div class="p"><!----></div>
+You should not edit the file you're trying to extract from, nor should you
+use cut and paste to extract the data.  Your program should operate on the 
+page in its entirety.
+
+
+<div class="p"><!----></div>
+
+<ol type="1">
+<li>At <a href="http://news.ask.com/news">http://news.ask.com/news</a>, there are a
+number of headlines broken down into categories, like "Top Stories" and
+"Science </td><td width="150">
+ Tech"
+Extract all the headlines from the page into a vector of character strings in R, one 
+headline per string, and print them.
+<div class="p"><!----></div>
+</li>
+
+<li>
+The pdf file <a href="http://www.bea.gov/scb/pdf/2011/02%20February/D%20Pages/0211dpg_c.pdf">http://www.bea.gov/scb/pdf/2011/02 February/D Pages/0211dpg_c.pdf</a> contains, among other things, the Gross Domestic Product of the 
+United States for the last 50 years.  You can convert a pdf file called, say <tt>file.pdf</tt> to a text file 
+using the command:
+
+<pre>
+pdftotext&nbsp;-layout&nbsp;file.pdf
+
+</pre>
+ which will automatically create a file called <tt>file.txt</tt>.  Using this data, create
+a data frame with columns for year and GDP.  The <tt>pdftotext</tt> command is available on any
+of the SCF computers - if you'd like to install <tt>pdftotext</tt> on your own computer, go 
+to <a href="http://www.foolabs.com/xpdf/download.html">the xpdf home page</a>.
+
+<div class="p"><!----></div>
+At <a href="http://www.treasurydirect.gov/govt/reports/pd/pd.htm">http://www.treasurydirect.gov/govt/reports/pd/pd.htm</a>, there are a set
+of links entitled "Historical Debt Outstanding".  These links
+lead to five tables, showing dates and the amount of the national debt on
+those dates.
+
+<div class="p"><!----></div>
+Read the data for the debt from the tables that correspond to the GDP data, <i>i.e.</i> the last 
+fifty years, combine them with the GDP data, and
+merge them together with
+the GDP data based on the year of the data.  Finally, calculate the percentage of the GDP that the 
+debt represents for
+each year of available data, and make a plot of this percentage over time.
+<div class="p"><!----></div>
+</li>
+
+<li>
+The populations of the US states in 2004 through 2009 can be found at<br />
+<a href="http://www.infoplease.com/ipa/A0004986.html">http://www.infoplease.com/ipa/A0004986.html</a>.  Create a data frame with columns for the state name, 2009 population, 
+2004 population, and the percent change from 1990-2000. Calculate the change in population between 
+the 2004 and 2009 as a column
+in the data frame, and compare that change with the one from 1990-2000.  Which states had 
+the most different population growths from 1990 to 2000 than they did from 2004 to 2009.
+<div class="p"><!----></div>
+</li>
+
+<li>
+At <a href="http://www.forbes.com/lists/2009/54/rich-list-09_The-400-Richest-Americans_Rank.html">http://www.forbes.com/lists/2009/54/rich-list-09_The-400-Richest-Americans_Rank.html</a> is the first page of a
+list of the 400 richest Americans from 2009.  The complete list of the top 400 is spread over 16 pages.
+
+<div class="p"><!----></div>
+Write a program that reads <em>all</em> of the pages, and create a data frame with the rank, name,
+net worth, age, residence, and source of wealth for the top 400 richest Americans.  Who was the
+youngest person on the list?   What were the ten most common sources of wealth among the 400
+richest Americans?
+<div class="p"><!----></div>
+</li>
+</ol>
+<br />
+ Submit for grading all of your R code and the output requested by the 
+assignment, along with any output you used to answer the questions posed by the assignments.
+
+<div class="p"><!----></div>
+Your submission should be contained in a <em>single</em> pdf file. 
+
+<div class="p"><!----></div>
+Email this file to me (<tt>s133@stat.berkeley.edu</tt>) by 11:59PM
+on the due date. Make certain to save a copy of your email submission.
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On 23 Feb 2011, 13:22.</small>
+</html>

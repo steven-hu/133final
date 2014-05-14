@@ -1,0 +1,412 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> Data Frames </title>
+ 
+<h1 align="center">Data Frames  </h1>
+
+
+
+ <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;More on Data Frames</h2>
+
+<ol type="1">Notice that if you want to extract more than one column of a data frame,
+you need to use single brackets, not double:
+
+<pre>
+&#62;&nbsp;temps[c('min','max')]
+&nbsp;&nbsp;&nbsp;&nbsp;min&nbsp;&nbsp;max
+1&nbsp;&nbsp;50.7&nbsp;59.5
+2&nbsp;&nbsp;52.8&nbsp;55.7
+3&nbsp;&nbsp;48.6&nbsp;57.3
+4&nbsp;&nbsp;53.0&nbsp;71.5
+5&nbsp;&nbsp;49.9&nbsp;69.8
+6&nbsp;&nbsp;47.9&nbsp;68.8
+7&nbsp;&nbsp;54.1&nbsp;67.5
+8&nbsp;&nbsp;47.6&nbsp;66.0
+9&nbsp;&nbsp;43.6&nbsp;66.1
+10&nbsp;45.5&nbsp;61.7
+&#62;&nbsp;temps[[c('min','max')]]
+Error&nbsp;in&nbsp;.subset2(x,&nbsp;i,&nbsp;exact&nbsp;=&nbsp;exact)&nbsp;:&nbsp;subscript&nbsp;out&nbsp;of&nbsp;bounds
+
+</pre>
+<li>
+If you want to work with a data frame without having to constantly
+retype the data frame's name, you can use the <tt>with</tt> function.  
+Suppose we want to convert our minimum and maximum temperatures to 
+centigrade, and then calculate the difference between them.  Using 
+<tt>with</tt>, we can write:
+
+<pre>
+&#62;&nbsp;with(temps,5/9*(max-32)&nbsp;-&nbsp;5/9*(min-32))
+&nbsp;[1]&nbsp;&nbsp;4.888889&nbsp;&nbsp;1.611111&nbsp;&nbsp;4.833333&nbsp;10.277778&nbsp;11.055556&nbsp;11.611111&nbsp;&nbsp;7.444444
+&nbsp;[8]&nbsp;10.222222&nbsp;12.500000&nbsp;&nbsp;9.000000
+
+</pre>
+ which may be more convenient than typing out the data frame name
+repeatedly:
+
+<pre>
+&#62;&nbsp;5/9*(temps$max-32)&nbsp;-&nbsp;5/9*(temps$min-32)
+&nbsp;[1]&nbsp;&nbsp;4.888889&nbsp;&nbsp;1.611111&nbsp;&nbsp;4.833333&nbsp;10.277778&nbsp;11.055556&nbsp;11.611111&nbsp;&nbsp;7.444444
+&nbsp;[8]&nbsp;10.222222&nbsp;12.500000&nbsp;&nbsp;9.000000
+
+</pre>
+<div class="p"><!----></div>
+</li>
+
+<li>
+Finally, if the goal is to a add one or more new columns to a data frame, you 
+can combine a few operations into one using the <tt>transform</tt> function.
+The first argument to <tt>transform</tt> is the name of the data frame that 
+will be used to construct the new columns.  The remaining arguments to <tt>transform</tt>
+are name/value pairs describing the new columns.  For example,  suppose we wanted
+to create a new variable in the <tt>temps</tt> data frame called <tt>range</tt>, 
+representing the difference between the <tt>min</tt> and <tt>max</tt> values for
+each day.  We could use <tt>transform</tt> as follows:
+
+<pre>
+&#62;&nbsp;temps&nbsp;=&nbsp;transform(temps,range&nbsp;=&nbsp;max&nbsp;-&nbsp;min)
+&#62;&nbsp;head(temps)
+&nbsp;&nbsp;&nbsp;&nbsp;day&nbsp;&nbsp;min&nbsp;&nbsp;max&nbsp;range
+&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;1&nbsp;50.7&nbsp;59.5&nbsp;&nbsp;&nbsp;8.8
+&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;2&nbsp;52.8&nbsp;55.7&nbsp;&nbsp;&nbsp;2.9
+&nbsp;&nbsp;3&nbsp;&nbsp;&nbsp;3&nbsp;48.6&nbsp;57.3&nbsp;&nbsp;&nbsp;8.7
+&nbsp;&nbsp;4&nbsp;&nbsp;&nbsp;4&nbsp;53.0&nbsp;71.5&nbsp;&nbsp;18.5
+&nbsp;&nbsp;5&nbsp;&nbsp;&nbsp;5&nbsp;49.9&nbsp;69.8&nbsp;&nbsp;19.9
+&nbsp;&nbsp;6&nbsp;&nbsp;&nbsp;6&nbsp;47.9&nbsp;68.8&nbsp;&nbsp;20.9
+
+</pre>
+ As can be seen, <tt>transform</tt> returns a new data frame like 
+the original one, but with one or more new columns added.
+<div class="p"><!----></div>
+</li>
+</ol>
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc2">
+2</a>&nbsp;&nbsp;Reading Data Frames from Files and URLs</h2>
+While creating a data frame the way we just did is very handy for 
+quick examples, it's actually pretty rare to enter a data frame 
+in that way;
+usually we'll be reading data from a file or possibly a URL.  In
+these cases, the <tt>read.table</tt> function (or one of its' closely 
+related variations described below) can be used.   <tt>read.table</tt> tries
+to be clever about figuring out what type of data you'll be using, and 
+automatically determines how each column of the data frame should be 
+stored.  One problem with this scheme is has to do with a special type of
+variable known as a factor.  A factor in R is a variable that is stored as
+an integer, but displayed as a character string.  
+By default, <tt>read.table</tt> will automatically turn all the character
+variables that it reads into factors.
+You can recognize factors
+by using either the <tt>is.factor</tt> function or by examining the 
+object's class, using the <tt>class</tt> function.  Factors are very useful
+for storing large data sets compactly, as well as for statistical modeling
+and other tasks, but when you're first working with R they'll most likely
+just get in the way.  To avoid <tt>read.table</tt> from doing any factor
+conversions, pass the <tt>stringsAsFactors=FALSE</tt> argument as shown in the examples
+below.
+
+<div class="p"><!----></div>
+By default, R expects there to be at least one space or tab between each 
+of the data values in your input file; if you're using a different character
+to separate  your values, you can specify it with the <tt>sep=</tt> argument.
+Two special versions of <tt>read.table</tt> are provided to handle two 
+common cases: <tt>read.csv</tt> for files where the data is separated by 
+commas, and <tt>read.delim</tt> when a tab character is used to separate
+values.  On the other hand, if the variables in your input data occupy 
+the same columns for every line in the file, the <tt>read.fwf</tt> can be
+used to turn your data into a data frame.
+
+<div class="p"><!----></div>
+If the first line of your input file contains the names of the variables in
+your data separated with the same separator used for the rest of the data,
+you can pass the <tt>header=TRUE</tt> argument to <tt>read.table</tt> and 
+its variants, and the variables (columns) of your data frame will be 
+named accordingly.  Otherwise, names like <tt>V1</tt>, <tt>V2</tt>, etc. will
+be used.
+
+<div class="p"><!----></div>
+As an example of how to read data into a data frame, the URL 
+<a href="http://www.stat.berkeley.edu/classes/s133/data/world.txt">http://www.stat.berkeley.edu/classes/s133/data/world.txt</a>
+contains information about literacy, gross domestic product, income and 
+military expenditures for about 150 countries.  Here are the first few
+lines of the file:
+
+<pre>
+country,gdp,income,literacy,military
+Albania,4500,4937,98.7,56500000
+Algeria,5900,6799,69.8,2.48e+09
+Angola,1900,2457,66.8,183580000
+Argentina,11200,12468,97.2,4.3e+09
+Armenia,3900,3806,99.4,1.35e+08
+
+</pre>
+(You can use your favorite browser to examine a file like this, or you
+can use R's <tt>download.file</tt> and <tt>file.edit</tt> functions to download
+a copy to your computer and examine it locally.) 
+
+<div class="p"><!----></div>
+Since the values are separated by commas, and the variable names
+can be found in the first line of the file, we can read the data into 
+a data frame as follows:
+
+<pre>
+world&nbsp;=&nbsp;read.csv('http://www.stat.berkeley.edu/classes/s133/data/world.txt',header=TRUE,stringsAsFactors=FALSE)
+
+</pre>
+Now that we've created the data frame, we need to look at some ways to
+understand what our data is like.  The class and mode of objects in R is
+very important, but if we query them for our data frame, they're not
+very interesting:
+
+<pre>
+&#62;&nbsp;mode(world)
+[1]&nbsp;"list"
+&#62;&nbsp;class(world)
+[1]&nbsp;"data.frame"
+
+</pre>
+ 
+Note that a data frame is also a list.  We'll look at lists in more 
+detail later.
+As we've seen, 
+we can use the <tt>sapply</tt> function to see the modes of 
+the individual columns.  This function will apply a 
+function to each element of a list;  for a data frame these elements 
+represent the columns (variables), so it will do exactly what we want:
+
+<pre>
+&#62;&nbsp;sapply(world,mode)
+&nbsp;&nbsp;&nbsp;&nbsp;country&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gdp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;income&nbsp;&nbsp;&nbsp;&nbsp;literacy&nbsp;&nbsp;&nbsp;&nbsp;military
+"character"&nbsp;&nbsp;&nbsp;"numeric"&nbsp;&nbsp;&nbsp;"numeric"&nbsp;&nbsp;&nbsp;"numeric"&nbsp;&nbsp;&nbsp;"numeric"
+&#62;&nbsp;sapply(world,class)
+&nbsp;&nbsp;&nbsp;&nbsp;country&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gdp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;income&nbsp;&nbsp;&nbsp;&nbsp;literacy&nbsp;&nbsp;&nbsp;&nbsp;military
+"character"&nbsp;&nbsp;&nbsp;"integer"&nbsp;&nbsp;&nbsp;"integer"&nbsp;&nbsp;&nbsp;"numeric"&nbsp;&nbsp;&nbsp;"numeric"
+
+</pre>
+ You might want to experiment with <tt>sapply</tt> using other functions
+to get familiar with some strategies for dealing with data frames.
+
+<div class="p"><!----></div>
+You can always view the names of the variables in a data frame by using
+the <tt>names</tt> function, and the size (number of observations and 
+number of variables) using the <tt>dim</tt> function:
+
+<pre>
+&#62;&nbsp;names(world)
+[1]&nbsp;"country"&nbsp;&nbsp;"gdp"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"income"&nbsp;&nbsp;&nbsp;"literacy"&nbsp;"military"
+&#62;&nbsp;dim(world)
+[1]&nbsp;154&nbsp;&nbsp;&nbsp;5
+
+</pre>
+
+<div class="p"><!----></div>
+Suppose we want to see the country for which military spending is the 
+highest.  We can use the <tt>which.max</tt> function that we used
+before
+but extra care is needed to make sure we get the piece of the data frame
+we want.  Since each country occupies one row in the data frame, we want 
+all of the columns in that row, and we can leave the second index of the 
+data frame blank:
+
+<pre>
+&#62;
+&#62;&nbsp;world[which.max(world$military),]
+&nbsp;&nbsp;&nbsp;&nbsp;country&nbsp;&nbsp;&nbsp;gdp&nbsp;income&nbsp;literacy&nbsp;&nbsp;military
+142&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USA&nbsp;37800&nbsp;&nbsp;39496&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;99.9&nbsp;3.707e+11
+
+</pre>
+ The <tt>142</tt> at the beginning of the line is the row number of
+the observation.  If you'd like to use a more informative label for the 
+rows, look at the <tt>row.names=</tt> argument in <tt>read.table</tt> and 
+<tt>data.frame</tt>, or use the assignment form of the <tt>row.names</tt>
+function if the data frame already exists.  
+
+<div class="p"><!----></div>
+These types of queries, where we want to find observations from a data frame
+that have certain properties, are so common that R provides a function called
+<tt>subset</tt> to make them easier and more readable.  The <tt>subset</tt>
+function requires two arguments: the first is a data frame, and the second is 
+the condition that you want to use to create the subset.  
+An optional third argument called <tt>select=</tt> allows you to specify which
+of the variables in the data frame you're interested in.
+The return value from <tt>subset</tt> is a data frame, so you can use it anywhere
+that you'd normally use a data frame.
+A very attractive
+feature of subset is that you can refer to the columns of a data frame directly
+in the second or third arguments; you don't need to keep retyping the data frame's name,
+or surround all the variable names with quotes.
+Suppose we want to find those countries whose literacy rate is below
+20%.  We could use the <tt>subset</tt> function like this:
+
+<pre>
+&#62;&nbsp;subset(world,literacy&nbsp;&lt;&nbsp;20)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;country&nbsp;&nbsp;gdp&nbsp;income&nbsp;literacy&nbsp;military
+22&nbsp;&nbsp;Burkina&nbsp;Faso&nbsp;1100&nbsp;&nbsp;&nbsp;1258&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;12.8&nbsp;64200000
+88&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Mali&nbsp;&nbsp;900&nbsp;&nbsp;&nbsp;1024&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;19.0&nbsp;22400000
+102&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Niger&nbsp;&nbsp;800&nbsp;&nbsp;&nbsp;&nbsp;865&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;14.4&nbsp;33300000
+
+</pre>
+
+<div class="p"><!----></div>
+One other nice feature of the <tt>select=</tt> argument is that it converts 
+variable names to numbers before extracting the requested variables, so you
+can use "ranges" of variable names to specify contiguous columns in a 
+data frame.  For example, here are the names for the <tt>world</tt> data
+frame:
+
+<pre>
+&#62;&nbsp;names(world)
+[1]&nbsp;"country"&nbsp;&nbsp;"gdp"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"income"&nbsp;&nbsp;&nbsp;"literacy"&nbsp;"military"
+
+</pre>
+ To create a data frame with just the last three variables, we could 
+use
+
+<pre>
+&#62;&nbsp;subset(world,select=income:military)
+
+</pre>
+
+<div class="p"><!----></div>
+If we were interested in a particular variable, it would be useful to 
+reorder the rows of our data frame so that they were arranged in descending
+or ascending order of that variable.  It's easy enough to sort a variable
+in R; using <tt>literacy</tt> as an example, we simply call the <tt>sort</tt>
+routine:
+
+<pre>
+&#62;&nbsp;sort(world$literacy)
+&nbsp;[1]&nbsp;12.8&nbsp;14.4&nbsp;19.0&nbsp;25.5&nbsp;29.6&nbsp;33.6&nbsp;39.3&nbsp;39.6&nbsp;41.0&nbsp;41.1&nbsp;41.5&nbsp;46.5&nbsp;47.0&nbsp;48.6&nbsp;48.6
+[16]&nbsp;48.7&nbsp;49.0&nbsp;50.7&nbsp;51.2&nbsp;51.9&nbsp;53.0&nbsp;54.1&nbsp;55.6&nbsp;56.2&nbsp;56.7&nbsp;57.3&nbsp;58.9&nbsp;59.0&nbsp;61.0&nbsp;64.0
+[31]&nbsp;64.1&nbsp;65.5&nbsp;66.8&nbsp;66.8&nbsp;67.9&nbsp;67.9&nbsp;68.7&nbsp;68.9&nbsp;69.1&nbsp;69.4&nbsp;69.8&nbsp;70.6&nbsp;71.0&nbsp;73.6&nbsp;73.6
+[46]&nbsp;74.3&nbsp;74.4&nbsp;75.7&nbsp;76.7&nbsp;76.9&nbsp;77.0&nbsp;77.3&nbsp;78.9&nbsp;79.2&nbsp;79.4&nbsp;79.7&nbsp;80.0&nbsp;81.4&nbsp;81.7&nbsp;82.4
+[61]&nbsp;82.8&nbsp;82.9&nbsp;82.9&nbsp;84.2&nbsp;84.3&nbsp;85.0&nbsp;86.5&nbsp;86.5&nbsp;87.6&nbsp;87.7&nbsp;87.7&nbsp;87.7&nbsp;87.9&nbsp;87.9&nbsp;88.0
+[76]&nbsp;88.3&nbsp;88.4&nbsp;88.7&nbsp;89.2&nbsp;89.9&nbsp;90.0&nbsp;90.3&nbsp;90.3&nbsp;90.4&nbsp;90.9&nbsp;91.0&nbsp;91.0&nbsp;91.6&nbsp;91.9&nbsp;91.9
+[91]&nbsp;92.5&nbsp;92.5&nbsp;92.6&nbsp;92.6&nbsp;92.7&nbsp;92.9&nbsp;93.0&nbsp;94.2&nbsp;94.6&nbsp;95.7&nbsp;95.8&nbsp;96.2&nbsp;96.5&nbsp;96.8&nbsp;96.8
+[106]&nbsp;96.9&nbsp;96.9&nbsp;97.2&nbsp;97.2&nbsp;97.3&nbsp;97.7&nbsp;97.7&nbsp;97.8&nbsp;98.1&nbsp;98.2&nbsp;98.5&nbsp;98.5&nbsp;98.7&nbsp;98.7&nbsp;98.8
+[121]&nbsp;98.8&nbsp;99.3&nbsp;99.3&nbsp;99.4&nbsp;99.4&nbsp;99.5&nbsp;99.5&nbsp;99.6&nbsp;99.6&nbsp;99.6&nbsp;99.7&nbsp;99.7&nbsp;99.7&nbsp;99.8&nbsp;99.9
+[136]&nbsp;99.9&nbsp;99.9&nbsp;99.9&nbsp;99.9&nbsp;99.9&nbsp;99.9&nbsp;99.9&nbsp;99.9&nbsp;99.9&nbsp;99.9&nbsp;99.9&nbsp;99.9&nbsp;99.9&nbsp;99.9&nbsp;99.9
+[151]&nbsp;99.9&nbsp;99.9&nbsp;99.9&nbsp;99.9
+
+</pre>
+
+<div class="p"><!----></div>
+To reorder the rows of a data frame to correspond to the sorted order of one of 
+the variables in the data frame, the <tt>order</tt> function can be used.
+This function returns a set of indices which are in the proper order to 
+rearrange the data frame appropriately.  (Perhaps the easiest way to understand
+what the <tt>order</tt> function is to realize that <tt>x[order(x)]</tt> is
+the same as <tt>sort(x)</tt>.)
+
+<pre>
+&#62;&nbsp;sworld&nbsp;=&nbsp;world[order(world$literacy),]
+&#62;&nbsp;head(sworld)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;country&nbsp;&nbsp;gdp&nbsp;income&nbsp;literacy&nbsp;&nbsp;military
+22&nbsp;&nbsp;Burkina&nbsp;Faso&nbsp;1100&nbsp;&nbsp;&nbsp;1258&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;12.8&nbsp;&nbsp;64200000
+103&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Niger&nbsp;&nbsp;800&nbsp;&nbsp;&nbsp;&nbsp;865&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;14.4&nbsp;&nbsp;33300000
+89&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Mali&nbsp;&nbsp;900&nbsp;&nbsp;&nbsp;1024&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;19.0&nbsp;&nbsp;22400000
+29&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Chad&nbsp;1200&nbsp;&nbsp;&nbsp;1555&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;25.5&nbsp;101300000
+121&nbsp;Sierra&nbsp;Leone&nbsp;&nbsp;500&nbsp;&nbsp;&nbsp;&nbsp;842&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;29.6&nbsp;&nbsp;13200000
+14&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Benin&nbsp;1100&nbsp;&nbsp;&nbsp;1094&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;33.6&nbsp;&nbsp;96500000
+
+</pre>
+To sort by descending values of a variable, pass the <tt>decreasing=TRUE</tt>
+argument to <tt>sort</tt> or <tt>order</tt>.
+
+<div class="p"><!----></div>
+When you're first working with a data frame, it can be helpful to get some 
+preliminary information about the variables.  One easy way to do this is to
+pass the data frame to the <tt>summary</tt> function, which understands what
+a  data frame is, and will give separate summaries for each of the variables:
+
+<pre>
+&#62;&nbsp;summary(world)
+&nbsp;&nbsp;&nbsp;country&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gdp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;income&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;literacy
+&nbsp;Length:154&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Min.&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;500&nbsp;&nbsp;&nbsp;Min.&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;569&nbsp;&nbsp;&nbsp;Min.&nbsp;&nbsp;&nbsp;:12.80
+&nbsp;Class&nbsp;:character&nbsp;&nbsp;&nbsp;1st&nbsp;Qu.:&nbsp;1825&nbsp;&nbsp;&nbsp;1st&nbsp;Qu.:&nbsp;2176&nbsp;&nbsp;&nbsp;1st&nbsp;Qu.:69.17
+&nbsp;Mode&nbsp;&nbsp;:character&nbsp;&nbsp;&nbsp;Median&nbsp;:&nbsp;4900&nbsp;&nbsp;&nbsp;Median&nbsp;:&nbsp;5930&nbsp;&nbsp;&nbsp;Median&nbsp;:88.55
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Mean&nbsp;&nbsp;&nbsp;:&nbsp;9031&nbsp;&nbsp;&nbsp;Mean&nbsp;&nbsp;&nbsp;:10319&nbsp;&nbsp;&nbsp;Mean&nbsp;&nbsp;&nbsp;:81.05
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3rd&nbsp;Qu.:11700&nbsp;&nbsp;&nbsp;3rd&nbsp;Qu.:15066&nbsp;&nbsp;&nbsp;3rd&nbsp;Qu.:98.42
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Max.&nbsp;&nbsp;&nbsp;:55100&nbsp;&nbsp;&nbsp;Max.&nbsp;&nbsp;&nbsp;:63609&nbsp;&nbsp;&nbsp;Max.&nbsp;&nbsp;&nbsp;:99.90
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NA's&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;1
+&nbsp;&nbsp;&nbsp;&nbsp;military
+&nbsp;Min.&nbsp;&nbsp;&nbsp;:6.500e+06
+&nbsp;1st&nbsp;Qu.:5.655e+07
+&nbsp;Median&nbsp;:2.436e+08
+&nbsp;Mean&nbsp;&nbsp;&nbsp;:5.645e+09
+&nbsp;3rd&nbsp;Qu.:1.754e+09
+&nbsp;Max.&nbsp;&nbsp;&nbsp;:3.707e+11
+
+</pre>
+
+<div class="p"><!----></div>
+Another useful way to view the properties of a variable is with the <tt>stem</tt>
+function, which produces a text-base stem-and-leaf diagram.  Each observation
+for the variable is represented by a number in the diagram showing that 
+observation's value:
+
+<pre>
+&#62;&nbsp;stem(world$gdp)
+
+&nbsp;&nbsp;The&nbsp;decimal&nbsp;point&nbsp;is&nbsp;4&nbsp;digit(s)&nbsp;to&nbsp;the&nbsp;right&nbsp;of&nbsp;the&nbsp;|
+
+&nbsp;&nbsp;0&nbsp;|&nbsp;11111111111111111111111111112222222222222222222223333333333344444444
+&nbsp;&nbsp;0&nbsp;|&nbsp;55555555555666666666677777778889999
+&nbsp;&nbsp;1&nbsp;|&nbsp;000111111223334
+&nbsp;&nbsp;1&nbsp;|&nbsp;66788889
+&nbsp;&nbsp;2&nbsp;|&nbsp;0022234
+&nbsp;&nbsp;2&nbsp;|&nbsp;7778888999
+&nbsp;&nbsp;3&nbsp;|&nbsp;00013
+&nbsp;&nbsp;3&nbsp;|&nbsp;88
+&nbsp;&nbsp;4&nbsp;|
+&nbsp;&nbsp;4&nbsp;|
+&nbsp;&nbsp;5&nbsp;|
+&nbsp;&nbsp;5&nbsp;|&nbsp;5
+
+</pre>
+
+<div class="p"><!----></div>
+Graphical techniques are often useful when exploring a data frame.  While we'll
+look at graphics in more detail later, the functions <tt>boxplot</tt>, 
+<tt>hist</tt>, and <tt>plot</tt> combined with the <tt>density</tt> function
+are often good choices.  Here are examples:
+
+<pre>
+&#62;&nbsp;boxplot(world$gdp,main='Boxplot&nbsp;of&nbsp;GDP')
+&#62;&nbsp;hist(world$gdp,main='Histogram&nbsp;of&nbsp;GDP')
+&#62;&nbsp;plot(density(world$gdp),main='Density&nbsp;of&nbsp;GDP')
+
+</pre>
+
+<div class="p"><!----></div>
+<img src="gdp-hist.png">
+
+<div class="p"><!----></div>
+<img src="gdp-dens.png">
+
+<div class="p"><!----></div>
+<img src="gdp-boxplot.png">
+
+<div class="p"><!----></div>
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On 30 Jan 2011, 19:56.</small>
+</html>

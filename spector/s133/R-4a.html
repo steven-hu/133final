@@ -1,0 +1,277 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> Data Frames and Plotting</title>
+ 
+<h1 align="center">Data Frames and Plotting </h1>
+
+
+
+ <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;Working with Multiple Data Frames</h2>
+Suppose we want to add some additional information to our data frame, for example
+the continents in which the countries can be found.  Very often we have information
+from different sources and it's very important to combine  it correctly. The URL
+<a href="http://www.stat.berkeley.edu/s133/data/conts.txt">http://www.stat.berkeley.edu/s133/data/conts.txt</a> contains the information about the continents.  Here are 
+the first few lines of that file:
+
+<pre>
+country,cont
+Afghanistan,AS
+Albania,EU
+Algeria,AF
+American&nbsp;Samoa,OC
+Andorra,EU
+
+</pre>
+ In R, the <tt>merge</tt> function allows you to combine two data frames
+based on the value of a variable that's common to both of them.  The new data
+frame will have all of the variables from both of the original data frames. First,
+we'll read in the continent values into a data frame called <tt>conts</tt>:
+
+<pre>
+conts&nbsp;=&nbsp;read.csv('http://www.stat.berkeley.edu/classes/s133/data/conts.txt',na.string='.',stringsAsFactors=FALSE)
+
+</pre>
+To merge two data frames, we simply need to tell the <tt>merge</tt> function which
+variable(s) the two data frames have in common, in this case <tt>country</tt>:
+
+<pre>
+world1&nbsp;=&nbsp;merge(world,conts,by='country')
+
+</pre>
+Notice that we pass the name of the variable that we want to merge by, not the 
+actual value of the variable itself.  The first few records of the merged data
+set  look like this:
+
+<pre>
+&#62;&nbsp;head(world1)
+&nbsp;&nbsp;&nbsp;&nbsp;country&nbsp;&nbsp;&nbsp;gdp&nbsp;income&nbsp;literacy&nbsp;&nbsp;&nbsp;military&nbsp;cont
+1&nbsp;&nbsp;&nbsp;Albania&nbsp;&nbsp;4500&nbsp;&nbsp;&nbsp;4937&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;98.7&nbsp;5.6500e+07&nbsp;&nbsp;&nbsp;EU
+2&nbsp;&nbsp;&nbsp;Algeria&nbsp;&nbsp;5900&nbsp;&nbsp;&nbsp;6799&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;69.8&nbsp;2.4800e+09&nbsp;&nbsp;&nbsp;AF
+3&nbsp;&nbsp;&nbsp;&nbsp;Angola&nbsp;&nbsp;1900&nbsp;&nbsp;&nbsp;2457&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;66.8&nbsp;1.8358e+08&nbsp;&nbsp;&nbsp;AF
+4&nbsp;Argentina&nbsp;11200&nbsp;&nbsp;12468&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;97.2&nbsp;4.3000e+09&nbsp;&nbsp;&nbsp;SA
+5&nbsp;&nbsp;&nbsp;Armenia&nbsp;&nbsp;3900&nbsp;&nbsp;&nbsp;3806&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;99.4&nbsp;1.3500e+08&nbsp;&nbsp;&nbsp;AS
+6&nbsp;Australia&nbsp;28900&nbsp;&nbsp;29893&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;99.9&nbsp;1.6650e+10&nbsp;&nbsp;&nbsp;OC
+
+</pre>
+We've already seen how to count specific conditions, like how many countries
+in our data frame are in Europe:
+
+<pre>
+&#62;&nbsp;sum(world1$cont&nbsp;==&nbsp;'EU')
+[1]&nbsp;34
+
+</pre>
+It would be tedious to have to repeat this for each of the continents.  Instead,
+we can use the <tt>table</tt> function:
+
+<pre>
+&#62;&nbsp;table(world1$cont)
+
+AF&nbsp;AS&nbsp;EU&nbsp;NA&nbsp;OC&nbsp;SA
+47&nbsp;41&nbsp;34&nbsp;15&nbsp;&nbsp;4&nbsp;12
+
+</pre>
+We can now examine the variables taking into account the continent that they're
+in.  For example, suppose we wanted to view the literacy rates of countries in
+the different continents.  We can produce side-by-side boxplots like this:
+
+<pre>
+&#62;&nbsp;boxplot(split(world1$literacy,world1$cont),main=Literacy&nbsp;by&nbsp;Continent')
+
+</pre>
+<img src="cont-lit.png">
+
+<div class="p"><!----></div>
+Now let's concentrate on plots involving two variables.  It may be surprising,
+but R is smart enough to know how to "plot" a dataframe.  It actually calls
+the <tt>pairs</tt> function, which will produce what's called a scatterplot
+matrix.  This is a display with many little graphs showing the relationships
+between each pair of variables in the data frame.   Before we can call
+<tt>plot</tt>, we need to remove the character variables (<tt>country</tt>
+and <tt>cont</tt>) from the data using negative subscripts:
+
+<pre>
+&#62;&nbsp;plot(world1[,-c(1,6)])
+
+</pre>
+
+<div class="p"><!----></div>
+The resulting plot looks like this:
+
+<div class="p"><!----></div>
+<img src="plotworld.png">
+
+<div class="p"><!----></div>
+As we'd expect, <tt>gdp</tt> (Gross Domestic Product) and <tt>income</tt> seem
+to have a very consistent relationship.  The relation between <tt>literacy</tt>
+and <tt>income</tt> appears to be interesting, so we'll examine it in more 
+detail, by making a separate plot for it:
+
+<div class="p"><!----></div>
+
+<pre>
+&#62;&nbsp;with(world,plot(literacy,income))
+
+</pre>
+  The first variable we pass to plot (<tt>literacy</tt> in this
+example) will be used for the x-axis, and the second (<tt>income</tt>) will
+be used on the y-axis.  The plot looks like this:
+
+<div class="p"><!----></div>
+<img src="litinc.png">
+
+<div class="p"><!----></div>
+In many cases, the most interesting points on a graph are the ones that don't
+follow the usual relationships.  In this case, there are a few points where the
+income is a bit higher than we'd expect based on the other countries, considering 
+the rate of literacy.  To see which countries they represent, we can use the 
+<tt>identify</tt> function.  You call <tt>identify</tt> with the same arguments
+as you passed to <tt>plot</tt>; then when you click on a point on the graph
+with the left mouse button, its row number will be printed on the graph.  It's
+usually helpful to have more than just the row number, so identify is usually
+called with a <tt>labels=</tt> argument.  In this case, the obvious choice is 
+the country name.  The way to stop identifying points depends on your operating
+system; on Windows, right click on the plot and choose "Stop"; on Unix/Linux
+click on the plot window with the middle button.  Here's the previous graph 
+after some of the outlier points are identified:
+
+<div class="p"><!----></div>
+<img src="litinc-i.png">
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc2">
+2</a>&nbsp;&nbsp;Adding Color to Plots</h2>
+Color is often refered to as the third dimension of a 2-dimensional plot, because
+it allows us to add extra information to an ordinary scatterplot.  Consider the 
+graph of literacy and income.  By examining boxplots, we can see that there are
+differences among the distributions of income (and literacy) for the different
+continents, and it would be nice to display some of that information on a 
+scatterplot.  This is one situation where factors come in very handy.  Since 
+factors are stored internally as numbers (starting at 1 and going up to the number
+of unique levels of the factor), it's very easy to assign different observations
+different colors based on the value of a factor variable.
+
+<div class="p"><!----></div>
+To illustrate, let's replot the income vs. literacy graph, but this time we'll
+convert the continent into a factor and use it to decide on the color of the 
+points that will be used for each country.  First, consider the <tt>world1</tt>
+data frame.  In that data frame, the continent is stored in the column (variable)
+called <tt>cont</tt>.  We convert this variable to a factor with the <tt>factor</tt>
+function.  First, let's look at the mode and class of the variable before we
+convert it to a factor:
+
+<pre>
+&#62;&nbsp;mode(world1$cont)
+[1]&nbsp;"character"
+&#62;&nbsp;class(world1$cont)
+[1]&nbsp;"character"
+&#62;&nbsp;world1$cont&nbsp;=&nbsp;factor(world1$cont)
+
+</pre>
+In many situations, the <tt>cont</tt> variable will behave the same as it did 
+when it was a simple
+character variable, but notice that its mode and class have changed:
+
+<pre>
+&#62;&nbsp;mode(world1$cont)
+[1]&nbsp;"numeric"
+&#62;&nbsp;class(world1$cont)
+[1]&nbsp;"factor"
+
+</pre>
+Having made <tt>cont</tt> into a factor, we need to choose some colors to 
+represent the different continents.  There are a few ways to tell R what 
+colors you want to use.  The easiest is to just use a color's name.  Most 
+colors you think of will work, but you can run the <tt>colors</tt> function
+without an argument to see the official list.  You can also use the method
+that's commonly use by web designers, where colors are specified as a pound
+sign (<tt>#</tt>) followed by 3 sets of hexadecimal digits providing the levels
+of red, green and blue, respectively.  Using this scheme, red is represented as
+'#FF0000', green as '#00FF00', and blue as '#0000FF'.  To see how many unique
+values of <tt>cont</tt> there are, we can use the <tt>levels</tt> function, 
+since it's a factor.  (For non-factors, the <tt>unique</tt> function is available,
+but it may give the levels in an unexpected order.)
+
+<pre>
+&#62;&nbsp;levels(world1$cont)
+[1]&nbsp;"AF"&nbsp;"AS"&nbsp;"EU"&nbsp;"NA"&nbsp;"OC"&nbsp;"SA"
+
+</pre>
+There are six levels.  The first step is to create a vector of color values:
+
+<pre>
+mycolors&nbsp;=&nbsp;c('red','yellow','blue','green','orange','violet')
+
+</pre>
+ To make the best possible graph, you should probably be more careful
+when choosing the colors, but this will serve as a simple example.
+
+<div class="p"><!----></div>
+Now, when we make the scatterplot, we add an additional argument, <tt>col=</tt>,
+which is a vector of the same length as the number of pairs of points that we're
+plotting - the color in each position corresponds to the color that will be used
+to draw that point on the graph.  Probably the easiest way to do that is to use
+the value of the factor <tt>cont</tt> as a subscript to the <tt>mycolors</tt>
+vector that we created earlier.  (If you don't see why this does what we want,
+please take a look at the result of <tt>mycolors[world1$cont]</tt>).
+
+<pre>
+with(world1,plot(literacy,income,col=mycolors[cont]))
+
+</pre>
+  There's one more detail that we need to take care of.  Since we're
+using color on the graph, we have to provide some way that someone viewing the
+graph can tell which color represents which continent, i.e. we need to add a 
+legend to the graph.  In R, this is done with the <tt>legend</tt> command. 
+There are many options to this command, but in it's simplest form we just tell
+R where to put the legend, whether we should show points or lines, and what
+colors they should be.  A title for the legend can also be added, which is a 
+good idea in this example, because the meaning of the continent abbreviations 
+may not be immediately apparent. You can specify x- and y-coordinates for the legend
+location or you can use one of several shortcuts like "topleft" to do things
+automatically.  (You may also want to look at the <tt>locator</tt> command, 
+that lets you decide where to place your legends interactively).  For our
+example, the following will place a legend in an appropriate place; the 
+<tt>title</tt> command is also used to add a title to the plot:
+
+<pre>
+&nbsp;with(world1,legend('topleft',legend=levels(cont),col=mycolors,pch=1,title='Continent'))
+title('Income&nbsp;versus&nbsp;Literacy&nbsp;for&nbsp;Countries&nbsp;around&nbsp;the&nbsp;World')
+
+</pre>
+ Notice how the <tt>title</tt> function can be used to add a title to a plot
+after it's displayed if you forget to provide a <tt>main=</tt> argument to <tt>plot</tt>.
+
+<div class="p"><!----></div>
+The <tt>pch=</tt> argument to the <tt>legend</tt> function is a graphics parameter
+representing the <i>p</i>lotting <i>ch</i>aracter.  While the <tt>plot</tt> function 
+uses a value of <tt>pch=1</tt> by default, the <tt>legend</tt> function won't display anything
+if you don't provide a <tt>pch=</tt> argument.  (You might want to experiment with different
+values for the <tt>pch=</tt> argument in the <tt>plot</tt> function.)
+Here's what the plot looks like:
+
+<div class="p"><!----></div>
+<img src="litinc-color.png">
+
+<div class="p"><!----></div>
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On  1 Mar 2011, 20:28.</small>
+</html>

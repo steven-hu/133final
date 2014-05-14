@@ -1,0 +1,137 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> Cluster Analysis</title>
+ 
+<h1 align="center">Cluster Analysis </h1>
+
+
+
+     <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;Introduction to Cluster Analysis</h2>
+While we often think of statistics as giving definitive answers to 
+well-posed questions, there are some statistical techniques that are used
+simply to gain further insight into a group of observations.  One such
+technique (which encompasses lots of different methods) is cluster analysis.
+The idea of cluster analysis is that we have a set of observations, on which
+we have available several measurements.  Using these measurements, we want to
+find out if the observations naturally group together in some predictable way.
+For example, we may have recorded physical measurements on many animals, and
+we want to know if there's a natural grouping (based, perhaps on species) that
+distinquishes the animals from another.  (This use of cluster analysis is
+sometimes called "numerical taxonomy").  As another example, suppose we have 
+information on the demographics and buying habits of many consumers.  We could
+use cluster analysis on the data to see if there are distinct groups of 
+consumers with similar demographics and buying habits (market segmentation).
+
+<div class="p"><!----></div>
+It's important to remember that cluster analysis isn't about finding the right 
+answer - it's about finding ways to look at data that allow us to understand the 
+data better.  For example, suppose we have a deck of playing cards, and we want to
+see if they form some natural groupings.  One person may separate the black cards
+from the red; another may break the cards up into hearts, clubs, diamonds and spades;
+a third person might separate cards with pictures from cards with no pictures, and
+a fourth might make one pile of aces, one of twos, and so on. Each
+person is right in their own way, but in cluster analysis, there's really not a single
+"correct" answer.
+
+<div class="p"><!----></div>
+Another aspect of cluster analysis is that there are an enormous number of possible
+ways of dividing a set of observations into groups.  Even if we specify the number
+of groups, the number of possibilities is still enormous.  For example, consider the 
+task of dividing 25 observations into 5 groups.  (25 observations is considered 
+very small in the world of cluster analysis).  It turns out there are 2.4*10<sup>15</sup>
+different ways to arrange those observations into 5 groups.  If, as is often the 
+case, we don't know the number of groups ahead of time, and we need to consider 
+all possible numbers of groups (from 1 to 25), the number is more than 4*10<sup>18</sup>!
+So any technique that simply tries all the different possibilities is doomed to 
+failure.
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc2">
+2</a>&nbsp;&nbsp;Standardization</h2>
+There are two very important decisions that need to be made whenever you are carrying
+out a cluster analysis.  The first regards the relative scales of the variables 
+being measured.  We'll see that the available cluster analysis algorithms all depend
+on the concept of measuring the distance (or some other measure of similarity) 
+between the different observations we're trying to cluster.  If one of the variables
+is measured on a much larger scale than the other variables,  then whatever measure
+we use will be overly influenced by that variable.  For example, recall the 
+<tt>world</tt> data set that we used earlier in the semester.   Here's a quick
+summary of the mean values of the variables in that data set:
+
+<pre>
+&#62;&nbsp;apply(world1[-c(1,6)],2,mean,na.rm=TRUE)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gdp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;income&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;literacy&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;military
+9.053595e+03&nbsp;1.025796e+04&nbsp;8.094902e+01&nbsp;5.679061e+09
+
+</pre>
+ Without some sort of standardization, a variable like literacy, measured
+on a scale of 0 to 100 has no chance of influencing our solution when the other variables
+are so much larger.
+
+<div class="p"><!----></div>
+The traditional way of standardizing variables is to subtract their mean, and divide
+by their standard deviation.  Variables standardized this way are sometimes refered to
+as z-scores, and always have a mean of zero and variance of one.  In the case of variables
+that contain outliers (observations that are much bigger or smaller than the vast majority
+of the data), this sort of standardization may be too severe, scaling down the
+outlying observations so that they appear to be closer to the others.   
+One alternative is to use
+the median absolute deviation in place of the standard deviation; another possibility is to
+subtract the median and divide by either the interquartile range
+or the median absolute deviation.  For the common
+methods of measuring distances (discussed below), centering the data by subtracting the 
+mean or median is not really critical; it's the division by an appropriate scaling factor
+that's important.
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc3">
+3</a>&nbsp;&nbsp;Distance Measures</h2>
+The most common distance measure, and the default for most programs that perform cluster
+analysis is the Euclidean distance, which is an extension of the usual notion of the distance
+between two points in a plane.  The Euclidean distance between two observations is calculated
+as the square root of the sum of the squares of the distances between corresponding variables
+in the two observations being considered.  Another widely used measure is the Manhattan distance,
+so named because it is similar to the distance between two points in a city, where you can only
+travel along a grid of streets.  It's calculated by adding up the absolute value of the 
+differences of the corresponding variables, and is less likely to be influenced by a very
+large difference between just one of the variables.  The Canberra distance is interesting in
+that it performs its own standardization;  absolute values of differences are divided by 
+the absolute value of the sum of the corresponding variables in the two observations.  
+Depending on the values and distributions of the variables in the data set being clustered,
+these different distance measures may point out different aspects of the structure of the 
+data set.
+
+<div class="p"><!----></div>
+Special consideration needs to be given to binary variables, that is, variables that take
+on only one of two values like TRUE or FALSE, especially when they are used in conjunction
+with continuous variables.  Generally there are two types of measures that are used with
+binary data.  Symmetric measures view two observations as being close together if the binary 
+feature is either absent in both or present in both, while asymmetric measures only
+view the observations as being close if the feature is present for both.
+
+<div class="p"><!----></div>
+For some clustering methods, the entire distance matrix must be calculated; for other 
+methods, distances are only calculated as needed.   
+
+<div class="p"><!----></div>
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On  5 May 2011, 09:54.</small>
+</html>

@@ -1,0 +1,632 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> GUIs / CGI Programming</title>
+ 
+<h1 align="center">GUIs / CGI Programming </h1>
+
+
+
+ <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;Using Images with the <tt>tcltk</tt> package</h2>
+The current version of tcl that ships with R allows you to display
+images in your GUIs, but only if they are in GIF format.  Fortunately,
+it's very easy to change the format of images if they are, for example
+JPEG or PNG files.  On any SCF machine, the command:
+
+<pre>
+mogrify&nbsp;-format&nbsp;gif&nbsp;*.jpg
+
+</pre>
+ will convert all the files ending in <tt>.jpg</tt> to files with
+the same name, but in the GIF format.  You can then use the <tt>.gif</tt>
+files that are created to display in your GUI.
+
+<div class="p"><!----></div>
+To use images with the <tt>tcltk</tt> library, first create a Tcl variable
+representing the image with code like:
+
+<pre>
+myimage&nbsp;=&nbsp;tclVar()
+tcl("image","create","photo",myimage,file="picture.gif")
+
+</pre>
+ Next, create a <tt>tklabel</tt> using the <tt>image=</tt> argument
+pointing to the tcl variable that holds the image:
+
+<pre>
+img&nbsp;=&nbsp;tklabel(frame,image=myimage)
+
+</pre>
+ Like any other widget, you can change the image during the execution
+of your program using the <tt>tkconfigure</tt> function.  Suppose we have another
+tcl variable called <tt>otherimage</tt> that has an image associated with it.
+To change the <tt>img</tt> widget to display that image, use
+
+<pre>
+tkconfigure(img,image=otherimage)
+
+</pre>
+
+<div class="p"><!----></div>
+If you have many pictures, it will be more convenient to store the tcl image variables
+in a list.  Suppose the R list <tt>pics</tt> contains the full pathname of several
+GIF files.  (It's usually simplest to use <tt>setwd</tt> to change to the directory
+where you're storing the GIF files, so that you only need to type their names, not
+their full paths.  The command
+
+<pre>
+setwd(file.choose())
+
+</pre>
+ allows you to navigate to the directory with the GIF files.)
+
+<div class="p"><!----></div>
+The following example displays pictures of three fruits, chosen from a list 
+of five.  When the button is pressed, it uses <tt>tkconfigure</tt> to change
+each picture many times, to give the illusion of a slot machine.  Note the 
+use of <tt>sapply</tt> to create a list of images, regardless of the number
+of images used.
+
+<pre>
+
+require(tcltk)
+pics&nbsp;=&nbsp;list.files('fruits',pattern='\\.gif$')
+pics&nbsp;=&nbsp;paste('fruits/',pics,sep='')
+n&nbsp;=&nbsp;length(pics)
+theimages&nbsp;=&nbsp;sapply(pics,function(pic)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tcl("image","create","photo",tclVar(),file=pic))
+spinner&nbsp;=&nbsp;function(...){
+&nbsp;&nbsp;&nbsp;&nbsp;for(i&nbsp;in&nbsp;1:50){
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;r&nbsp;=&nbsp;sample(1:n,size=3,replace=TRUE)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tkconfigure(img1,image=theimages[[r[1]]])
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tkconfigure(img2,image=theimages[[r[2]]])
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tkconfigure(img3,image=theimages[[r[3]]])
+	tcl('update')
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sys.sleep(.07)
+&nbsp;&nbsp;&nbsp;&nbsp;}
+}
+top&nbsp;=&nbsp;tktoplevel()
+f1&nbsp;=&nbsp;tkframe(top)
+f2&nbsp;=&nbsp;tkframe(top)
+r&nbsp;=&nbsp;sample(1:n,size=3,replace=TRUE)
+img1&nbsp;=&nbsp;tklabel(f1,image=theimages[[r[1]]])
+img2&nbsp;=&nbsp;tklabel(f1,image=theimages[[r[2]]])
+img3&nbsp;=&nbsp;tklabel(f1,image=theimages[[r[3]]])
+tkpack(img1,side='left')
+tkpack(img2,side='left')
+tkpack(img3,side='left')
+tkpack(tkbutton(f2,text='Spin',command=spinner),side='bottom')
+tkpack(f1,side='top')
+tkpack(f2,side='bottom')
+
+</pre>
+
+<div class="p"><!----></div>
+A picture of the GUI before spinning is shown below
+
+<div class="p"><!----></div>
+<img src="slot.png">
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc2">
+2</a>&nbsp;&nbsp;Web Servers</h2>
+We're all familiar with the use of a webserver - we type an address or click
+on a link, and then the page we want appears in our browser.  But what actually
+happens when we type in a web address?  Web servers are simply programs that 
+listen for requests on a particular port (port 80 by default), and then send 
+out information to the connection that requested it.  
+Such a two-way connection is known as a socket.  
+To see what really happens
+when a request is sent to a webserver, we can write an
+R program that creates a socket on an unused port, and then try to access that
+port through a web browser.  Then we can have our program simply send back
+whatever it received in order to see what's really going on.  The program is
+surprisingly simple:
+
+<pre>
+webecho&nbsp;=&nbsp;function(){
+&nbsp;&nbsp;&nbsp;&nbsp;xx&nbsp;=&nbsp;make.socket('localhost',port=1888,server=TRUE)
+&nbsp;&nbsp;&nbsp;&nbsp;on.exit(close.socket(xx))
+&nbsp;&nbsp;&nbsp;&nbsp;stuff&nbsp;=&nbsp;read.socket(xx,maxlen=1024)
+&nbsp;&nbsp;&nbsp;&nbsp;write.socket(xx,stuff)
+}
+
+</pre>
+The function opens a socket to port 1888, reads whatever gets sent to it, and
+then sends it right back to the same place as the request came from, so 
+it can be displayed in a browser.  The 
+call to <tt>on.exit</tt> makes sure that the socket is closed after the 
+communication takes place.  To run the program so that it will be able to
+respond to requests, we place it in a loop:
+
+<pre>
+&#62;&nbsp;while(1)webecho()
+
+</pre>
+(If you run the program on a UNIX system, you'll have to quit your R 
+session (with control-<tt>\</tt>) to stop it;  on a Windows system you may
+be prompted to quit your R session  when you try to exit.)
+
+<div class="p"><!----></div>
+Now let's type the following address into a browser:
+
+<pre>
+http://localhost:1888/something
+
+</pre>
+Here's what appears in the browser:
+
+<pre>
+GET&nbsp;/something&nbsp;HTTP/1.1
+Host:&nbsp;localhost:1888
+User-Agent:&nbsp;Mozilla/5.0&nbsp;(X11;&nbsp;U;&nbsp;Linux&nbsp;x86_64;&nbsp;en-US;&nbsp;rv:1.7.12)&nbsp;Gecko/20051010&nbsp;Galeon/1.3.21&nbsp;(Debian&nbsp;package&nbsp;1.3.21-6ubuntu3)&nbsp;(Ubuntu&nbsp;package&nbsp;1.0.7)
+Accept:&nbsp;text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5
+Accept-Language:&nbsp;en
+Accept-Encoding:&nbsp;gzip,deflate
+Accept-Charset:&nbsp;ISO-8859-1,utf-8;q=0.7,*;q=0.7
+Keep-Alive:&nbsp;300
+Connection:&nbsp;keep-alive
+
+</pre>
+The output consists of the actual request (the line with the <tt>GET</tt>),
+and a series of headers.  This is all the information that is transmitted 
+from the browser to the webserver when a request is made for a particular
+page.   Once a webserver receives a request like this, it returns the page
+that the user requested (as specified in the <tt>GET</tt> directive).  If 
+that page contains images, documents or additional programs, they would be
+sent to the browser through the same mechanism.
+
+<div class="p"><!----></div>
+This is fine for ordinary, static pages, but what about the case where we
+accept input from the user?  This would be the case when data is entered into
+a field, or checkboxes are checked on a page, and then a button is clicked to 
+send the information from the browser to the web server.  Web pages that accept
+information are known as forms.  
+There are two mechanisms that can be used to send information from a 
+web browser to a webserver; 
+GET (which is the default, if you don't explicitly state a method) and POST.  
+(We'll look at their differences shortly.)
+For example, the HTML that would be used on
+a web page to accept a text field and use the GET method to send the 
+information would look like this:
+
+<pre>
+&lt;form&nbsp;action='http://localhost:1888'&nbsp;method=GET&#62;
+&lt;input&nbsp;type=text&nbsp;name=myvar&#62;&lt;br&#62;
+&lt;input&nbsp;type=submit&nbsp;value='GET'&#62;
+&lt;/form&#62;
+&lt;/html&#62;
+
+</pre>
+Notice the <tt>action=</tt> specification in the form tag; this specifies the
+program which will be executed once the information is sent from the browser
+to the web server.  The <tt>name=</tt> specification, which must always be 
+present in an HTML that will accept information from a user, defines the name
+of a CGI variable.  CGI stands for "Common Gateway Interface", and is a 
+catch-all term for any program which is executed by a web server in response to
+a request from a browser.
+
+<div class="p"><!----></div>
+Here's how this html would display in a browser:
+
+<div class="p"><!----></div>
+<img src="form1.png">
+
+<div class="p"><!----></div>
+What happens if we enter something in the field, and click on the button?
+Let's put the words "hello, world" in the field and see:
+
+<div class="p"><!----></div>
+<img src="form2.png">
+
+<div class="p"><!----></div>
+First, notice that the address has changed, reflecting the address given in the 
+<tt>action=</tt> specification.  Additionally, some text has been added to the 
+end of the displayed URL, and we can see that this same text was sent to the 
+web server as part of the <tt>GET</tt> specification.  
+
+<div class="p"><!----></div>
+The extra text that's in the URL and the <tt>GET</tt> specification is said to
+be urlencoded; non-alphanumeric characters (like the comma) are replaced with 
+a percent sign followed by the two-digit hexadecimal representation of the 
+character, and spaces are replaced with plus signs. (A complete list of the 
+encodings can be found at <a href="http://www.w3schools.com/tags/ref_urlencode.asp">http://www.w3schools.com/tags/ref_urlencode.asp</a>).  
+
+<div class="p"><!----></div>
+This method of transfering information has its limitations.  First of all, it's
+obvious that it won't work for things like files, because there's just not enough
+room in a URL to accomodate files of arbitrary length.  Secondly, it may not be
+prudent to display the information that you're transfering in the URL where it can
+easily be seen.  An alternative to <tt>GET</tt> is known as <tt>POST</tt>.  Let's
+see how it differs from <tt>GET</tt> by creating a form identical to the first 
+one, but with the method specified as <tt>POST</tt>.  The html looks like this:
+
+<pre>
+&lt;form&nbsp;action='http://localhost:1888'&nbsp;method=post&#62;
+&lt;input&nbsp;type=text&nbsp;name=myvar&#62;&lt;br&#62;
+&lt;input&nbsp;type=submit&nbsp;value='POST'&#62;
+&lt;/form&#62;
+
+</pre>
+Here's how it displays in the browser:
+
+<div class="p"><!----></div>
+<img src="form3.png">
+
+<div class="p"><!----></div>
+Once again, we'll enter "hello, world", and click on the button:
+
+<div class="p"><!----></div>
+<img src="form4.png">
+
+<div class="p"><!----></div>
+Notice that the URL no longer has any information about the CGI variables;
+the urlencoded string with the values now appears after the header information
+that the web browser sent.  (Remember that for protocols like HTTP, a single
+completely blank line indicates the end of the headers.)
+Since the information in the form is not placed in
+the URL, this should allow us to upload local files to a CGI program.  Here's 
+the HTML code for a form that will upload a file:
+
+<pre>
+&lt;form&nbsp;action='http://localhost:1888'&nbsp;method=post&nbsp;enctype="multipart/form-data"&#62;
+&lt;input&nbsp;type=file&nbsp;name='myfile'&#62;
+&lt;input&nbsp;type=submit&nbsp;value='POST'&#62;
+&lt;/form&#62;
+
+</pre>
+Here it is displayed in a browser:
+
+<div class="p"><!----></div>
+<img src="form5.png">
+
+<div class="p"><!----></div>
+The <tt>Browse...</tt> button is generated automatically when <tt>type=file</tt>
+is specified for an input element.  For file uploading, the method must be set
+to <tt>post</tt>; using <tt>get</tt> just won't work.  Now I'll fill out the 
+form with the name of the file that holds the source for the <tt>webecho</tt>
+function that we've been using to see how it gets transfered.
+
+<div class="p"><!----></div>
+<img src="form6.png">
+
+<div class="p"><!----></div>
+The file is sent (after the headers) in a form very similar to an email attachment.
+One big difference is that, if the file to be transmitted is a non-text file
+(like an image or document), no encoding needs to be done - the HTTP protocol
+utilizes all 8 bits of each byte.  You may have noticed the 
+<tt>enctype="multipart/form-data"</tt> specification in the previous form.
+This is what causes the web browser to send it's data in the "attachment"
+style, and is required when you're uploading a file.  If you specify it in a 
+normal form, it will send the CGI variable information in a similar
+fashion.  With a form like this:
+
+<div class="p"><!----></div>
+
+<pre>
+&lt;form&nbsp;action='http://localhost:1888'&nbsp;method=post&nbsp;enctype="multipart/form-data"&#62;
+&lt;input&nbsp;type=text&nbsp;name=myvar&#62;&lt;br&#62;
+&lt;input&nbsp;type=submit&nbsp;value='POST'&#62;
+&lt;/form&#62;
+
+</pre>
+
+<div class="p"><!----></div>
+entering "hello, world" results in the following:
+
+<div class="p"><!----></div>
+
+<pre>
+POST&nbsp;/&nbsp;HTTP/1.1
+Host:&nbsp;localhost:1888
+User-Agent:&nbsp;Mozilla/5.0&nbsp;(X11;&nbsp;U;&nbsp;Linux&nbsp;x86_64;&nbsp;en-US;&nbsp;rv:1.7.12)&nbsp;Gecko/20051010&nbsp;Firefox/1.0.7&nbsp;StumbleUpon/1.9993&nbsp;(Ubuntu&nbsp;package&nbsp;1.0.7)
+Accept:&nbsp;text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5
+Accept-Language:&nbsp;en-us,en;q=0.5
+Accept-Encoding:&nbsp;gzip,deflate
+Accept-Charset:&nbsp;ISO-8859-1,utf-8;q=0.7,*;q=0.7
+Keep-Alive:&nbsp;300
+Connection:&nbsp;keep-alive
+Content-Type:&nbsp;multipart/form-data;&nbsp;boundary=---------------------------14394547745218385925125258
+Content-Length:&nbsp;178
+
+-----------------------------14394547745218385925125258
+Content-Disposition:&nbsp;form-data;&nbsp;name="myvar"
+
+hello,&nbsp;world
+-----------------------------14394547745218385925125258--
+
+</pre>
+
+<div class="p"><!----></div>
+Note that in this case, there was no urlencoding of the variable's value.
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc3">
+3</a>&nbsp;&nbsp;CGI Scripting</h2>
+Before continuing, it's worth making note of some very practical details that
+you'll have to consider before beginning a project that uses CGI scripting.
+The programs which a web server will execute in response to a request need to 
+be in specially designated directories, or the web server will treat them as
+ordinary documents, not programs.  In general, access to such directories will
+be limited, both for financial and security reasons.  In addition, a program which
+requires large amounts of computer resources may make it difficult for others 
+who use the server to get anything done.  
+
+<div class="p"><!----></div>
+When you are writing CGI programs, it's very important to avoid allowing users
+manipulate any input which might find its way outside of the web server's 
+slightly protected environment.  What this means is that programs that call 
+operating system programs, (for example calls to <tt>system</tt> in R), should
+generally be avoided.  
+
+<div class="p"><!----></div>
+Now that we've seen what's going on behind the scenes, we can start to look
+at the facilities in R that will allow us to write CGI scripts.  
+The <tt>CGIwithR</tt> library provides a "wrapper" script that sets up an
+environment in which R can run.  
+The most important
+function of the <tt>CGIwithR</tt> library is to gather all the 
+information that the web browser has sent to the web server (regardless of 
+how it was sent to the browser) and to make it easily available inside of 
+R.  The <tt>CGIwithR</tt> library takes all of the CGI variables (defined in
+the forms that a user has responded to), and places them in a list called
+<tt>formData</tt>, which can be manipulated like any other list in R.  Note that
+the library resolves all issues regarding which method (get or post) was used 
+in the form that generated the variables, and that the <tt>formData</tt> list 
+is the only object you need to look at to get the values of the CGI variables
+defined in the form.
+
+<div class="p"><!----></div>
+Once your program has received the information from a user's web browser, any
+printing statements that you make in your program will be directed back to the 
+browser.  This means that you need to follow the rules of HTML when you are 
+displaying results, not the ordinary rules that would apply for an regular R
+session.  The <tt>cat</tt> function is very useful in this regard, because it
+displays exactly what you tell it to, without any element numbering or formatting.
+If you know the basics of HTML, you may prefer to simply use <tt>cat</tt> to 
+generate most or all of the HTML your CGI script creates.  (There is a library
+called <tt>R2HTML</tt> that automates the "HTML-ization" of R objects, and you
+may want to study it on your own, but we won't be using it here.)  Here are some
+ideas for generating appropriate output in CGI programs written with R.
+
+<div class="p"><!----></div>
+
+<ul>
+<li>The <tt>CGIwithR</tt> library provides a few helper functions that make generating
+useful HTML much easier:
+
+<ul>
+<li><tt>HTMLheader</tt> - This function, called with no arguments, prints the 
+appropriate information at the beginning of your output so that all browsers
+will realize that they're receiving HTML.  It's recommended that you call this
+function before you produce any output in an CGI script.
+<div class="p"><!----></div>
+</li>
+
+<li>
+<tt>tag</tt> and <tt>untag</tt> - These functions accept unquoted arguments and
+produce either the opening or closing tag required for most HTML constructs.
+For example, a large title line can be specified in HTML by beginning with 
+<tt>&lt;h1&#62;</tt> and ending with <tt>&lt;/h1&#62;</tt>.  You could generate a title
+using <tt>tag</tt> and <tt>untag</tt> as follows:
+
+<pre>
+tag(h1)
+cat('Here's&nbsp;my&nbsp;title')
+untag(h1)
+
+</pre>
+<div class="p"><!----></div>
+</li>
+
+<li>
+<tt>br</tt> - To indicate a line break in HTML, the <tt>&lt;br&gt;</tt> tag must be 
+used; HTML pays no attention to newline characters.  The <tt>br</tt> function
+will print such a tag, so it can be inserted into your CGI program wherever you
+want to insert line breaks.  An optional argument (defaulting to 1) tells 
+<tt>br</tt> how many lines you want inserted.
+<div class="p"><!----></div>
+</li>
+</ul>
+<div class="p"><!----></div>
+</li>
+
+<li>
+The HTML <tt>&lt;pre&#62;</tt> tag specifies that you don't want the browser that displays
+the output to perform any formatting.   Suppose you want 
+your CGI program 
+to display the results of 
+the summary function for a variable <tt>x</tt> in a browser window just as it 
+would appear in a command-line R session.  You could use the following:
+
+<pre>
+tag(pre)
+print(summary(x))
+untag(pre)
+
+</pre>
+<div class="p"><!----></div>
+</li>
+
+<li>
+The <tt>&lt;p&#62;</tt> tag is an alternative way of placing line breaks into your 
+output.
+<div class="p"><!----></div>
+</li>
+</ul>
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc4">
+4</a>&nbsp;&nbsp;A First CGI program with R</h2>
+As a simple way of getting started with CGI programming, let's take the output
+from the first simple form that we created and see how the information gets 
+translated from the CGI environment into the R environment.  
+I'm assuming that your SCF account
+is <tt>s133xx</tt> and that you've followed the instructions at 
+<a href="http://www.stat.berkeley.edu/classes/s133/projects/tech/Cgiprogs.html">http://www.stat.berkeley.edu/classes/s133/projects/tech/Cgiprogs.html</a> to 
+prepare your account to use CGI scripting.  Typically, you would put the page
+containing the html in your <tt>public_html</tt> directory.  Suppose the 
+following is placed in a file called <tt>form1.html</tt> in your 
+<tt>public_html</tt> directory:
+
+<pre>
+&lt;html&#62;
+&lt;form&nbsp;action='cgi-bin/R.cgi/test1.cgi'&nbsp;method=get&#62;
+&lt;input&nbsp;type=text&nbsp;name=myvar&#62;&lt;br&#62;
+&lt;input&nbsp;type=submit&nbsp;value='GET'&#62;
+&lt;/form&#62;
+&lt;/html&#62;
+
+</pre>
+Since file names
+in HTML are interpreted relative to the directory that the HTML resides in,
+we can refer to the CGI program relative to the <tt>cgi-bin</tt> directory.
+Notice that this will allow you to use the same form whether you're running on 
+the SCF network or through a tunnel.   
+In addition to 
+the <tt>formData</tt> list that holds the values of the CGI variables, information
+is also passed to your CGI program through environmental variables.  These 
+variables can be accessed with the <tt>Sys.getenv</tt> function, but for our
+purposes here, we can use the <tt>showEnvironmentVariables</tt> function that's
+part of the <tt>CGIwithR</tt> package. Here's a simple program that will just
+print out some information about the <tt>formData</tt> list and the environmental
+variables that are transfered into the environment:
+
+<div class="p"><!----></div>
+Here's the <tt>test1.cgi</tt> program:
+
+<pre>
+HTMLheader()
+
+cat('Class&nbsp;of&nbsp;formData=',class(formData),'&nbsp;Mode&nbsp;of&nbsp;formData=',mode(formData),'&lt;br&#62;')
+cat('Names&nbsp;of&nbsp;formData=',names(formData),'&lt;br&#62;')
+
+tag(pre)
+print(formData)
+untag(pre)
+
+showEnvironmentVariables()
+
+cat('&lt;/body&#62;&lt;/html&#62;')
+
+</pre>
+
+<div class="p"><!----></div>
+If we run the program (by pointing a browser at <tt>http://springer/&nbsp;s133xx/form1.html</tt>, entering "hello, world" and pressing the button), here's what the 
+output looks like:
+
+<pre>
+Class&nbsp;of&nbsp;formData=&nbsp;list&nbsp;Mode&nbsp;of&nbsp;formData=&nbsp;list
+Names&nbsp;of&nbsp;formData=&nbsp;myvar
+
+$myvar
+[1]&nbsp;"hello,&nbsp;world"
+
+SERVER_SIGNATURE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Apache/2.0.54&nbsp;(Ubuntu)&nbsp;Server&nbsp;at&nbsp;springer&nbsp;Port&nbsp;80
+R_INCLUDE_DIR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/usr/local/linux/R-2.2.1/include
+HTTP_KEEP_ALIVE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;300
+HTTP_USER_AGENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Mozilla/5.0&nbsp;(X11;&nbsp;U;&nbsp;Linux&nbsp;x86_64;&nbsp;en-US;&nbsp;rv:1.7.12)&nbsp;Gecko/20051010&nbsp;Galeon/1.3.21&nbsp;(Debian&nbsp;package&nbsp;1.3.21-6ubuntu3)&nbsp;(Ubuntu&nbsp;package&nbsp;1.0.7)
+SERVER_PORT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;80
+HTTP_HOST&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;springer
+LD_LIBRARY_PATH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/usr/local/linux/R-2.2.1/lib:/usr/local/lib64:/usr/lib/gcc/x86_64-linux-gnu/3.4.5:/usr/X11R6/lib:/server/linux/j2sdk1.4.2_04/jre/lib/i386/client:/server/linux/j2sdk1.4.2_04/jre/lib/i386
+DOCUMENT_ROOT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/mirror/data/pub/html/classes/s133
+HTTP_ACCEPT_CHARSET&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ISO-8859-1,utf-8;q=0.7,*;q=0.7
+SCRIPT_FILENAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/class/u/s133/s133xx/public_html/cgi-bin/R.cgi
+REQUEST_URI&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/~s133xx/cgi-bin/R.cgi/test1.cgi?myvar=hello%2C+world
+SCRIPT_NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/~s133xx/cgi-bin/R.cgi
+R_GSCMD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/usr/bin/gs
+HTTP_CONNECTION&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;keep-alive
+PATH_INFO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/test1.cgi
+REMOTE_PORT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;48242
+PATH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/usr/local/bin:/usr/bin:/bin
+R_LIBS&nbsp;&nbsp;
+PWD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/class/u/s133/s133xx/public_html/cgi-bin
+SERVER_ADMIN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;webmaster@localhost
+R_SHARE_DIR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/usr/local/linux/R-2.2.1/share
+LANG&nbsp;&nbsp;&nbsp;&nbsp;
+HTTP_ACCEPT_LANGUAGE&nbsp;&nbsp;&nbsp;&nbsp;en
+PATH_TRANSLATED&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/class/u/s133/s133xx/public_html/cgi-bin/test1.cgi
+HTTP_REFERER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;http://springer/~s133xx/form1.html
+HTTP_ACCEPT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5
+REMOTE_ADDR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;128.32.135.22
+SHLVL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1
+SERVER_NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;springer
+FORM_DATA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;myvar=hello%2C+world
+SERVER_SOFTWARE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Apache/2.0.54&nbsp;(Ubuntu)
+QUERY_STRING&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;myvar=hello%2C+world
+SERVER_ADDR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;128.32.135.22
+GATEWAY_INTERFACE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CGI/1.1
+R_HOME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/usr/local/linux/R-2.2.1
+SERVER_PROTOCOL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTTP/1.1
+HTTP_ACCEPT_ENCODING&nbsp;&nbsp;&nbsp;&nbsp;gzip,deflate
+R_DOC_DIR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/usr/local/linux/R-2.2.1/doc
+REQUEST_METHOD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GET
+R_SESSION_TMPDIR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/tmp/RtmpPPrmxy
+R_PLATFORM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x86_64-unknown-linux-gnu
+R_PAPERSIZE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;letter
+R_PRINTCMD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lpr
+R_LATEXCMD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/usr/bin/latex
+R_DVIPSCMD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/usr/bin/dvips
+R_MAKEINDEXCMD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/usr/bin/makeindex
+R_RD4DVI&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ae
+R_RD4PDF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;times,hyper
+R_UNZIPCMD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/usr/bin/unzip
+R_ZIPCMD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/usr/bin/zip
+R_BROWSER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/usr/bin/firefox
+EDITOR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vi
+PAGER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/usr/bin/less
+R_PDFVIEWER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/usr/local/linux/bin/acroread
+AWK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gawk
+EGREP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;grep&nbsp;-E
+MAKE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;make
+PERL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/usr/bin/perl
+TAR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tar
+LN_S&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ln&nbsp;-s
+R_USE_AQUA_SUBDIRS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;no&nbsp;
+
+</pre>
+
+<div class="p"><!----></div>
+You may have noticed that the URL we used for the <tt>action=</tt>
+specification makes it look like <tt>R.cgi</tt> is a directory, not 
+a file.  What happens is that the <tt>R.cgi</tt> program gets
+invoked by the web server, and it examines the <tt>PATH_INFO</tt>
+variable to find the name of your script (<tt>test1.cgi</tt> in this case.)
+It then loads up the <tt>formData</tt> list and calls your program.
+
+<div class="p"><!----></div>
+If you examine the information that our simple web echoing program displayed,
+you'll see that each of the headers that were passed to the program have 
+been transfered to environmental variables with a prefix of <tt>HTTP_</tt>.
+Although you most likely won't need them, you can examine the list of 
+environmental variables to find information that you might want to use in
+your CGI programs and then access the information by using <tt>Sys.getenv</tt>.
+
+<div class="p"><!----></div>
+The most important thing to notice is that the <tt>myvar</tt> CGI variable,
+defined  in the input field of the HTML form, is available inside your R 
+program, in unencoded form, in the element with the name <tt>myvar</tt>.  This
+is the mechanism by which all the CGI variables are transfered into the R 
+environment.
+
+<div class="p"><!----></div>
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On 13 Apr 2011, 20:56.</small>
+</html>

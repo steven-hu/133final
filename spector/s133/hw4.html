@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"
+           "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.85">
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+   
+<title>Stat 133 - Homework 4 due April 15, 2011</title>
+
+
+<center><font size="+1">Stat 133, Spring 2011<br />
+Homework 4: XML, Clutering, and Classification Methods<br />
+Due Friday, April 15 at 11:59PM<br />
+</font></center>
+
+<table align="center" border="0"><tr><td>
+<font size="+2">XML, Clustering, and  Classification Methods</font></td></tr></table><!--hboxt-->
+
+
+<ol type="1">
+<li>Two applications where XML is already widely used are RSS (really simple
+syndication), and the distribution of television listings for use in
+home theater systems (XMLTV).  In this assignment, we're going to use R
+to extract information from these readily available XML documents.
+
+<div class="p"><!----></div>
+
+<ol type="a">
+<li>RSS is a format that is used to provide information about news stories,
+blog entries, or any other information that can be broken down into 
+individual items.  When you see a symbol like this <img src="RSS.png">
+or this <img src="XML.png">
+on a web page, it indicates a link to an RSS feed.  
+
+<div class="p"><!----></div>
+Write a <b>function</b>, which accepts the URL of an RSS feed, and returns
+a data frame with the headlines (titles), descriptions, and URLs (links)  of the objects in the feed.
+You can use the RSS feed 
+of Yahoo headlines available at <br />
+<a href="http://rss.news.yahoo.com/rss/topstories">http://rss.news.yahoo.com/rss/topstories</a>
+to develop your function.
+Then find at least two other RSS feeds, preferably at a site you're interested
+in, and use your function on them.  (You can find some feeds at <br />
+<a href="http://www.google.com/support/news/bin/answer.py?hl=en&answer=59255">http://www.google.com/support/news/bin/answer.py?hl=en&amp;answer=59255</a>.  You can turn any <tt>bing.com</tt> 
+search into an RSS feed by taking the URL for the search and appending <tt>&amp;format=rss</tt>.  Another way to find RSS feeds is by
+adding <tt>filetype:rss</tt> to a Google search.)
+<div class="p"><!----></div>
+</li>
+
+<li>
+At <a href="http://www.stat.berkeley.edu/classes/s133/listings.xml.gz">http://www.stat.berkeley.edu/classes/s133/listings.xml.gz</a>, there
+is a gzipped file containing five days of television listings for over 200 channels.
+This XML file has two separate trees - one which describes the channels and
+the other which describes the programs.  You'll need to use 
+<tt>xmlElementsByTagName</tt> to separate them before processing.
+
+<div class="p"><!----></div>
+From these TV listings, use the <tt>XML</tt> library in R to create a 
+data frame with columns for starting time, channel, title and description
+of each of the programs represented in the listings.  Notice that some of
+this information is stored as attributes in the XML tags, so you'll need
+to use <tt>xmlAttrs</tt> to extract this information.  
+
+<div class="p"><!----></div>
+Once you've got the data frame set up, choose a show or topic that you're 
+interested in, and use R to print the rows of the data frame corresponding
+to those programs that match your criteria.
+<div class="p"><!----></div>
+</li>
+</ol>
+<div class="p"><!----></div>
+</li>
+
+<li>
+Using the builtin data set <tt>iris</tt>, use the <tt>rpart</tt> library in R to 
+build a classification tree to predict the value of <tt>Species</tt> for each
+observation.  Write a sentence which describes the prediction rule that your 
+<tt>rpart</tt> analysis produced.
+
+<div class="p"><!----></div>
+Next, using the <tt>lda</tt> function in the <tt>MASS</tt> library, classify
+the species of the observations using linear discriminant analysis.   Finally, using
+the <tt>knn.cv</tt> function from the <tt>class</tt> library, use kth-nearest 
+neighbor classification on the species of the observations.
+
+<div class="p"><!----></div>
+For each of the three methods, calculate the percent of observations that were
+misclassified in order to determine which method was most effective in classifying
+the observations.
+<div class="p"><!----></div>
+</li>
+
+<li>
+At <a href="http://www.stat.berkeley.edu/classes/s133/data/teeth.csv">http://www.stat.berkeley.edu/classes/s133/data/teeth.csv</a>, there is a CSV file containing the 
+names of animals and the numbers of various types of teeth (both top and 
+bottom incisors, canines, premolars, and molars) that they have.  Use cluster
+analysis to find groups of animals that are similar, based on the numbers of 
+different kinds of teeth that they have.
+<div class="p"><!----></div>
+</li>
+</ol>
+
+<div class="p"><!----></div>
+<b>Note: </b>If there are other data sets that you are interested that are
+appropriate for classification or cluster analysis, you can substitute them
+for the data sets in parts 2 and 3.
+
+<div class="p"><!----></div>
+Your submission should be contained in a <em>single</em> pdf file, 
+containing all the R code you used for the assignment.
+Email this file to me (<tt>s133@stat.berkeley.edu</tt>), with your 
+name
+in the subject of the email message and on the report, 
+by 11:59PM (plus or minus a minute)
+on the due date. Make certain to save a copy of your email submission.
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.85.<br />On  4 Apr 2011, 11:15.</small>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+ 
+<title> Saving Plots in R</title>
+ 
+<h1 align="center">Saving Plots in R </h1>
+
+Since R runs on so many different operating systems, and supports 
+so many different graphics formats, it's not surprising that there
+are a variety of ways of saving your plots, depending on what 
+operating system you are using, what you plan to do with the graph,
+and whether you're connecting locally or remotely.  
+
+<div class="p"><!----></div>
+The first step in deciding how to save plots is to decide on the 
+output format that you want to use.  The following table lists some
+of the available formats, along with guidance as to when they may
+be useful.
+
+<div class="p"><!----></div>
+
+<table border="1">
+<tr><td>Format</td><td>Driver</td><td>Notes</td></tr>
+<tr><td>JPG</td><td><tt>jpeg</tt></td><td>Can be used anywhere, but doesn't resize</td></tr>
+<tr><td>PNG</td><td><tt>png</tt></td><td>Can be used anywhere, but doesn't resize</td></tr>
+<tr><td>WMF</td><td><tt>win.metafile</tt></td><td>Windows only; best choice with Word; easily resizable</td></tr>
+<tr><td>PDF</td><td><tt>pdf</tt></td><td>Best choice with pdflatex; easily resizable</td></tr>
+<tr><td>Postscript</td><td><tt>postscript</tt></td><td>Best choice with latex and Open Office; easily resizable</td></tr></table>
+
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;A General Method</h2>
+First, here's a general method that will work on any computer with R,
+regardless of operating system or the way that you are connecting.
+
+<ol type="1">
+<li>Choose the format that you want to use.  In this example, I'll save a 
+plot as a JPG file, so I'll use the <tt>jpeg</tt> driver.
+<div class="p"><!----></div>
+</li>
+
+<li>
+The only argument that the device drivers need is the name of the file 
+that you will use to save your graph.  Remember that your plot will be
+stored relative to the current directory.  You can find the current 
+directory by typing <tt>getwd()</tt> at the R prompt.
+
+<div class="p"><!----></div>
+You may want to make adjustments to the size of the plot before saving
+it.  Consult the help file for your selected driver to learn how.
+<div class="p"><!----></div>
+</li>
+
+<li>
+Now enter your plotting commands as you normally would.  You will
+<b>not</b> actually see the plot - the commands are being saved to 
+a file instead.
+<div class="p"><!----></div>
+</li>
+
+<li>
+When you're done with your plotting commands, enter the <tt>dev.off()</tt>
+command.  This is very important - without it you'll get a partial plot
+or nothing at all.
+<div class="p"><!----></div>
+</li>
+</ol>
+
+<div class="p"><!----></div>
+So if I wanted to save a jpg file called "<tt>rplot.jpg</tt>" containing
+a plot of <tt>x</tt> and <tt>y</tt>, I would type the following commands:
+
+<pre>
+&#62;&nbsp;jpeg('rplot.jpg')
+&#62;&nbsp;plot(x,y)
+&#62;&nbsp;dev.off()
+
+</pre>
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc2">
+2</a>&nbsp;&nbsp;Another Approach</h2>
+If you follow the process in the previous section, you'll first have to
+make a plot to the screen, then re-enter the commands to save your plot
+to a file.  R also provides the <tt>dev.copy</tt> command, to copy the 
+contents of the graph window to a file without having to re-enter the 
+commands.  For most plots, things will be fine, but sometimes translating
+what was on the screen into a different format doesn't look as nice as
+it should.  
+
+<div class="p"><!----></div>
+To use this approach, first produce your graph in the usual way.  When
+you're happy with the way it looks, call <tt>dev.copy</tt>, passing it the
+driver you want to use, the file name to store it in, and any other arguments
+appropriate to the driver.
+
+<div class="p"><!----></div>
+For example, to create a png file called <tt>myplot.png</tt> from a graph that 
+is displayed by R, type
+
+<pre>
+&#62;&nbsp;dev.copy(png,'myplot.png')
+&#62;&nbsp;dev.off()
+
+</pre>
+ Remember that when you save plots this way, the plot isn't actually
+written to the file until you call <tt>dev.off</tt>.
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc3">
+3</a>&nbsp;&nbsp;Local Sessions with Windows or OS X</h2>
+If you're actually sitting in front of a Windows or Mac computer (i.e. not
+using ssh to connect), the graphical user interface makes it easy to save
+files.   Under Windows, right click inside the graph window, and choose
+either "<tt>Save as metafile ...</tt>" or "<tt>Save as postscript ...</tt>"
+If using Word, make sure to save as a metafile.
+
+<div class="p"><!----></div>
+On a Mac, click on the graphics window to make sure it's the active one, then
+go to <tt>File -&#62; Save</tt> in the menubar, and choose a location to save the
+file.   It will be saved as a pdf file, which you can double click to open in
+Preview, and then use the <tt>File -&#62; Save As</tt> menu choice to convert to
+another format.  
+
+<div class="p"><!----></div>
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On 14 Sep 2007, 11:39.</small>
+</html>

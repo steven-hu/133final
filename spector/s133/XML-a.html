@@ -1,0 +1,667 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> XML</title>
+ 
+<h1 align="center">XML </h1>
+
+
+
+ <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;What is XML?</h2>
+XML, which is an acronym for extensible markup language, is a way of 
+creating documents that contain structured information.  Up until now,
+most of the data sets that we've considered were easily accomodated 
+by a observations and variables rectangular data structure (like a 
+comma separated file, which translates neatly to a data
+frame in R), where the number of variables for each observations is the 
+same.  Outside of variable names and the actual data values, there was no
+additional information stored in the data, either in its text form or 
+once it was read into R.
+
+<div class="p"><!----></div>
+One type of data that we've seen that accomodates extra information is the
+spreadsheet;  people often annotate their data will all sorts of useful and
+maybe-not-so-useful information.  But as we've seen, there's no standard 
+structure to these non-data rows of the spreadsheet, so they really just
+get in our way and require customized processing.
+
+<div class="p"><!----></div>
+Another example of non-regular data would be the baseball database; players
+played for varying numbers of seasons, and for varying numbers of teams;
+they may or may not have attended college, or played in a world series, etc.
+Databases have traditionally been used for data like this, but they certainly
+have their disadvantages: there are many tables, making it necessary to perform
+lots of joins, and it's easy to lose track of all that information.
+
+<div class="p"><!----></div>
+One frustrating aspect regarding designing formats for data is that if you go
+into the design with a specific type of data in mind, you'll build in features
+that are wonderful for that data, but may be very lacking for other sorts of 
+data.  For example, statisticians would want a rich syntax to describe things
+like repeated measures, missing values, allowable ranges of variables, etc., but
+these features would not be of much use to a general user.  So in some ways, we
+can think of XML as a compromise that will allow a wide variety of different 
+information to be stored and distributed in a similar way without favoring any
+particular structure or type of data.  The features that I've described can 
+easily be accomodated in an XML document by simply defining new tags to contain
+this information.  Furthermore, XML is designed so that it's alright if there is
+no extra information in the document other than the data and its' associated tags.
+This sort of flexibility is one of the most powerful forces behind the development
+of XML.  To see a list of some of the applications for which XML document
+styles have been proposed, go to <a href="http://xml.coverpages.org/xml.html#applications">http://xml.coverpages.org/xml.html#applications</a>.
+
+<div class="p"><!----></div>
+At first glance, XML looks very similar to HTML, but there are important
+differences.  First, HTML is used to describe the desired appearance of 
+information in the browser, not the structure of that information.  Second, the
+set of allowable tags in HTML is fixed; we can't just redefine them at our 
+convenience.  HTML is also inconsistent.   Tags like <tt>h1</tt> and <tt>td</tt>
+must have accompanying closing tags (<tt>&lt;/h1&#62;</tt> and <tt>&lt;/td&#62;</tt>), but tags
+like <tt>&lt;br&#62;</tt> and <tt>&lt;p&#62;</tt> don't. 
+Finally, to accomodate all the people creating web pages and all the browsers
+trying to display them, HTML doesn't lay down strict rules about the way information
+is put into a web page.   These facts about HTML should not be interpreted as 
+saying the HTML is not useful.  It's very useful for what it does, but it doesn't
+give us a consistent, extensible format for accomodating data that preserves its
+structure.
+
+<div class="p"><!----></div>
+Here are some of the things that we'll see in XML documents:
+
+<ul>
+<li>XML documents always begin with
+
+<pre>
+&lt;?xml&nbsp;....?&#62;
+
+</pre>
+<div class="p"><!----></div>
+</li>
+
+<li>
+Information is identified by tags (i.e. an indentifier surrounded by 
+angle brackets, like   
+
+<pre>
+&lt;coursename&#62;
+&nbsp;&nbsp;&nbsp;Statistics&nbsp;133
+&lt;/coursename&#62;
+
+</pre>
+Every opening tag has a corresponding tag, except for the case where 
+there is no information; then a single tag like <tt>&lt;sometag/&#62;</tt> can
+be used.
+The specific names of these tags will 
+vary with each XML document.
+<div class="p"><!----></div>
+</li>
+
+<li>
+Tags are case sensitive, and opening and closing tags must match
+exactly.
+<div class="p"><!----></div>
+</li>
+
+<li> No spaces are allowed between the opening angle bracket and the tag
+name
+<div class="p"><!----></div>
+</li>
+
+<li> Tag names must begin with a letter, and can contain only letters and
+numbers.
+<div class="p"><!----></div>
+</li>
+
+<li>
+As in HTML, angle brackets will always be interpreted as parts of tags; to
+get literal angle brackets in data we need to use <tt>&amp;lt;</tt> and <tt>&amp;gt;</tt>.
+<div class="p"><!----></div>
+</li>
+
+<li>
+Additional information can be stored in the tags in the form of attributes.
+For example, in the previous example, we could have specified the 
+department as:
+
+<pre>
+&lt;coursename&nbsp;department='Statistics'&#62;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Statistics&nbsp;133
+&lt;/coursename&#62;
+
+</pre>
+or
+
+<pre>
+&lt;course&#62;
+&nbsp;&nbsp;&nbsp;&lt;name&#62;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Statistics&nbsp;133
+&nbsp;&nbsp;&nbsp;&lt;/name&#62;
+&nbsp;&nbsp;&nbsp;&lt;department&#62;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Statistics
+&nbsp;&nbsp;&nbsp;&lt;/department&#62;
+&lt;/course&#62;
+
+</pre>
+The decision is up to the designer of the particular document.
+<div class="p"><!----></div>
+</li>
+
+<li>
+Comments can be placed in an XML document by starting with <tt>&lt;!-</tt> and
+ending with <tt>-&#62;</tt>, and they may appear anywhere in the document.
+<div class="p"><!----></div>
+</li>
+</ul>
+
+<div class="p"><!----></div>
+Documents that conform to these rules are said to be well-formed, and this is
+the minimum requirement for any XML document.  But to be useful, they should
+also conform to additional rules described in what is known as the 
+Document Type Definitions for a particular document, or the DTD.  
+The DTD describes the allowable tags, what kind of data can be stored within
+those tags, and what attributes are allowed in the tags.  The 
+DTD for a particular document can be provided in the document itself;
+when a document 
+uses multiple DTDs, the tag name may be prefaced with an identifier followed 
+by a colon to make clear which DTD the tag comes from.  
+The programs that read XML are known as parsers; without a DTD they simply 
+make sure that the document is well-formed; with a DTD they can additionally
+check to make sure that the data is valid.
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc2">
+2</a>&nbsp;&nbsp;A Simple Example</h2>
+Let's start with a very simple example to introduce the XML library and some of
+the strategies we'll need to use when working with XML.  The example we'll use is
+a catalog of plants.  (You can find the XML document at
+<a href="http://www.stat.berkeley.edu/classes/s133/data/plant_catalog.xml">http://www.stat.berkeley.edu/classes/s133/data/plant_catalog.xml</a>.)
+Here's what the beginning of the file looks like:
+
+<pre>
+&lt;?xml&nbsp;version="1.0"&nbsp;encoding="ISO-8859-1"?&#62;^M
+&lt;!--&nbsp;Edited&nbsp;with&nbsp;XML&nbsp;Spy&nbsp;v2006&nbsp;(http://www.altova.com)&nbsp;--&#62;^M
+&lt;CATALOG&#62;^M
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;PLANT&#62;^M
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;COMMON&#62;Bloodroot&lt;/COMMON&#62;^M
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;BOTANICAL&#62;Sanguinaria&nbsp;canadensis&lt;/BOTANICAL&#62;^M
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;ZONE&#62;4&lt;/ZONE&#62;^M
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;LIGHT&#62;Mostly&nbsp;Shady&lt;/LIGHT&#62;^M
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;PRICE&#62;$2.44&lt;/PRICE&#62;^M
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;AVAILABILITY&#62;031599&lt;/AVAILABILITY&#62;^M
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/PLANT&#62;^M
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;PLANT&#62;^M
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;COMMON&#62;Columbine&lt;/COMMON&#62;^M
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;BOTANICAL&#62;Aquilegia&nbsp;canadensis&lt;/BOTANICAL&#62;^M
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;ZONE&#62;3&lt;/ZONE&#62;^M
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;LIGHT&#62;Mostly&nbsp;Shady&lt;/LIGHT&#62;^M
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;PRICE&#62;$9.37&lt;/PRICE&#62;^M
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;AVAILABILITY&#62;030699&lt;/AVAILABILITY&#62;^M
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/PLANT&#62;^M
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.&nbsp;.&nbsp;.
+
+</pre>
+The main body of the data is enclosed by the <tt>CATALOG</tt> tag;  we'll sometimes
+refer to this as a node.
+Within the <tt>CATALOG</tt> node are several <tt>PLANT</tt> nodes - each of them 
+contains several pieces of data which are the information we wish to extract.
+We're going to use the R XML library with what is known as the Document Object Model
+(DOM), in which R will read the entire XML file into memory, and internally convert it to a
+tree structure.  (There is another model, called SAX (Simple API for XML), which only
+reads part of the data at a time, but it's more complicated than the <tt>DOM</tt> model.)
+All the information about the data and its structure will be stored 
+in a list inside of R, but when we print it, it will look very much like the document
+that we started with.  The basic strategy of working with XML files under this model
+is to keep "tunneling down" into the document structure without disturbing its 
+structure until we come to the end of the node.  For example, with the plant catalog,
+we want to extract the <tt>PLANT</tt> nodes as XML structures, and then extract the 
+values of the terminal branches of the tree (like <tt>COMMON</tt>, <tt>BOTANICAL</tt>, 
+and <tt>ZONE</tt>) using the <tt>xmlValue</tt> function.  As we explore the structure
+of the data, we can use the <tt>names</tt> function to see what nodes exist; at any
+time, we can print a node, and it will show us a representation like the original XML 
+document so we'll know where to go next.
+
+<div class="p"><!----></div>
+The first step in reading an XML document into R is loading the <tt>XML</tt> library.
+Next, the <tt>xmlTreeParse</tt> function is called to read the document into memory,
+and the root of the XML tree is extracted using <tt>xmlRoot</tt>:
+
+<pre>
+&#62;&nbsp;library(XML)
+&#62;&nbsp;doc&nbsp;=&nbsp;xmlTreeParse('plant_catalog.xml')
+&#62;&nbsp;root&nbsp;=&nbsp;xmlRoot(doc)
+
+</pre>
+Let's look at some properties of this root node:
+
+<pre>
+&#62;&nbsp;class(root)
+[1]&nbsp;"XMLNode"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"RXMLAbstractNode"&nbsp;"XMLAbstractNode"&nbsp;&nbsp;"oldClass"&nbsp;
+&#62;&nbsp;names(root)
+&#62;&nbsp;names(root)
+&nbsp;[1]&nbsp;"PLANT"&nbsp;"PLANT"&nbsp;"PLANT"&nbsp;"PLANT"&nbsp;"PLANT"&nbsp;"PLANT"&nbsp;"PLANT"&nbsp;"PLANT"&nbsp;"PLANT"
+[10]&nbsp;"PLANT"&nbsp;"PLANT"&nbsp;"PLANT"&nbsp;"PLANT"&nbsp;"PLANT"&nbsp;"PLANT"&nbsp;"PLANT"&nbsp;"PLANT"&nbsp;"PLANT"
+[19]&nbsp;"PLANT"&nbsp;"PLANT"&nbsp;"PLANT"&nbsp;"PLANT"&nbsp;"PLANT"&nbsp;"PLANT"&nbsp;"PLANT"&nbsp;"PLANT"&nbsp;"PLANT"
+[28]&nbsp;"PLANT"&nbsp;"PLANT"&nbsp;"PLANT"&nbsp;"PLANT"&nbsp;"PLANT"&nbsp;"PLANT"&nbsp;"PLANT"&nbsp;"PLANT"&nbsp;"PLANT"
+
+</pre>
+In this example, <tt>xmlTreeParse</tt> read its input from a local file.
+Other choices are local gzipped files and URLs representing <tt>XML</tt>
+documents or gzipped XML documents.
+
+<div class="p"><!----></div>
+The class of <tt>XMLNode</tt> indicates that internally, R is storing the object
+as part of an XML tree.  This will be important later when we decide how to 
+process the entire tree.  The result of the <tt>names</tt> function call tells us
+that the structure of this document is quite simple.  Inside the root node, there
+are 36 <tt>PLANT</tt> nodes.  (For larger documents, it might be prudent to make
+a table of the names instead of displaying the names directly.) As we've already seen 
+from looking at the document,
+this is where our data lies, so we'll want to examine one of the plant nodes a 
+little more carefully to figure out how to extract the actual data.
+
+<pre>
+&#62;&nbsp;oneplant&nbsp;=&nbsp;root[[1]]
+&#62;&nbsp;class(oneplant)
+[1]&nbsp;"XMLNode"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"RXMLAbstractNode"&nbsp;"XMLAbstractNode"&nbsp;&nbsp;"oldClass"&nbsp;
+&#62;&nbsp;oneplant
+&nbsp;&lt;PLANT&#62;
+&nbsp;&nbsp;&lt;COMMON&#62;
+&nbsp;&nbsp;Bloodroot
+&nbsp;&nbsp;&lt;/COMMON&#62;
+&nbsp;&nbsp;&lt;BOTANICAL&#62;
+&nbsp;&nbsp;Sanguinaria&nbsp;canadensis
+&nbsp;&nbsp;&lt;/BOTANICAL&#62;
+&nbsp;&nbsp;&lt;ZONE&#62;
+&nbsp;&nbsp;4
+&nbsp;&nbsp;&lt;/ZONE&#62;
+&nbsp;&nbsp;&lt;LIGHT&#62;
+&nbsp;&nbsp;Mostly&nbsp;Shady
+&nbsp;&nbsp;&lt;/LIGHT&#62;
+&nbsp;&nbsp;&lt;PRICE&#62;
+&nbsp;&nbsp;$2.44
+&nbsp;&nbsp;&lt;/PRICE&#62;
+&nbsp;&nbsp;&lt;AVAILABILITY&#62;
+&nbsp;&nbsp;031599
+&nbsp;&nbsp;&lt;/AVAILABILITY&#62;
+&nbsp;&lt;/PLANT&#62;
+
+</pre>
+We can see that this single <tt>PLANT</tt> object is still an <tt>XMLnode</tt>; its
+printed representation shows us exactly what we've got.   Notice that the individual
+elements don't have any further tree structure; this means we can use <tt>xmlValue</tt>
+to extract the values:
+
+<pre>
+&#62;&nbsp;xmlValue(oneplant[['COMMON']])
+[1]&nbsp;"Bloodroot"
+&#62;&nbsp;xmlValue(oneplant[['BOTANICAL']])
+[1]&nbsp;"Sanguinaria&nbsp;canadensis"
+
+</pre>
+Of course, we don't want to perform these tasks one by one for each node of the 
+tree.  You may recall that when we were confronted with problems like this before,
+we used the <tt>sapply</tt> function, which operates on every element of a list.  
+If the object we want to process is an <tt>xmlNode</tt>, the corresponding function to
+use is <tt>xmlSApply</tt>.  For example, to get all the common names of all the plants,
+we can use <tt>xmlValue</tt> on all the <tt>PLANT</tt> nodes like this:
+
+<pre>
+&#62;&nbsp;commons&nbsp;=&nbsp;xmlSApply(root,function(x)xmlValue(x[['COMMON']]))
+&#62;&nbsp;head(commons)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PLANT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PLANT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PLANT
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Bloodroot"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Columbine"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Marsh&nbsp;Marigold"
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PLANT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PLANT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PLANT
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Cowslip"&nbsp;"Dutchman's-Breeches"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Ginger,&nbsp;Wild"
+
+</pre>
+We could repeat the process for each column manually, and then combine things into
+a data frame, or we can automate the process using <tt>lapply</tt> and the names
+of the objects within the plants:
+
+<pre>
+&#62;&nbsp;getvar&nbsp;=&nbsp;function(x,var)xmlValue(x[[var]])
+&#62;&nbsp;res&nbsp;=&nbsp;lapply(names(root[[1]]),function(var)xmlSApply(root,getvar,var))
+&#62;&nbsp;plants&nbsp;=&nbsp;data.frame(res)
+&#62;&nbsp;names(plants)&nbsp;=&nbsp;names(root[[1]])
+&#62;&nbsp;head(plants)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COMMON&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BOTANICAL&nbsp;ZONE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIGHT&nbsp;PRICE
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Bloodroot&nbsp;Sanguinaria&nbsp;canadensis&nbsp;&nbsp;&nbsp;&nbsp;4&nbsp;Mostly&nbsp;Shady&nbsp;$2.44
+2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Columbine&nbsp;&nbsp;&nbsp;Aquilegia&nbsp;canadensis&nbsp;&nbsp;&nbsp;&nbsp;3&nbsp;Mostly&nbsp;Shady&nbsp;$9.37
+3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Marsh&nbsp;Marigold&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Caltha&nbsp;palustris&nbsp;&nbsp;&nbsp;&nbsp;4&nbsp;Mostly&nbsp;Sunny&nbsp;$6.81
+4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Cowslip&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Caltha&nbsp;palustris&nbsp;&nbsp;&nbsp;&nbsp;4&nbsp;Mostly&nbsp;Shady&nbsp;$9.90
+5&nbsp;Dutchman's-Breeches&nbsp;&nbsp;&nbsp;&nbsp;Dicentra&nbsp;cucullaria&nbsp;&nbsp;&nbsp;&nbsp;3&nbsp;Mostly&nbsp;Shady&nbsp;$6.44
+6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ginger,&nbsp;Wild&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Asarum&nbsp;canadense&nbsp;&nbsp;&nbsp;&nbsp;3&nbsp;Mostly&nbsp;Shady&nbsp;$9.03
+&nbsp;&nbsp;AVAILABILITY
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;031599
+2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;030699
+3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;051799
+4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;030699
+5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;012099
+6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;041899
+
+</pre>
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc3">
+3</a>&nbsp;&nbsp;More Complex Example</h2>
+For more complex documents, a few other tools are useful.  To illustrate, we'll look
+at a file that uses Geographic Markup Language, or GML.
+This file (which you can find
+at <a href="http://www.stat.berkeley.edu/classes/s133/data/counties.gml">http://www.stat.berkeley.edu/classes/s133/data/counties.gml</a>
+contains the x- and y-coordinates of the county centers for each state in the 
+United States.  Information like this would be difficult to store in a less structured
+environment, because each state has a different number of counties.  If we were going
+to read it into a database, we might want to have a separate table for each state;
+in some programs, we'd have to force it into a rectangular form, even though it wouldn't
+be that efficient.  If we were using a spreadsheet, we might want to put all the information
+in a single spreadsheet, with a separate heading for each state.  
+In R, a reasonable way to store the data would be in a list, with a separate data frame
+for each state.
+Thus, providing the
+data in a form that could be easily converted to any of those formats is essential, and
+that's just what XML does for us.
+
+<div class="p"><!----></div>
+The first steps are the same as the previous example; loading the library, parsing the 
+tree, and extracting the root.
+
+<pre>
+&#62;&nbsp;doc&nbsp;=&nbsp;xmlTreeParse('counties.gml')
+&#62;&nbsp;root&nbsp;=&nbsp;xmlRoot(doc)
+
+</pre>
+To see what's in the root, we can get a table of the names found there:
+
+<pre>
+&#62;&nbsp;table(names(root))
+
+state
+&nbsp;&nbsp;&nbsp;51
+
+</pre>
+Let's extract the first <tt>state</tt> node for further study:
+
+<pre>
+&#62;&nbsp;onestate&nbsp;=&nbsp;root[[1]]
+&#62;&nbsp;class(onestate)
+[1]&nbsp;"XMLNode"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"RXMLAbstractNode"&nbsp;"XMLAbstractNode"&nbsp;&nbsp;"oldClass"
+&#62;&nbsp;table(names(onestate))
+
+county&nbsp;&nbsp;&nbsp;name
+&nbsp;&nbsp;&nbsp;&nbsp;67&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1
+
+</pre>
+Here's what the <tt>onestate</tt> object looks like - I've truncated it so 
+that it only displays a single county, but we can still see the general 
+structure:
+
+<pre>
+&lt;state&#62;
+&nbsp;&lt;gml:name&nbsp;abbreviation="AL"&#62;ALABAMA&lt;/gml:name&#62;
+&nbsp;&lt;county&#62;
+&nbsp;&nbsp;&lt;gml:name&#62;Autauga&nbsp;County&lt;/gml:name&#62;
+&nbsp;&nbsp;&lt;gml:location&#62;
+&nbsp;&nbsp;&nbsp;&lt;gml:coord&#62;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;gml:X&#62;-86641472&lt;/gml:X&#62;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;gml:Y&#62;32542207&lt;/gml:Y&#62;
+&nbsp;&nbsp;&nbsp;&lt;/gml:coord&#62;
+&nbsp;&nbsp;&lt;/gml:location&#62;
+&nbsp;&lt;/county&#62;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.&nbsp;.&nbsp;.
+
+</pre>
+The <tt>name</tt> element (labeled as <tt>gml:name</tt>) is just the name of the 
+state.  We can extract them from all of the states using <tt>xmlSApply</tt>:
+
+<pre>
+&#62;&nbsp;statenames&nbsp;=&nbsp;xmlSApply(root,function(x)xmlValue(x[['name']]))
+&#62;&nbsp;head(statenames)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;state&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;state&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;state&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;state&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;state&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;state
+&nbsp;&nbsp;&nbsp;"ALABAMA"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"ALASKA"&nbsp;&nbsp;&nbsp;&nbsp;"ARIZONA"&nbsp;&nbsp;&nbsp;"ARKANSAS"&nbsp;"CALIFORNIA"&nbsp;&nbsp;&nbsp;"COLORADO"
+
+</pre>
+Note that in this example there is an attribute in the name tag, namely the 
+state abbreviation.  To access these attributes we can use the <tt>xmlAttrs</tt>
+function in a fashion similar to <tt>xmlValue</tt>:
+
+<pre>
+&#62;&nbsp;stateabbs&nbsp;=&nbsp;xmlSApply(root,function(x)xmlAttrs(x[['name']]))
+&#62;&nbsp;head(stateabbs)
+state.abbreviation&nbsp;state.abbreviation&nbsp;state.abbreviation&nbsp;state.abbreviation
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"AL"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"AK"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"AZ"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"AR"
+state.abbreviation&nbsp;state.abbreviation
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"CA"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"CO"
+
+</pre>
+Since there was only one attribute, <tt>xmlSApply</tt> was used to extract 
+directly into a vector.  If there were multiple attributes, then <tt>xmlApply</tt>
+would need to be used, since it will return a list of attributes, preserving the 
+structure of the data.
+
+<div class="p"><!----></div>
+To process the county data further, we need to extract just the <tt>county</tt>
+nodes.  The <tt>xmlElementsByTagName</tt> function will extract just the elements
+that we want:
+
+<pre>
+&#62;&nbsp;counties&nbsp;=&nbsp;xmlElementsByTagName(onestate,'county')
+&#62;&nbsp;class(counties)
+[1]&nbsp;"list"
+&#62;&nbsp;length(counties)
+[1]&nbsp;67
+
+</pre>
+Notice that extracting the elements in this way results in a list, not an xmlNode.
+But what's in the list?
+
+<pre>
+&#62;&nbsp;onecounty&nbsp;=&nbsp;counties[[1]]
+&#62;&nbsp;class(onecounty)
+[1]&nbsp;"XMLNode"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"RXMLAbstractNode"&nbsp;"XMLAbstractNode"&nbsp;&nbsp;"oldClass"&nbsp;
+&#62;&nbsp;names(onecounty)
+[1]&nbsp;"name"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"location"
+&#62;&nbsp;onecounty
+&nbsp;&lt;county&#62;
+&nbsp;&nbsp;&lt;gml:name&#62;
+&nbsp;&nbsp;Autauga&nbsp;County
+&nbsp;&nbsp;&lt;/gml:name&#62;
+&nbsp;&nbsp;&lt;gml:location&#62;
+&nbsp;&nbsp;&nbsp;&lt;gml:coord&#62;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;gml:X&#62;
+&nbsp;&nbsp;&nbsp;&nbsp;-86641472
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;/gml:X&#62;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;gml:Y&#62;
+&nbsp;&nbsp;&nbsp;&nbsp;32542207
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;/gml:Y&#62;
+&nbsp;&nbsp;&nbsp;&lt;/gml:coord&#62;
+&nbsp;&nbsp;&lt;/gml:location&#62;
+&nbsp;&lt;/county&#62;
+
+</pre>
+The elements inside the <tt>counties</tt> list are still xmlNodes.  The fact 
+that they are contained in a list simply means that we'll use <tt>sapply</tt>
+or <tt>lapply</tt> to process them instead of <tt>xmlSApply</tt> or <tt>xmlApply</tt>.
+What we really want are the <tt>X</tt> and <tt>Y</tt> values within the <tt>coord</tt>
+nodes, so let's extract out those nodes from the full list of county nodes:
+
+<pre>
+&#62;&nbsp;coords&nbsp;=&nbsp;lapply(counties,function(x)x[['location']][['coord']])
+&#62;&nbsp;class(coords)
+[1]&nbsp;"list"
+&#62;&nbsp;class(coords[[1]])
+[1]&nbsp;"XMLNode"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"RXMLAbstractNode"&nbsp;"XMLAbstractNode"&nbsp;&nbsp;"oldClass"
+&#62;&nbsp;coords[[1]]
+&nbsp;&lt;gml:coord&#62;
+&nbsp;&nbsp;&lt;gml:X&#62;
+&nbsp;&nbsp;-86641472
+&nbsp;&nbsp;&lt;/gml:X&#62;
+&nbsp;&nbsp;&lt;gml:Y&#62;
+&nbsp;&nbsp;32542207
+&nbsp;&nbsp;&lt;/gml:Y&#62;
+&nbsp;&lt;/gml:coord&#62;
+
+</pre>
+Since there is only one <tt>coord</tt> node within the <tt>location</tt> nodes, I
+extracted it directly.  I could also have used <tt>xmlGetElementsByTagName</tt>, and
+used the first element of the resulting list:
+
+<pre>
+coords&nbsp;=&nbsp;lapply(counties,function(x)xmlElementsByTagName(x[['location']],'coord')[[1]])
+
+</pre>
+Notice that I used <tt>lapply</tt> to extract the <tt>coord</tt> nodes.  Since 
+<tt>xmlNodes</tt> are represented internally as lists, I would have lost the structure
+of the data if I used <tt>sapply</tt> in this case.  
+
+<div class="p"><!----></div>
+Now we can extract the x and y values using <tt>xmlValue</tt>:
+
+<pre>
+&#62;&nbsp;x&nbsp;=&nbsp;as.numeric(sapply(coords,function(x)xmlValue(x[['X']])))
+&#62;&nbsp;y&nbsp;=&nbsp;as.numeric(sapply(coords,function(x)xmlValue(x[['Y']])))
+
+</pre>
+That shows the process for extracting the county names and x- and y-coordinates for
+a single state.  Let's summarize the steps in a function, which we can then apply to
+the root of the tree to get a separate list for each state:
+
+<pre>
+onestate&nbsp;=&nbsp;function(state){
+&nbsp;&nbsp;&nbsp;&nbsp;counties&nbsp;=&nbsp;xmlElementsByTagName(state,'county')
+&nbsp;&nbsp;&nbsp;&nbsp;countynames&nbsp;=&nbsp;sapply(counties,function(x)xmlValue(x[['name']]))
+&nbsp;&nbsp;&nbsp;&nbsp;coords&nbsp;=&nbsp;lapply(counties,function(x)x[['location']][['coord']])
+&nbsp;&nbsp;&nbsp;&nbsp;x&nbsp;=&nbsp;as.numeric(sapply(coords,function(x)xmlValue(x[['X']])))
+&nbsp;&nbsp;&nbsp;&nbsp;y&nbsp;=&nbsp;as.numeric(sapply(coords,function(x)xmlValue(x[['Y']])))
+&nbsp;&nbsp;&nbsp;&nbsp;data.frame(county=countynames,x=x,y=y)
+}
+
+</pre>
+To combine everything together, and create a list with one data frame per state,
+we can do the following:
+
+<pre>
+&#62;&nbsp;res&nbsp;=&nbsp;xmlApply(root,onestate)
+&#62;&nbsp;names(res)&nbsp;=&nbsp;xmlSApply(root,function(x)xmlValue(x[['name']]))
+
+</pre>
+
+<div class="p"><!----></div>
+Although these examples may seem simplistic, there are usable XML formats that are
+this simple, or even simpler.  For example, at the web site 
+<a href="http://www.weather.gov/data/current\_obs/">http://www.weather.gov/data/current_obs/</a>
+there is a description of an XML format used to distribute weather information.  Basically,
+the XML document is available at <tt>http://www.weather.gov/data/current_obs/XXXX.xml</tt>
+where <tt>XXXX</tt> represents the four letter weather station code, usually related to a 
+nearby airport.
+
+<div class="p"><!----></div>
+A quick look at the data reveals that the format is very simple:
+
+<pre>
+&#62;&nbsp;library(XML)
+&#62;&nbsp;doc&nbsp;=&nbsp;xmlTreeParse('http://www.weather.gov/data/current_obs/KOAK.xml')
+&#62;&nbsp;root&nbsp;=&nbsp;xmlRoot(doc)
+&#62;&nbsp;names(root)
+&nbsp;[1]&nbsp;"credit"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"credit_URL"
+&nbsp;[3]&nbsp;"image"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"suggested_pickup"
+&nbsp;[5]&nbsp;"suggested_pickup_period"&nbsp;"location"
+&nbsp;[7]&nbsp;"station_id"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"latitude"
+&nbsp;[9]&nbsp;"longitude"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"observation_time"
+[11]&nbsp;"observation_time_rfc822"&nbsp;"weather"
+[13]&nbsp;"temperature_string"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"temp_f"
+[15]&nbsp;"temp_c"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"relative_humidity"
+[17]&nbsp;"wind_string"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"wind_dir"
+[19]&nbsp;"wind_degrees"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"wind_mph"
+[21]&nbsp;"wind_gust_mph"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"pressure_string"
+[23]&nbsp;"pressure_mb"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"pressure_in"
+[25]&nbsp;"dewpoint_string"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"dewpoint_f"
+[27]&nbsp;"dewpoint_c"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"heat_index_string"
+[29]&nbsp;"heat_index_f"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"heat_index_c"
+[31]&nbsp;"windchill_string"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"windchill_f"
+[33]&nbsp;"windchill_c"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"visibility_mi"
+[35]&nbsp;"icon_url_base"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"icon_url_name"
+[37]&nbsp;"two_day_history_url"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"ob_url"
+[39]&nbsp;"disclaimer_url"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"copyright_url"
+[41]&nbsp;"privacy_policy_url"
+
+</pre>
+ Essentially, all the information is in the root node, so it can be 
+extracted with <tt>xmlValue</tt>:
+
+<pre>
+&#62;&nbsp;xmlValue(root[['temp_f']])
+[1]&nbsp;"49.0"
+&#62;&nbsp;xmlValue(root[['wind_mph']])
+[1]&nbsp;"12.7"
+
+</pre>
+
+<div class="p"><!----></div>
+To make this easy to use, we can write a function that will allow us to specify
+a location and some variables that we want information about:
+
+<pre>
+getweather&nbsp;=&nbsp;function(loc='KOAK',vars='temp_f'){
+&nbsp;&nbsp;&nbsp;require(XML)
+&nbsp;&nbsp;&nbsp;url&nbsp;=&nbsp;paste('http://www.weather.gov/data/current_obs/',loc,'.xml',sep='')
+&nbsp;&nbsp;&nbsp;doc&nbsp;=&nbsp;xmlTreeParse(url)
+&nbsp;&nbsp;&nbsp;root&nbsp;=&nbsp;xmlRoot(doc)
+&nbsp;&nbsp;&nbsp;sapply(vars,function(x)xmlValue(root[[x]]))
+}
+
+</pre>
+ Let's check to make sure it works with the defaults:
+
+<pre>
+&#62;&nbsp;getweather()
+temp_f&nbsp;
+"49.0"&nbsp;
+
+</pre>
+ That seems to be ok.  To make it even more useful, we can create a vector
+of station names, and use sapply to find weather information for each station:
+
+<pre>
+&#62;&nbsp;result&nbsp;=&nbsp;sapply(c('KOAK','KACV','KSDM'),getweather,vars=c('temp_f','wind_mph','wind_dir','relative_humidity'))
+&#62;&nbsp;data.frame(t(result))
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;temp_f&nbsp;wind_mph&nbsp;&nbsp;wind_dir&nbsp;relative_humidity
+KOAK&nbsp;&nbsp;&nbsp;49.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;12.7&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;South&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;93
+KACV&nbsp;&nbsp;&nbsp;45.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6.9&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;South&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;86
+KSDM&nbsp;&nbsp;&nbsp;66.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6.9&nbsp;Northwest&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;42
+
+</pre>
+ <tt>sapply</tt> has properly labeled all the stations and variables.
+
+<div class="p"><!----></div>
+If information was recorded at different times, the <tt>observation_time_rfc822</tt> variable
+could be converted to an R <tt>POSIXct</tt> object as follows:
+
+<div class="p"><!----></div>
+
+<pre>
+&#62;&nbsp;as.POSIXct(getweather('KOAK','observation_time_rfc822'),format='%a,&nbsp;%d&nbsp;%b&nbsp;%Y&nbsp;%H:%M:%S&nbsp;%z')
+[1]&nbsp;"2011-03-18&nbsp;14:53:00&nbsp;PDT"
+
+</pre>
+
+<div class="p"><!----></div>
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On 18 Mar 2011, 15:32.</small>
+</html>

@@ -1,0 +1,322 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"
+           "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.85">
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> Classification Analysis</title>
+ 
+<h1 align="center">Classification Analysis </h1>
+
+
+
+ <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;Introduction to Classification Methods</h2>
+When we apply cluster analysis to a dataset, we let the values of the variables 
+that were measured tell us if there is any structure to the observations in the 
+data set, by choosing a suitable metric and seeing if groups of observations that
+are all close together can be found.   If we have an auxilliary variable (like the 
+country of origin from the cars example), it may be interesting to see if the 
+natural clustering of the data corresponds to this variable, but it's important to
+remember that the idea of clustering is just to see if any groups form naturally,
+not to see if we can actually figure out which group an observation belongs to 
+based on the values of the variables that we have.
+
+<div class="p"><!----></div>
+When the true goal of our data analysis is to be able to predict which of several
+non-overlapping groups an observation belongs to, the techniques we use are known
+as classification techniques.  We'll take a look at three classification techniques:
+kth nearest neighbor classification, linear discrimininant analysis, and recursive
+partitioning.
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc2">
+2</a>&nbsp;&nbsp;kth Nearest Neighbor Classification</h2>
+The idea behind nearest neighbor classification is simple and somewhat intuitive -
+find other observations in the data that are close to an observation we're interested,
+and classify that observation based on the class of its neighbors.   The number of 
+neighbors that we consider is where the "k" comes in - usually we'll have to look
+at several different values of k to determine which ones work well with a particular
+data set.  Values in the range of one to ten are usually reasonable choices.  
+
+<div class="p"><!----></div>
+Since we need to look at all of the distances between one observation and all the 
+others in order to find the neighbors, it makes sense to form a distance matrix before
+starting a nearest neighbor classification.  Each row of the distance matrix  tells
+us the distances to all the other observations, so we need to find the k smallest 
+values in each row of the distance matrix.  Once we find those smallest values, we 
+determine which observations they belong to, and look at how those observations were
+classified.  We assign whichever value of the classification that was most common among 
+the k nearest neighbors as our guess (predicted value) for the current observation, and 
+then move on to
+the next row of the distance matrix.  Once we've looked at every row of the distance
+matrix, we'll have classified every observation, and can compare the predicted 
+classification with the actual classification.  To see how well we've done, various
+error rates can be examined.  If the observations are classified as TRUE / FALSE,
+for example disease or no disease, then we can look at two types of error rates.
+The first type of error rate, known as Type I error, occurs when we say that an 
+observation should be classified as TRUE when it really should have been FALSE.  The 
+other type of error (Type II) occurs when we say that an observation should be 
+classified as FALSE when it should have been TRUE.   When the classification is something
+other than TRUE/FALSE, we can report an overall error rate, that is, the fraction of
+observations for which our prediction was not correct.  In either case, the error 
+rates can be calculated in R by using the <tt>table</tt> function.  As a simple
+example, suppose we have two vectors: <tt>actualvalues</tt>, which contains the actual values 
+of a classification variable, and <tt>predvalues</tt>, the value that our classification
+predicted:
+
+<pre>
+&#62;&nbsp;actualvalues&nbsp;=&nbsp;c(TRUE,TRUE,TRUE,FALSE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE)
+&#62;&nbsp;predvalues&nbsp;=&nbsp;c(TRUE,TRUE,TRUE,TRUE,FALSE,FALSE,FALSE,TRUE,FALSE,TRUE)
+&#62;&nbsp;tt&nbsp;=&nbsp;table(actualvalues,predvalues)
+&#62;&nbsp;tt
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;predvalues
+actualvalues&nbsp;FALSE&nbsp;TRUE
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FALSE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3&nbsp;&nbsp;&nbsp;&nbsp;2
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;4
+
+</pre>
+The observations that contribute to Type I error (the actual value is false but we
+predicted true) can be found in the first row and second column; those that 
+contribute to Type II error can be found in the second row and first column.  Since
+the <tt>table</tt> function returns a matrix, we can calculate the rows as 
+follows:
+
+<pre>
+&#62;&nbsp;tot&nbsp;=&nbsp;sum(tt)
+&#62;&nbsp;type1&nbsp;=&nbsp;tt['FALSE','TRUE']&nbsp;/&nbsp;tot
+&#62;&nbsp;type2&nbsp;=&nbsp;tt['TRUE','FALSE']&nbsp;/&nbsp;tot
+&#62;&nbsp;type1
+[1]&nbsp;0.2
+&#62;&nbsp;type2
+[1]&nbsp;0.1
+
+</pre>
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc3">
+3</a>&nbsp;&nbsp;Cross Validation</h2>
+There's one problem with the above scheme.  We used the data that we're making 
+predictions about in the process of making those predictions.
+In other words, the data that we're making predictions for is not independent of 
+the data that we're using to make the predictions.  As might be expected, it's been
+shown in practice that calculating error rates this way will almost always make our 
+classification method look better than it should be.  If the data can be naturally
+(or even artificially) divided into two groups, then one can be used as a training
+set, and the other can be used as a test set - we'd calculate our error rates only
+from the classification of the test set using the training set to make our predictions.
+Many statisticians don't like the idea of having to "hold back" some of their data
+when building models, so an alternative way to bring some independence to our predictions
+known as v-fold cross validation has been devised.  The idea is to first divide the entire
+data set
+into v groups.  To classify objects in the first group, we don't use any of the first
+group to make our predictions;  in the case of k-th nearest neighbor classification,
+that would mean that when we're looking for the smallest distances in order to classify
+an observation, we don't consider any of the distances corresponding to other members
+of the same group that the current one belongs to.   The basic idea is that we want
+to make the prediction for an observation as independent from that observation as we 
+can.  We continue through each of the v groups, classifying observations in each group
+using only observations from the other groups.  When we're done we'll have a prediction
+for each observation, and can compare them to the actual values as in the previous 
+example.
+
+<div class="p"><!----></div>
+Another example of cross-validation is leave-out-one cross-validation.  With this method,
+we predict the classification of an observation without using the observation itself.
+In other words, for each observation, we perform the analysis without using that 
+observation, and then predict where that observation would be classified using that 
+analysis.  
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc4">
+4</a>&nbsp;&nbsp;Linear Discriminant Analysis</h2>
+One of the oldest forms of classification is known as linear discriminant analysis.
+The idea is to form linear combinations of predictor variables (similar to a linear
+regression model) in such a way that the average value of these linear combinations will
+be as different as possible for the different levels of the classification variable.
+Based on the values of the linear combinations, linear discriminant analysis reports 
+a set of posterior probabilities  for every level of the classification, for each 
+observation, along with the level of the classification variable that the analysis
+predicted. Suppose we have a classification variable that can take one of three 
+values:  after a linear discriminant analysis, we will have three probabilities (adding
+up to one) for each variable that tell how likely it is that the observation
+be categorized into each of the three categories; the predicted classificiation is the 
+one that had the highest probability, and we can get insight into the quality of the classification
+by looking at the values of the probabilities.
+
+<div class="p"><!----></div>
+To study the different classification methods, we'll use a data set about
+different wines.  This data set contains various measures regarding chemical
+and other properties of the wines, along with a variable identifying the 
+Cultivar (the particular variety of the grape from which the wine was produced).
+We'll try to classify the observations based on the Cultivar, using the other
+variables.
+The data is available at <a href="http://www.stat.berkeley.edu/classes/s133/data/wine.data">http://www.stat.berkeley.edu/classes/s133/data/wine.data</a>;  information about
+the variables is at <a href="http://www.stat.berkeley.edu/classes/s133/data/wine.names">http://www.stat.berkeley.edu/classes/s133/data/wine.names</a>
+
+<div class="p"><!----></div>
+First, we'll read in the <tt>wine</tt> dataset:
+
+<pre>
+wine&nbsp;=&nbsp;read.csv('http://www.stat.berkeley.edu/classes/s133/data/wine.data',header=FALSE)
+names(wine)&nbsp;=&nbsp;c("Cultivar",&nbsp;"Alcohol",&nbsp;"Malic.acid",&nbsp;"Ash",&nbsp;"Alkalinity.ash",
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Magnesium",&nbsp;"Phenols",&nbsp;"Flavanoids",&nbsp;"NF.phenols",&nbsp;"Proanthocyanins",
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Color.intensity","Hue","OD.Ratio","Proline")
+wine$Cultivar&nbsp;=&nbsp;factor(wine$Cultivar)
+
+</pre>
+ Notice that I set <tt>wine$Cultivar</tt> to be a factor.  Factors are very
+important and useful in modeling functions because categorical variables almost always
+have to be treated differently than numeric variables, and turning a categorical variable 
+into
+a factor will insure that they are always used properly in modeling functions.  Not 
+surprisingly, the dependent variable for <tt>lda</tt> must be a factor.
+
+<div class="p"><!----></div>
+The <tt>class</tt> library of R provides two functions for nearest neighbor
+classification.  The first, <tt>knn</tt>, takes the approach of using a
+training set and a test set, so it would require holding back some of the 
+data.  The other function, <tt>knn.cv</tt> uses leave-out-one cross-validation,
+so it's more suitable to use on an entire data set.  
+
+<div class="p"><!----></div>
+Let's use <tt>knn.cv</tt> on the wine data set.   Since, like cluster analysis, 
+this technique is based
+on distances, the same considerations regarding standardization as we saw
+with cluster analysis apply.  Let's examine a summary for the data frame:
+
+<pre>
+&#62;&nbsp;summary(wine)
+&nbsp;Cultivar&nbsp;&nbsp;&nbsp;&nbsp;Alcohol&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Malic.acid&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ash&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Alkalinity.ash&nbsp;
+&nbsp;1:59&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Min.&nbsp;&nbsp;&nbsp;:11.03&nbsp;&nbsp;&nbsp;Min.&nbsp;&nbsp;&nbsp;:0.740&nbsp;&nbsp;&nbsp;Min.&nbsp;&nbsp;&nbsp;:1.360&nbsp;&nbsp;&nbsp;Min.&nbsp;&nbsp;&nbsp;:10.60&nbsp;&nbsp;
+&nbsp;2:71&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1st&nbsp;Qu.:12.36&nbsp;&nbsp;&nbsp;1st&nbsp;Qu.:1.603&nbsp;&nbsp;&nbsp;1st&nbsp;Qu.:2.210&nbsp;&nbsp;&nbsp;1st&nbsp;Qu.:17.20&nbsp;&nbsp;
+&nbsp;3:48&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Median&nbsp;:13.05&nbsp;&nbsp;&nbsp;Median&nbsp;:1.865&nbsp;&nbsp;&nbsp;Median&nbsp;:2.360&nbsp;&nbsp;&nbsp;Median&nbsp;:19.50&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Mean&nbsp;&nbsp;&nbsp;:13.00&nbsp;&nbsp;&nbsp;Mean&nbsp;&nbsp;&nbsp;:2.336&nbsp;&nbsp;&nbsp;Mean&nbsp;&nbsp;&nbsp;:2.367&nbsp;&nbsp;&nbsp;Mean&nbsp;&nbsp;&nbsp;:19.49&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3rd&nbsp;Qu.:13.68&nbsp;&nbsp;&nbsp;3rd&nbsp;Qu.:3.083&nbsp;&nbsp;&nbsp;3rd&nbsp;Qu.:2.558&nbsp;&nbsp;&nbsp;3rd&nbsp;Qu.:21.50&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Max.&nbsp;&nbsp;&nbsp;:14.83&nbsp;&nbsp;&nbsp;Max.&nbsp;&nbsp;&nbsp;:5.800&nbsp;&nbsp;&nbsp;Max.&nbsp;&nbsp;&nbsp;:3.230&nbsp;&nbsp;&nbsp;Max.&nbsp;&nbsp;&nbsp;:30.00&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;Magnesium&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Phenols&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Flavanoids&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NF.phenols&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;Min.&nbsp;&nbsp;&nbsp;:&nbsp;70.00&nbsp;&nbsp;&nbsp;Min.&nbsp;&nbsp;&nbsp;:0.980&nbsp;&nbsp;&nbsp;Min.&nbsp;&nbsp;&nbsp;:0.340&nbsp;&nbsp;&nbsp;Min.&nbsp;&nbsp;&nbsp;:0.1300&nbsp;&nbsp;
+&nbsp;1st&nbsp;Qu.:&nbsp;88.00&nbsp;&nbsp;&nbsp;1st&nbsp;Qu.:1.742&nbsp;&nbsp;&nbsp;1st&nbsp;Qu.:1.205&nbsp;&nbsp;&nbsp;1st&nbsp;Qu.:0.2700&nbsp;&nbsp;
+&nbsp;Median&nbsp;:&nbsp;98.00&nbsp;&nbsp;&nbsp;Median&nbsp;:2.355&nbsp;&nbsp;&nbsp;Median&nbsp;:2.135&nbsp;&nbsp;&nbsp;Median&nbsp;:0.3400&nbsp;&nbsp;
+&nbsp;Mean&nbsp;&nbsp;&nbsp;:&nbsp;99.74&nbsp;&nbsp;&nbsp;Mean&nbsp;&nbsp;&nbsp;:2.295&nbsp;&nbsp;&nbsp;Mean&nbsp;&nbsp;&nbsp;:2.029&nbsp;&nbsp;&nbsp;Mean&nbsp;&nbsp;&nbsp;:0.3619&nbsp;&nbsp;
+&nbsp;3rd&nbsp;Qu.:107.00&nbsp;&nbsp;&nbsp;3rd&nbsp;Qu.:2.800&nbsp;&nbsp;&nbsp;3rd&nbsp;Qu.:2.875&nbsp;&nbsp;&nbsp;3rd&nbsp;Qu.:0.4375&nbsp;&nbsp;
+&nbsp;Max.&nbsp;&nbsp;&nbsp;:162.00&nbsp;&nbsp;&nbsp;Max.&nbsp;&nbsp;&nbsp;:3.880&nbsp;&nbsp;&nbsp;Max.&nbsp;&nbsp;&nbsp;:5.080&nbsp;&nbsp;&nbsp;Max.&nbsp;&nbsp;&nbsp;:0.6600&nbsp;&nbsp;
+&nbsp;Proanthocyanins&nbsp;Color.intensity&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Hue&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OD.Ratio&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;Min.&nbsp;&nbsp;&nbsp;:0.410&nbsp;&nbsp;&nbsp;Min.&nbsp;&nbsp;&nbsp;:&nbsp;1.280&nbsp;&nbsp;&nbsp;Min.&nbsp;&nbsp;&nbsp;:0.4800&nbsp;&nbsp;&nbsp;Min.&nbsp;&nbsp;&nbsp;:1.270&nbsp;&nbsp;
+&nbsp;1st&nbsp;Qu.:1.250&nbsp;&nbsp;&nbsp;1st&nbsp;Qu.:&nbsp;3.220&nbsp;&nbsp;&nbsp;1st&nbsp;Qu.:0.7825&nbsp;&nbsp;&nbsp;1st&nbsp;Qu.:1.938&nbsp;&nbsp;
+&nbsp;Median&nbsp;:1.555&nbsp;&nbsp;&nbsp;Median&nbsp;:&nbsp;4.690&nbsp;&nbsp;&nbsp;Median&nbsp;:0.9650&nbsp;&nbsp;&nbsp;Median&nbsp;:2.780&nbsp;&nbsp;
+&nbsp;Mean&nbsp;&nbsp;&nbsp;:1.591&nbsp;&nbsp;&nbsp;Mean&nbsp;&nbsp;&nbsp;:&nbsp;5.058&nbsp;&nbsp;&nbsp;Mean&nbsp;&nbsp;&nbsp;:0.9574&nbsp;&nbsp;&nbsp;Mean&nbsp;&nbsp;&nbsp;:2.612&nbsp;&nbsp;
+&nbsp;3rd&nbsp;Qu.:1.950&nbsp;&nbsp;&nbsp;3rd&nbsp;Qu.:&nbsp;6.200&nbsp;&nbsp;&nbsp;3rd&nbsp;Qu.:1.1200&nbsp;&nbsp;&nbsp;3rd&nbsp;Qu.:3.170&nbsp;&nbsp;
+&nbsp;Max.&nbsp;&nbsp;&nbsp;:3.580&nbsp;&nbsp;&nbsp;Max.&nbsp;&nbsp;&nbsp;:13.000&nbsp;&nbsp;&nbsp;Max.&nbsp;&nbsp;&nbsp;:1.7100&nbsp;&nbsp;&nbsp;Max.&nbsp;&nbsp;&nbsp;:4.000&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;Proline&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;Min.&nbsp;&nbsp;&nbsp;:&nbsp;278.0&nbsp;&nbsp;
+&nbsp;1st&nbsp;Qu.:&nbsp;500.5&nbsp;&nbsp;
+&nbsp;Median&nbsp;:&nbsp;673.5&nbsp;&nbsp;
+&nbsp;Mean&nbsp;&nbsp;&nbsp;:&nbsp;746.9&nbsp;&nbsp;
+&nbsp;3rd&nbsp;Qu.:&nbsp;985.0&nbsp;&nbsp;
+&nbsp;Max.&nbsp;&nbsp;&nbsp;:1680.0&nbsp;&nbsp;
+
+</pre>
+ Since the scale of the variables differ widely,  standardization
+is probably a good idea.  We'll divide each variable by its standard deviation
+to try to give each variable more equal weight in determining the distances:
+
+<pre>
+&#62;&nbsp;wine.use&nbsp;=&nbsp;scale(wine[,-1],scale=apply(wine[,-1],2,sd))
+&#62;&nbsp;library(class)
+&#62;&nbsp;res&nbsp;=&nbsp;knn.cv(wine.use,wine$Cultivar,k=3)
+&#62;&nbsp;names(res)
+NULL
+&#62;&nbsp;length(res)
+[1]&nbsp;178
+
+</pre>
+Since there are no names, and the length of <tt>res</tt> is the same as the
+number of observations, <tt>knn.cv</tt> is simply returning the classifications
+that the method predicted for each observation using leave-out-one cross validation.
+This means we can compare the predicted values to the true values using <tt>table</tt>:
+
+<pre>
+&#62;&nbsp;table(res,wine$Cultivar)
+&nbsp;&nbsp;&nbsp;
+res&nbsp;&nbsp;1&nbsp;&nbsp;2&nbsp;&nbsp;3
+&nbsp;&nbsp;1&nbsp;59&nbsp;&nbsp;4&nbsp;&nbsp;0
+&nbsp;&nbsp;2&nbsp;&nbsp;0&nbsp;63&nbsp;&nbsp;0
+&nbsp;&nbsp;3&nbsp;&nbsp;0&nbsp;&nbsp;4&nbsp;48
+
+</pre>
+
+<div class="p"><!----></div>
+To calculate the proportion of incorrect classifications, we can use the <tt>row</tt>
+and <tt>col</tt> functions.  These unusual functions don't seem to do anything very
+useful when we simply call them:
+
+<pre>
+&#62;&nbsp;tt&nbsp;=&nbsp;table(res,wine$Cultivar)
+&#62;&nbsp;row(tt)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[,1]&nbsp;[,2]&nbsp;[,3]
+[1,]&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;1
+[2,]&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;2
+[3,]&nbsp;&nbsp;&nbsp;&nbsp;3&nbsp;&nbsp;&nbsp;&nbsp;3&nbsp;&nbsp;&nbsp;&nbsp;3
+&#62;&nbsp;col(tt)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[,1]&nbsp;[,2]&nbsp;[,3]
+[1,]&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;3
+[2,]&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;3
+[3,]&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;3
+
+</pre>
+ However, if you recall that the misclassified observations are
+those that are off the diagonal, we can find those observations as follows:
+
+<pre>
+&#62;&nbsp;tt[row(tt)&nbsp;!=&nbsp;col(tt)]
+[1]&nbsp;0&nbsp;0&nbsp;4&nbsp;4&nbsp;0&nbsp;0
+
+</pre>
+ and the proportion of misclassified observations can be calculated
+as:
+
+<pre>
+&#62;&nbsp;sum(tt[row(tt)&nbsp;!=&nbsp;col(tt)])&nbsp;/&nbsp;sum(tt)
+[1]&nbsp;0.04494382
+
+</pre>
+ or a missclassification rate of about 4.5
+<div class="p"><!----></div>
+Could we have done better if we used 5 nearest neighbors instead of 3?
+
+<pre>
+&#62;&nbsp;res&nbsp;=&nbsp;knn.cv(wine.use,wine$Cultivar,k=5)
+&#62;&nbsp;tt&nbsp;=&nbsp;table(res,wine$Cultivar)
+&#62;&nbsp;sum(tt[row(tt)&nbsp;!=&nbsp;col(tt)])&nbsp;/&nbsp;sum(tt)
+[1]&nbsp;0.02808989
+
+</pre>
+ How about using just the single nearest neighbor?
+
+<pre>
+&#62;&nbsp;res&nbsp;=&nbsp;knn.cv(wine.use,wine$Cultivar,k=1)
+&#62;&nbsp;tt&nbsp;=&nbsp;table(res,wine$Cultivar)
+&#62;&nbsp;sum(tt[row(tt)&nbsp;!=&nbsp;col(tt)])&nbsp;/&nbsp;sum(tt)
+[1]&nbsp;0.04494382
+
+</pre>
+For this data set, using k=5 did slightly better than 1 or 3.
+
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.85.<br />On 30 Mar 2011, 16:12.</small>
+</html>

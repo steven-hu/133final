@@ -1,0 +1,158 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> Connecting to the SQL database using Windows</title>
+ 
+<h1 align="center">Connecting to the SQL database using Windows </h1>
+
+
+ <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;<tt>RMySQL</tt></h2>
+If you check on CRAN, you'll see that  the <tt>RMySQL</tt> package is not available for 
+Windows.  (If you use Mac OSX or Linux, you can install RMySQL in the usual way.)  
+To get around this problem, I've created a version of the RMySQL library that you 
+should be able to get to work under Windows.  You can download it from 
+<a href="http://www.stat.berkeley.edu/classes/s133/RMySQL_0.7-5.zip">http://www.stat.berkeley.edu/classes/s133/RMySQL_0.7-5.zip</a>. 
+To install it, download the file to your computer, choose 
+Packages-&#62;Install from Local Zip File , and navigate to wherever you stored the file.
+To use the package, you'll also need to install the <tt>DBI</tt> package in the usual
+way.
+
+<div class="p"><!----></div>
+Unfortunately, there's one extra detail that you have to take care of before you
+can load the package.  You need to set up an environmental variable that points to
+the directory where the <tt>RMySQL</tt> package was installed.  This will be a folder 
+called <tt>RMySql</tt> inside the <tt>library</tt> folder in the folder in which R was 
+installed.  We'll create an <tt>.Rprofile</tt> file in the working directory that R 
+uses when you start it so that you won't have to enter the command every time you want
+to use the library.  At the R prompt, type
+
+<div class="p"><!----></div>
+
+<pre>
+edit()
+
+</pre>
+ When the editor opens, type this line into the editor window:
+
+<pre>
+Sys.setenv(MYSQL_HOME=paste(Sys.getenv('R_HOME'),'library','RMySQL',sep='\\'))
+
+</pre>
+Close the file, and save it under the name <tt>.Rprofile</tt> - notice the leading period
+and the capital R in the file name.  Now exit R.  
+When you run R in the future, you can simply type
+
+<pre>
+library{RMySQL}
+
+</pre>
+ to use the package as we've seen in class.
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc2">
+2</a>&nbsp;&nbsp;<tt>RODBC</tt></h2>
+As an alternative to the above procedure, you can use the <tt>RODBC</tt> package,
+which uses Windows' Open Database Connection facility.  To use this facility with a 
+particular database, you need to have a piece of software known as a connector 
+installed and configured on your computer.  You can download a MySQL ODBC connector
+at <a href="http://dev.mysql.com/downloads/connector/odbc/5.1.html">http://dev.mysql.com/downloads/connector/odbc/5.1.html</a>.  (I recommend that you use the MSI version of the installer for
+your version of Windows.  When you click the Download button, it will look like you need
+a password to access the download, but if you look carefully you'll see a link
+labeled "No thanks, just take me to the downloads!".)  Download and install the 
+connector.  You'll see no indication that anything has happened, but you can now 
+configure the connector as follows:
+
+<div class="p"><!----></div>
+Go to Control Panel-&#62;Administrative Tools, and double click on "<tt>Data Sources (ODBC)</tt>".
+Click "<tt>Add</tt>", and choose "<tt>MySQL ODBC 5.1 Driver</tt>" from the dropdown menu.  
+(As a side note,
+notice the wide range of database connectors that are already available for use through
+ODBC.  After configuring any one of them, you can use them in R in a similar way to the 
+way we'll access <tt>MySQL</tt> through <tt>RODBC</tt>.)  After clicking "<tt>Finish</tt>", enter 
+the following:
+
+<pre>
+Data&nbsp;Source&nbsp;Name:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mysql&nbsp;(or&nbsp;some&nbsp;other&nbsp;name&nbsp;if&nbsp;you'd&nbsp;like)
+Description:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;whatever&nbsp;you&nbsp;want
+TCP/IP&nbsp;Server:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;localhost
+User:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;stat133
+Password:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T0pSecr3t
+
+</pre>
+Notice that we've specified <tt>localhost</tt> as the server.  That's because you'll
+need to access the MySQL server that runs on my office computer through an SSH tunnel, as 
+described at <a href="http://www.stat.berkeley.edu/classes/s133/mysqlt.html">http://www.stat.berkeley.edu/classes/s133/mysqlt.html</a>.  If you've established the tunnel, you can click the "<tt>Test</tt>" button.
+You should see a window with the message "Connection Successful".  At that point, you can choose
+<tt>Baseball</tt> from the "<tt>Database</tt>" dropdown menu.  (If you haven't yet configured the 
+tunnel, don't worry - we can specify the database when we connect to the server.)
+
+<div class="p"><!----></div>
+ Once you've entered the information, Click "OK" as necessary to close the <tt>ODBC</tt> 
+control panel. 
+
+<div class="p"><!----></div>
+Now, in R, install the <tt>RODBC</tt> package in the usual way.  
+
+<div class="p"><!----></div>
+If you've already set the database to <tt>Baseball</tt> in the previous step, and you've 
+got the SSH tunnel running, you can connect to the SQL server by entering
+
+<div class="p"><!----></div>
+
+<pre>
+con&nbsp;=&nbsp;odbcConnect('mysql')
+
+</pre>
+
+<div class="p"><!----></div>
+If you haven't specified the database when configuring the connector, use
+
+<div class="p"><!----></div>
+
+<pre>
+con&nbsp;=&nbsp;odbcConnect('mysql;db=baseball')
+
+</pre>
+ (Of course if you used a name different than "msyql" when you configured the
+connector, you would use that name when you connect.)
+
+<div class="p"><!----></div>
+When you connect through <tt>RODBC</tt>, the function to make queries is <tt>sqlQuery</tt>;
+other useful functions are <tt>sqlTables</tt> and <tt>sqlColumns</tt>.
+
+<div class="p"><!----></div>
+If you're using Mac OSX and would like to use <tt>RODBC</tt> to connect to the MySQL server,
+download the appropriate connector from the MySQL website, and go to 
+Applications-&#62;Utilities-&#62;ODBC Administrator .  The process of configuring the connector
+is very similar to the method described above.
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc3">
+3</a>&nbsp;&nbsp;A Final Note</h2>
+I'll do everything I can to help you get one of these methods working on your computer, but
+if you encounter problems, remember that you can always connect to the SQL server through any
+of the SCF computers by specifying a hostname of <tt>springer</tt> , <i>i.e</i> you don't 
+need an SSH tunnel when you use the SCF computers.  To use the SCF computers, you can 
+go to Evans 342, or you can access them remotely from anywhere with an internet connection
+by following the instructions at <a href="http://www.stat.berkeley.edu/classes/s133/remote.html">http://www.stat.berkeley.edu/classes/s133/remote.html</a>.
+
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On  7 Mar 2011, 15:55.</small>
+</html>

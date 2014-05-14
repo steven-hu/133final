@@ -1,0 +1,210 @@
+<html>
+<head><title>Statistics 133 Home Page</title></head>
+<body>
+
+
+<table>
+
+<tr>
+<td bgcolor='lightblue' width=150 valign=top>
+<br><br>
+<a href='schedule.html'>Schedule</a><br><br>
+<a href='homework.html'>Homework</a><br><br>
+<a href='resources.html'>Resources</a><br><br>
+</td>
+
+<td width=40>
+</td>
+
+<td>
+<center>
+<h1>Concepts in Computing with Data</h1>
+<h2>Statistics 133, Spring 2011</h2>
+</center>
+</br>
+<font size=+3>
+I've assembled the class notes into a 350 page pdf document.  You 
+can download it <a href='all2011.pdf'>here</a>.
+</font>
+<br>
+<p><p>
+<center>
+<table>
+<tr>
+<td colspan=2 align=center> 
+<h2>Contact Information</h2>
+</center>
+</td>
+<tr>
+<td align=center colspan=2>
+<font size=+1>Instructor: Phil Spector</font><br>
+Office: Evans 495<br>
+Office Hours: MWF 10-12  TuTh 2-5<br>
+e-mail: <a mailto='spector@stat.berkeley.edu'>spector@stat.berkeley.edu</a><br>
+</td>
+</tr>
+<tr>
+<!--
+<td align=center colspan=2>
+<font size=+1><br>GSI: Harry Kim</font><br>
+Office Hours (Room 342, Evans Hall):
+</td></tr>
+<tr><td align=center>Thursday 2-3 4-5</td></tr>
+<tr>
+<td align=center colspan=2>
+<font size=+1>Lab Sessions (Room 342, Evans Hall)</font>
+</td></tr>
+<tr>
+<td align=center>Friday 10-11</td>
+</tr>
+<tr>
+<td align=center>Friday 12-1<br></td>
+</tr>
+<tr>
+<td align=center>Friday 1-2<br></td>
+</tr>
+<tr>
+<td align=center>
+e-mail: <a mailto='harryk@cal.berkeley.edu'>harryk@cal.berkeley.edu</a><br>
+</td>
+</tr>
+<tr>
+<td align=center colspan=2>
+<font size=+1><br>Undergraduate Assistant: Qui Tran</font><br>
+Office Hours (Room 342, Evans Hall):
+</td></tr>
+<tr><td align=center>Thursday 1-4</td></tr>
+<tr><td align=center>Friday 10-11, 4-5</td>
+</tr>
+-->
+</table>
+</center>
+<p>
+<a href='finalreview.html'>Final Review Outline</a>
+<br>
+<a href='final2010.pdf'>Last year's final (pdf)</a>
+<p>
+<br>
+The final will be held in our regular classroom (150 GSPP) on Tuesday, May 10
+from 11:30-2:30PM  (although I don't anticipate anyone needing all three hours.)
+Like the midterm, it will be closed book with no notes or computer.  Please 
+bring a blue book to the exam.
+<br>
+<p>
+<br>
+Assignments 5 (due April 29) and 6 (due May 6) are available on the <a href='homework.html'>Homework page.<p>
+<a href='midterm.html'>Midterm Answers and Grading Information</a><br>
+<!--
+I've prepared a pdf file containing all the notes for this course. You
+can get a copy <a href='s133.pdf'>here.</a>
+<br>
+<br>
+<p>
+-->
+<!--
+<font color=red>Note:</font> If you can't load the tcltk library on
+a Mac, the problem is most likely that tcltk itself (not the R library)
+is not installed on your computer.   Download and install the 
+<tt>tcltk-8.5.5-x11.dmg</tt> file from <a href="http://cran.cnr.berkeley.edu/bin/macosx/tools/">this page</a>.
+<br>
+<p>
+
+<font color=red>Note:</font> Some of the descriptions in the XMLTV file
+are empty, which can confuse the <tt>xmlValue</tt> function. If you 
+experience this problem, use a function like this instead of calling
+<tt>xmlValue</tt> directly:
+<br>
+<br>
+<tt>
+getnull = function(x,var)if(length(x[[var]]) > 0)xmlValue(x[[var]]) else ''
+</tt>
+<br>
+<p>
+<font color=red>Note:</font> If you are having trouble reading the 
+listings.xml.gz file (which contains five days of listings), you can
+use <a href='listings2.xml.gz'>this file</a> which contains only
+two days of listings. 
+<br>
+<p>
+<font color=red>Note:</font> If you are using Windows, and can't find
+a working copy of the XML package, you can install one from the Bioconductor
+repository by typing the following two commands in your R session:
+<br>
+<br>
+<tt>
+source('http://www.bioconductor.org/getBioC.R')<br>
+getBioC('XML')<br>
+</tt>
+<br>
+<p>
+
+<font color=red>Note:</font> If R complains about missing registry keys
+or something similar when you try to use the RMySQL library, you can 
+install an old copy <a href='RMySQL_0.5-11.zip'>from here</a>.  Download
+the file to your computer, then choose <tt>Packages -> Install from Local Zip File</tt>.
+<p>
+<font color=red>Note:</font> If you see a message like the following:
+<pre>
+Error in gsub(pattern, replacement, x, ignore.case, extended, fixed, useBytes) :
+        input string 15 is invalid in this locale
+</pre>
+<p>
+Then you should issue the following command before using <tt>readLines</tt>:
+<pre>
+Sys.setlocale('LC_ALL','C')
+</pre>
+
+<br>
+<a href="trytable.r">"Table" program from class 4/24</a>
+</br>
+<br>
+<font color=red>Homework 5</font> (due Apr. 30) and <font color=red>Homework 6</font> (due May 7) posted on the <a href='homework.html'>Homework page</a>
+<br>
+<br>
+<a href='midterm.html'>Midterm Answers and Grading Information</a><br>
+-->
+<p>
+<a href="heart.r">Valentine's Day Heart program</a>
+<br>
+You can type 
+<tt>
+source("http://www.stat.berkeley.edu/classes/s133/heart.r")
+</tt>
+to run the program.
+<br>
+<h2>About this Course</h2>
+<p>
+The goal of this course is to introduce you to a variety of programs and
+technologies that are useful for organizing, manipulating and
+visualizing data.  This includes the R statistical computing language,
+the SQL language for working with databases, XML, the Document Object
+Model and Common Gateway Interface (CGI) used by webservers and browsers.
+</P>
+<P>
+Rather than concentrate on formulas and how they are computed, we'll use
+existing software to explore a variety of statistical problems concerning
+text and/or numbers, both numerically and graphically.   Students are
+encouraged to download and install some of the software that we'll be using
+to their own computers.
+<P>
+There are no prerequisites for the course, but students are expected to
+spend time thinking about the problems that are presented in the course,
+and to explore the software that we'll be using to solve those problems.
+<h2>Grading</h2>
+Grading will be based on 6 homework assignments (10% each), 
+a midterm exam (20%) , and a final exam (20%).
+<h2>Computers for Remote Access</h2>
+If you are accessing the SCF remotely, use a computer name of the 
+form scf-ugNN.berkeley.edu, where the NN stands for a number from 
+01 to 27, for example scf-ug03.berkeley.edu .  Once you are logged in,
+the command
+<pre>
+stathosts public
+</pre>
+will show you the names of additional computers that you can 
+access remotely.  (You may need to add ".berkeley.edu" to the end
+of the computer name.)
+</table>
+</table>
+</body>
+</html>

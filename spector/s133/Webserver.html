@@ -1,0 +1,85 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> Running Your Own Webserver</title>
+ 
+<h1 align="center">Running Your Own Webserver </h1>
+
+
+
+ <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;Using a Mac or Linux computer to run R CGI programs</h2>
+If you'd like to run your CGI programs on your own computer before 
+moving them over to the SCF computers where I can test them, it's
+fairly easy to do on Mac or Linux systems.  (If you've got Cygwin
+installed on a Windows computer, you can find information  for 
+setting things up <a href="http://www2.warwick.ac.uk/fac/sci/statistics/staff/academic/firth/software/cgiwithr/windows.txt">here</a>.)
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc2">
+2</a>&nbsp;&nbsp;Linux</h2>
+First make sure that the <tt>apache2</tt> program is installed on your 
+system.  If you're already running a webserver, then you're all set.
+After installing
+the <tt>CGIwithR</tt> package in R, you'll need to copy two files from the
+installation to your system's cgi area.  These two files can be found in
+<tt>/usr/local/lib/R/site-library/CGIwithR/cgi-bin</tt>, and they are
+called <tt>R.cgi</tt> and <tt>.Rprofile</tt>.  Copy these two files to
+<tt>/usr/lib/cgi-bin</tt>.  You can now add your R scripts to that same 
+directory and access them as <tt>http://localhost/cgi-bin/R.cgi/scriptname.cgi</tt>,
+where <tt>scriptname.cgi</tt> is the name of your CGI script.
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc3">
+3</a>&nbsp;&nbsp;Mac</h2>
+To activate the apache webserver that's part of Mac OS X, open the 
+System Preferences pane (through the Apple menu), and choose the 
+"Sharing" preference.  Click on "Web Sharing" to start the webserver.
+After installing the <tt>CGIwithR</tt> package in R, you'll need to copy
+two files from the installation to your system's cgi area.  These two files
+can be found in <tt>/Library/Frameworks/R.framework/Version/Current/Resources/library/CGIwithR/cgi-bin</tt>, and they are called <tt>R.cgi</tt> and <tt>.Rprofile</tt>.  Copy 
+these two files to <tt>/Library/WebServer/CGI-Executables</tt>.   
+In the file <tt>R.cgi</tt>, find the line that looks like this:
+
+<div class="p"><!----></div>
+
+<pre>
+R_DEFAULT=/usr/local/bin/R
+
+</pre>
+and change it to 
+
+<pre>
+R_DEFAULT=/usr/bin/R
+
+</pre>
+
+<div class="p"><!----></div>
+You can now add your 
+R scripts to that same directory, and your HTML files in 
+<tt>/Library/Webserver/Documents</tt>.
+You can then 
+access the html files as <tt>http://localhost/file.html</tt> where 
+<tt>file.html</tt> is the name of your html file, and the CGI files as
+<tt>http://localhost/cgi-bin/R.cgi/scriptname.cgi</tt>, where <tt>scriptname.cgi</tt> is the 
+name of your CGI script.  
+
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On  3 May 2011, 11:31.</small>
+</html>

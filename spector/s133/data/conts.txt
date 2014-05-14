@@ -1,0 +1,243 @@
+country,cont
+Afghanistan,AS
+Albania,EU
+Algeria,AF
+American Samoa,OC
+Andorra,EU
+Angola,AF
+Anguilla,NA
+Antarctica (the territory South of 60 de,AN
+Antigua and Barbuda,NA
+Argentina,SA
+Armenia,AS
+Aruba,NA
+Australia,OC
+Austria,EU
+Azerbaijan,AS
+Bahamas,NA
+Bahrain,AS
+Bangladesh,AS
+Barbados,NA
+Belarus,EU
+Belgium,EU
+Belize,NA
+Benin,AF
+Bermuda,NA
+Bhutan,AS
+Bolivia,SA
+Bosnia and Herzegovina,EU
+Botswana,AF
+Bouvet Island (Bouvetoya),AN
+Brazil,SA
+British Indian Ocean Territory (Chagos A,AS
+British Virgin Islands,NA
+Brunei,AS
+Bulgaria,EU
+Burkina Faso,AF
+Burundi,AF
+Cambodia,AS
+Cameroon,AF
+Canada,NA
+Cape Verde,AF
+Cayman Islands,NA
+Central African Republic,AF
+Chad,AF
+Chile,SA
+China,AS
+Christmas Island,AS
+Cocos (Keeling) Islands,AS
+Colombia,SA
+Comoros,AF
+Zaire,AF
+Congo,AF
+Cook Islands,OC
+Costa Rica,NA
+Cote D'Ivoire,AF
+Croatia,EU
+Cuba,NA
+Cyprus,AS
+Czech Republic,EU
+Denmark,EU
+Djibouti,AF
+Dominica,NA
+Dominican Republic,NA
+Ecuador,SA
+Egypt,AF
+El Salvador,NA
+Equatorial Guinea,AF
+Eritrea,AF
+Estonia,EU
+Ethiopia,AF
+Faeroe Islands,EU
+Falkland Islands (Malvinas),SA
+Fiji,OC
+Finland,EU
+France,EU
+French Guiana,SA
+French Polynesia,OC
+French Southern Territories,AN
+Gabon,AF
+Gambia,AF
+Georgia,AS
+Germany,EU
+Ghana,AF
+Gibraltar,EU
+Greece,EU
+Greenland,NA
+Grenada,NA
+Guadaloupe,NA
+Guam,OC
+Guatemala,NA
+Guernsey,EU
+Guinea,AF
+Guinea-Bissau,AF
+Guyana,SA
+Haiti,NA
+Heard and McDonald Islands,AN
+Holy See (Vatican City State),EU
+Honduras,NA
+Hong Kong,AS
+Hungary,EU
+Iceland,EU
+India,AS
+Indonesia,AS
+Iran,AS
+Iraq,AS
+Ireland,EU
+Isle of Man,EU
+Israel,AS
+Italy,EU
+Jamaica,NA
+Japan,AS
+Jersey,EU
+Jordan,AS
+Kazakhstan,AS
+Kenya,AF
+Kiribati,OC
+Korea,AS
+Korea,AS
+Kuwait,AS
+Kyrgyzstan,AS
+Laos,AS
+Latvia,EU
+Lebanon,AS
+Lesotho,AF
+Liberia,AF
+Libya,AF
+Liechtenstein,EU
+Lithuania,EU
+Luxembourg,EU
+Macao,AS
+Macedonia,EU
+Madagascar,AF
+Malawi,AF
+Malaysia,AS
+Maldives,AS
+Mali,AF
+Malta,EU
+Marshall Islands,OC
+Martinique,NA
+Mauritania,AF
+Mauritius,AF
+Mayotte,AF
+Mexico,NA
+Micronesia,OC
+Moldova,EU
+Monaco,EU
+Mongolia,AS
+Montserrat,NA
+Morocco,AF
+Mozambique,AF
+Myanmar,AS
+Namibia,AF
+Nauru,OC
+Nepal,AS
+Netherlands Antilles,NA
+Netherlands,EU
+New Caledonia,OC
+New Zealand,OC
+Nicaragua,NA
+Niger,AF
+Nigeria,AF
+Niue,OC
+Norfolk Island,OC
+Northern Mariana Islands,OC
+Norway,EU
+Oman,AS
+Pakistan,AS
+Palau,OC
+Palestinian Territory,AS
+Panama,NA
+Papua New Guinea,OC
+Paraguay,SA
+Peru,SA
+Philippines,AS
+Pitcairn Island,OC
+Poland,EU
+Portugal,EU
+Puerto Rico,NA
+Qatar,AS
+Reunion,AF
+Romania,EU
+Russian Federation,EU
+Rwanda,AF
+St. Helena,AF
+St. Kitts and Nevis,NA
+St. Lucia,NA
+St. Pierre and Miquelon,NA
+St. Vincent and the Grenadines,NA
+Samoa,OC
+San Marino,EU
+Sao Tome and Principe,AF
+Saudi Arabia,AS
+Senegal,AF
+Serbia and Montenegro,EU
+Seychelles,AF
+Sierra Leone,AF
+Singapore,AS
+Slovakia,EU
+Slovenia,EU
+Solomon Islands,OC
+Somalia,AF
+South Africa,AF
+South Georgia and the South Sandwich Isl,AN
+Spain,EU
+Sri Lanka,AS
+Sudan,AF
+Suriname,SA
+Svalbard & Jan Mayen Islands,EU
+Swaziland,AF
+Sweden,EU
+Switzerland,EU
+Syria,AS
+Taiwan,AS
+Tajikistan,AS
+Tanzania,AF
+Thailand,AS
+Timor-Leste,AS
+Togo,AF
+Tokelau (Tokelau Islands),OC
+Tonga,OC
+Trinidad and Tobago,NA
+Tunisia,AF
+Turkey,AS
+Turkmenistan,AS
+Turks and Caicos Islands,NA
+Tuvalu,OC
+US Virgin Islands,NA
+Uganda,AF
+Ukraine,EU
+United Arab Emirates,AS
+United Kingdom,EU
+United States Minor Outlying Islands,OC
+USA,NA
+Uruguay,SA
+Uzbekistan,AS
+Vanuatu,OC
+Venezuela,SA
+Vietnam,AS
+Wallis and Futuna Islands,OC
+Western Sahara,AF
+Yemen,AS
+Zambia,AF
+Zimbabwe,AF

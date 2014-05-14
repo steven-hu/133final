@@ -1,0 +1,258 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> Smoothers</title>
+ 
+<h1 align="center">Smoothers </h1>
+
+
+
+ <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;Smoothers</h2>
+    In many of the graphs we've looked at, we added a straight line representing the 
+best linear regression line that went through the data we were plotting.  Such lines can 
+be very helpful when there are lots of points, or when outliers might detract from our
+seeing a relationship among the points.
+    But plotting the best linear regression line has some limitations.  For one thing,
+the regression has to fit all the data, so finding a good regression fit is often a 
+compromise between being true to the data in any given range, and trying to come up with
+a single line that does reasonably well throughout the entire range.  For some data, this
+may be appropriate.  For example, if we know that two variables really follow a linear
+relationship, then we'd have to assume that deviations from that relationship are just 
+noise, and the best straight line would be a meaningful way to display their relationship
+on a graph.  However, situations like that are not that common.
+    To come up with a way of visualizing relationships between two variables without
+resorting to a regression lines, statisticians and mathematicians have developed 
+techniques for smoothing curves.  Essentially this means drawing lines through the points 
+based only on other points from the surrounding neighborhood, not from the entire set of 
+points.   
+    There are many different types of smoothers available, and most of them offer an 
+option that controls how much smoothing they will do as well as options to control the 
+basic methods that they use, so it's usually possible to find
+a smoother that will work well for a particular set of data.
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc2">
+2</a>&nbsp;&nbsp;Kernel Smoothers</h2>
+   Kernel smoothers work by forming a weighted average of all the y-values corresponding 
+to points whose x-values are close to the x-value of a point being plotted.  The 
+function that defines the weights is known as a kernel, and the number of points involved
+in the weighted average is based on a parameter known as the bandwidth.   The default 
+kernel is a box function; in other words, it simply averages together y-values which are 
+within the specified bandwidth of a given x-value, and uses that average as the y-value
+for the x-value in question.  With a very tiny bandwidth, this corresponds to a 
+"connect-the-dots" type of drawing.  With a very large bandwidth, it will basically
+estimate every y-value as the mean of all the y-values.  However, even when the bandwidth
+is carefully chosen, using the box kernel rarely will result in a truly smooth graph.
+For example, consider a plot of <tt>OD.Ratio</tt> versus <tt>Proanthocyanins</tt> from 
+the <tt>wine</tt> data set that we've used in previous examples.  The following code
+produces a plot of the variables, and superimposes a line representing a box kernel
+smooth with the default bandwidth:
+
+<pre>
+&#62;&nbsp;plot(wine$Proanthocyanins,wine$OD.Ratio)
+&#62;&nbsp;lines(ksmooth(wine$Proanthocyanins,wine$OD.Ratio))
+
+</pre>
+Here's the graph:
+
+<div class="p"><!----></div>
+<img src="winebox.png">
+
+<div class="p"><!----></div>
+Notice how choppy the line is, especially where there isn't much data.  That's because 
+the box kernel is too extreme - it either adds in a point or not.   So using the box
+kernel is like stacking up a bunch of square boxes around each point, and we don't really
+get a smooth result.
+
+<div class="p"><!----></div>
+More commonly, kernels will have a maximum at distances that are very small, and will
+decrease gradually as the (absolute value) of the distance from the center of the 
+kernel increases.  This means that nearby points will have lots of influence on the 
+weighted estimate that will be plotted, but as we move away from a particular point,
+the neighboring points will have less and less influence.  We can modify how many 
+points are considered through the bandwidth - including more points tends to give
+smoother curves that don't respond as well to local variation, while decreasing the 
+bandwidth tends to make the curve look "choppier".  One of the most common kernels
+used in smoothing is the Gaussian or normal kernel.  This kernel is the familiar 
+"bell curve" - largest in the middle (corresponding in this cases to distances of 
+zero from a particular point), and gradually decreasing over it's supported range.
+The width of that range is determined by the bandwith when using a kernel smoother.
+Here's the <tt>Proanthocyanins</tt> vs. <tt>OD.Ratio</tt> plot, smoothed with a
+normal kernel using the default bandwidth:
+
+<div class="p"><!----></div>
+<img src="winenorm.png">
+
+<div class="p"><!----></div>
+Notice the change in the line when switching to the <tt>normal</tt> kernel; the line
+is now smooth, and we can see that a linear relationship that holds up until around
+a <tt>Proanthocyanin</tt> concentration of about 2.
+
+<div class="p"><!----></div>
+The argument that controls the size of the neighborhood that's used 
+by <tt>ksmooth</tt>
+to estimate
+the smoothed value at each point is called <tt>bandwidth</tt>.  We can examine 
+the effect of changing the bandwidth as follows;
+
+<div class="p"><!----></div>
+
+<pre>
+kplotfn&nbsp;=&nbsp;function(bw){
+&nbsp;&nbsp;&nbsp;&nbsp;plot(wine$Proanthocyanins,wine$OD.Ratio,main=bw)
+&nbsp;&nbsp;&nbsp;&nbsp;lines(ksmooth(wine$Proanthocyanins,wine$OD.Ratio,bandwidth=bw),col='green')
+}
+
+bws&nbsp;=&nbsp;seq(.1,1,by=.1)
+par(mfrow=c(5,2),mar=c(2,4,2,1)+.1)
+sapply(bws,kplotfn)
+
+</pre>
+
+<div class="p"><!----></div>
+<img src="winek.png">
+
+<div class="p"><!----></div>
+After adjusting the margins, the plot we got looks something like a lattice plot.
+But how could we produce an actual lattice plot with this data?  We would need 
+a data frame with x and y values for each bandwidth.  What does <tt>ksmooth</tt>
+return?
+
+<div class="p"><!----></div>
+
+<pre>
+&#62;&nbsp;result&nbsp;=&nbsp;ksmooth(wine$Proanthocyanins,wine$OD.Ratio)
+&#62;&nbsp;class(result)
+[1]&nbsp;"list"
+&#62;&nbsp;names(result)
+[1]&nbsp;"x"&nbsp;"y"
+
+</pre>
+ Since the lengths of <tt>x</tt> and <tt>y</tt> must be equal, we 
+can convert the output to a data frame directly.  Let's write a function which
+will generate a data frame with <tt>x</tt>, <tt>y</tt> and <tt>bandwidth</tt>
+values for a single bandwidth:
+
+<pre>
+kfun&nbsp;=&nbsp;function(bw)
+&nbsp;&nbsp;&nbsp;data.frame(bw=bw,as.data.frame(ksmooth(wine$Proanthocyanins,wine$OD.Ratio,bandwidth=bw)))
+
+</pre>
+ Notice that R realized it had to repeat the single <tt>bw</tt> value
+to make it compatible with <tt>x</tt> and <tt>y</tt>.  As always, we should test
+the function:
+
+<pre>
+&#62;&nbsp;result&nbsp;=&nbsp;kfun(.5)
+&#62;&nbsp;head(result)
+&nbsp;&nbsp;&nbsp;bw&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;y
+1&nbsp;0.5&nbsp;0.4100000&nbsp;1.881429
+2&nbsp;0.5&nbsp;0.4279096&nbsp;1.881429
+3&nbsp;0.5&nbsp;0.4458192&nbsp;1.812500
+4&nbsp;0.5&nbsp;0.4637288&nbsp;1.812500
+5&nbsp;0.5&nbsp;0.4816384&nbsp;1.879000
+6&nbsp;0.5&nbsp;0.4995480&nbsp;1.879000
+
+</pre>
+ Now we can create a list of data frames, one for each bandwidth:
+
+<pre>
+&#62;&nbsp;frames&nbsp;=&nbsp;lapply(seq(.1,1,by=.1),kfun)
+&#62;&nbsp;allbws&nbsp;=&nbsp;do.call(rbind,frames)
+&#62;&nbsp;dim(allbws)
+[1]&nbsp;1780&nbsp;&nbsp;&nbsp;&nbsp;3
+
+</pre>
+ Notice the use of the <tt>do.call</tt> function, which is used here
+to call <tt>rbind</tt> with the data frames for all of the different bandwidths.
+
+<div class="p"><!----></div>
+To get both points and lines on each panel, we can create a custom panel function:
+
+<pre>
+mypanel&nbsp;=&nbsp;function(x,y,...){
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;panel.xyplot(wine$Proanthocyanins,wine$OD.Ratio);
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;panel.xyplot(x,y,type='l',col='red')
+}
+xyplot(y~x|factor(bw),data=allbws,type='l',as.table=TRUE,layout=c(2,5),panel=mypanel)
+
+</pre>
+The resulting plot appears below:
+<img src="winesparl.png">
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc3">
+3</a>&nbsp;&nbsp;Locally Weighted Regression Smoothers</h2>
+Another approach that is often used to smooth curves is locally weighted regression.
+Instead of taking a weighted average of y-values near the x-values we want to plot,
+the nearby points are used in a (usually quadratic) weighted regression, and predicted 
+values from these local regressions are used as the y-values that are plotted. 
+The <tt>lowess</tt> function in R implements this technique by using the reciprocal
+of the residuals of successive fits as the weights, downgrading those points that 
+don't contribute to a smooth fit.  In the <tt>lowess</tt> function, the argument 
+<tt>f=</tt> specifies the fraction of the data to be used in the local regressions.
+Specifying a larger value results in a smoother curve.
+
+<div class="p"><!----></div>
+To illustrate, consider a plot of <tt>literacy</tt> versus <tt>phys</tt>, the number
+of physicians per 100000 people, from the <tt>world</tt> data set that we've used in
+previous examples.  The following code produces a plot of the data with a lowess 
+smoothed curve superimposed:
+
+<pre>
+&#62;&nbsp;plot(world$literacy,world$phys)
+&#62;&nbsp;lines(lowess(world$literacy,world$phys))
+
+</pre>
+ The graph appears below:
+
+<div class="p"><!----></div>
+<img src="worldlo.png">
+
+<div class="p"><!----></div>
+The argument to <tt>lowess</tt> that controls the level of smoothing is <tt>f</tt>,
+the fraction of the data which will be used in the local regressions.
+Let's compare the results of smoothing the literacy/physician curve using different 
+values of <tt>f</tt>
+
+<pre>
+lplotfn&nbsp;=&nbsp;function(f){
+&nbsp;&nbsp;&nbsp;&nbsp;plot(world$literacy,world$phys,main=f)
+&nbsp;&nbsp;&nbsp;&nbsp;lines(lowess(world$literacy,world$phys,f=f),col='orange')
+}
+
+fs&nbsp;=&nbsp;seq(.1,1,by=.1)
+par(mfrow=c(5,2),mar=c(2,4,2,1)+.1)
+sapply(fs,lplotfn)
+
+</pre>
+
+<div class="p"><!----></div>
+For this particular data set, there's not much difference in the 
+appearance of the smoothed curve, although there is a bit of noise
+when using the lowest value of <tt>f</tt>
+
+<div class="p"><!----></div>
+<img src="worldf.png">
+
+<div class="p"><!----></div>
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On 18 Apr 2011, 15:27.</small>
+</html>

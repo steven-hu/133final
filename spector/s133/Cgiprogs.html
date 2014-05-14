@@ -1,0 +1,137 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> Running R CGI Programs</title>
+ 
+<h1 align="center">Running R CGI Programs </h1>
+
+
+
+     <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;Setting up your Account for CGI Scripting</h2>
+In order to run CGI scripts on the class webserver, you need to 
+create two directories within your SCF account.  After logging
+in to your SCF account, you can create these directories with the
+following command:
+
+<div class="p"><!----></div>
+
+<pre>
+mkdir&nbsp;-p&nbsp;public_html/cgi-bin
+
+</pre>
+
+<div class="p"><!----></div>
+In order to run R CGI scripts, you will need to copy two files into
+the newly created cgi-bin directory.  You can do this with the following
+commands:
+
+<div class="p"><!----></div>
+
+<pre>
+cp&nbsp;~s133/.Rprofile&nbsp;public_html/cgi-bin
+cp&nbsp;~s133/R.cgi&nbsp;public_html/cgi-bin
+
+</pre>
+ Once you have created these directories and copied the two
+files, you are ready to start writing CGI programs using R.  Notice that
+you only have to create the directories and copy the files once, not 
+everytime that you create a CGI program.
+
+<div class="p"><!----></div>
+First, let's say that you've created an HTML page which will display
+a form for a user to enter some input, and you've named it <tt>test.html</tt>.
+Store the program in the <tt>public_html</tt> directory of your SCF account,
+and you can access it through the following URL (from the SCF machines):
+
+<div class="p"><!----></div>
+
+<pre>
+http://springer/~s133xx/test.html
+
+</pre>
+
+<div class="p"><!----></div>
+Now suppose that you've created an R CGI script that you'd like to test.
+(You may want to start with something simple, just to make sure that
+everything's working right.)  In order for the webserver to find your 
+program, it must be located in the cgi-bin directory that you created 
+earlier.  The webserver is configured so that it will only run programs
+that have a <tt>.cgi</tt> extension, so make sure your program has such
+an extension.  Let's say that the program you've placed in your 
+<tt>cgi-bin</tt> directory is called <tt>test.cgi</tt>, and that your 
+SCF login is <tt>s133xx</tt>.  If you're working 
+on one of the SCF machines, you would type the following address into your
+browser:
+
+<div class="p"><!----></div>
+
+<pre>
+http://springer/~s133xx/cgi-bin/R.cgi/test.cgi
+
+</pre>
+
+<div class="p"><!----></div>
+If you're using a computer on another network (like your own computer at
+home, or any other campus machine, including ones connected through
+AirBears), you'll need to set up an SSH tunnel to access the webserver.
+On Windows systems, you can
+use the SSH software that you downloaded from <tt>software.berkeley.edu</tt> to
+set up the tunnel;
+on Unix/Linux or Mac OSX you can use the command line.
+
+<div class="p"><!----></div>
+To set up an SSH tunnel using <tt>putty</tt>, 
+open the program,
+click on the plus sign to the left of <tt>SSH</tt> in the left-hand pane,
+and click on <tt>Tunnels</tt>, which will appear under the SSH section.
+Fill in the fields as shown in this screenshot:
+
+<center>
+<img src="puttyh.png">
+</center>
+ After hitting "<tt>Add</tt>", make sure that "<tt>L8080</tt>" appears
+in the window listing the forwarded port.
+
+<div class="p"><!----></div>
+If you're using a computer that has a command-line version of the ssh
+program, you can create the tunnel with the command:
+
+<pre>
+ssh&nbsp;-N&nbsp;-L&nbsp;8080:springer.berkeley.edu:80&nbsp;s133xx@anyscfhost
+
+</pre>
+Where <tt>anyscfhost</tt> is the name (including the <tt>.berkeley.edu</tt>
+at the end) of any SCF host, and <tt>s133xx</tt> is your SCF login.   
+The <tt>ssh</tt> program will prompt you for
+a password; once you type it in and hit Enter, you can put the <tt>ssh</tt> job
+in the background using <tt>control-Z</tt>, followed by typing "<tt>bg</tt>",
+or you can just leave it running it the terminal. 
+
+<div class="p"><!----></div>
+Once the tunnel is set up, you can access your program at:
+
+<pre>
+http://localhost:8080/~s133xx/cgi-bin/R.cgi/test.cgi
+
+</pre>
+
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On 15 Apr 2009, 16:05.</small>
+</html>

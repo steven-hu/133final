@@ -1,0 +1,483 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"
+           "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.85">
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> Classification Analysis</title>
+ 
+<h1 align="center">Classification Analysis </h1>
+
+
+
+In R, linear discriminant analysis is provided by the <tt>lda</tt> function from the
+<tt>MASS</tt> library, which is part of the base R distribution.  
+
+<div class="p"><!----></div>
+Like many modeling and analysis functions in R, <tt>lda</tt> takes a formula as its
+first argument.  A formula in R is a way of describing a set of relationships that
+are being studied.   The dependent variable, or the variable to be predicted, is 
+put on the left hand side of a tilda (<tt>~</tt>) and the variables that will be used
+to model or predict it are placed on the right hand side of the tilda, joined together
+by plus signs (<tt>+</tt>).  To save typing, you an provide the name of a data frame 
+through the <tt>data=</tt> argument, and use the name of the variables in the data 
+frame in your formula without retyping the data frame name or using the <tt>with</tt>
+function. 
+
+<div class="p"><!----></div>
+A convenience offered by the modeling functions is that a period (<tt>.</tt>)
+on the right-hand side of the tilda in a formula is interpreted as meaning "all the
+other variables in the data frame, except the dependent variable".  So a very popular
+method of specifying a formula is to use the period, and then use subscripting to 
+limit the <tt>data=</tt> argument to just the variables you want to fit.  In this 
+example, we don't need to do that, because we really do want to use all the variables
+in the data set.  
+
+<pre>
+&#62;&nbsp;wine.lda&nbsp;=&nbsp;lda(Cultivar&nbsp;~&nbsp;.,data=wine)
+
+</pre>
+We'll see that most of the modeling functions in R share many things in common.  For
+example, to predict values based on a model, we pass the model object to the 
+<tt>predict</tt> function along with a data frame containing the observations 
+for which we want predictions:
+
+<pre>
+&#62;&nbsp;pred&nbsp;=&nbsp;predict(wine.lda,wine)
+
+</pre>
+To see what's available from the call to predict, we can look at the names of the 
+<tt>pred</tt> object:
+
+<pre>
+&#62;&nbsp;names(pred)
+[1]&nbsp;"class"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"posterior"&nbsp;"x"
+
+</pre>
+The predicted classification is stored in the <tt>class</tt> component of the 
+object returned by <tt>predict</tt>
+Now that we've got the predicted classes, we can see how well the classification 
+went by making a cross-tabulation of the real Cultivar with our prediction, using
+the <tt>table</tt> function:
+
+<pre>
+&#62;&nbsp;table(wine$Cultivar,pred$class)
+&nbsp;&nbsp;&nbsp;predclass
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;2&nbsp;&nbsp;3
+&nbsp;&nbsp;1&nbsp;59&nbsp;&nbsp;0&nbsp;&nbsp;0
+&nbsp;&nbsp;2&nbsp;&nbsp;0&nbsp;71&nbsp;&nbsp;0
+&nbsp;&nbsp;3&nbsp;&nbsp;0&nbsp;&nbsp;0&nbsp;48
+
+</pre>
+Before we get too excited about these results, remember the caution about predicting
+values based on models that were built using those values.  The error rate we see in
+ the table (0) is probably an overestimate of how good the classification rule is.
+We can use v-fold cross validation on the data, by using the <tt>lda</tt> command
+repeatedly to classify groups of observations (folds) using the rest of the data
+to build the model.
+We could write this out "by hand", but it would be useful
+to have a function that could do this for us.  Here's such a function:
+
+<pre>
+vlda&nbsp;=&nbsp;function(v,formula,data,cl){
+&nbsp;&nbsp;&nbsp;require(MASS)
+&nbsp;&nbsp;&nbsp;grps&nbsp;=&nbsp;cut(1:nrow(data),v,labels=FALSE)[sample(1:nrow(data))]
+&nbsp;&nbsp;&nbsp;pred&nbsp;=&nbsp;lapply(1:v,function(i,formula,data){
+	&nbsp;&nbsp;&nbsp;&nbsp;omit&nbsp;=&nbsp;which(grps&nbsp;==&nbsp;i)
+	&nbsp;&nbsp;&nbsp;&nbsp;z&nbsp;=&nbsp;lda(formula,data=data[-omit,])
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;predict(z,data[omit,])
+	&nbsp;&nbsp;&nbsp;&nbsp;},formula,data)
+
+&nbsp;&nbsp;&nbsp;wh&nbsp;=&nbsp;unlist(lapply(pred,function(pp)pp$class))
+&nbsp;&nbsp;&nbsp;table(wh,cl[order(grps)])
+}
+
+</pre>
+This function accepts four arguments: <tt>v</tt>, the number of folds in the cross
+classification, <tt>formula</tt> which is the formula used in the linear discriminant
+analysis, <tt>data</tt> which is the data frame to use, and <tt>cl</tt>, 
+the classification variable (<tt>wine$Cultivar</tt> in this case).
+
+<div class="p"><!----></div>
+By using the <tt>sample</tt> function, we make sure that the groups that are used for
+cross-validation aren't influenced by the ordering of the data - notice how the 
+classification variable (<tt>cl</tt>) is indexed by <tt>order(grps)</tt> to make sure
+that the predicted and actual values line up properly.
+
+<div class="p"><!----></div>
+Applying this function to the <tt>wine</tt> data will give us a better idea of the 
+actual error rate of the classifier:
+
+<pre>
+&#62;&nbsp;vlda(5,Cultivar~.,wine,wine$Cultivar)&nbsp;
+wh&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;2&nbsp;&nbsp;3
+&nbsp;&nbsp;1&nbsp;59&nbsp;&nbsp;1&nbsp;&nbsp;0
+&nbsp;&nbsp;2&nbsp;&nbsp;0&nbsp;69&nbsp;&nbsp;1
+&nbsp;&nbsp;3&nbsp;&nbsp;0&nbsp;&nbsp;1&nbsp;47
+
+</pre>
+While the error rate is still very good, it's not quite perfect:
+
+<pre>
+&#62;&nbsp;error&nbsp;=&nbsp;sum(tt[row(tt)&nbsp;!=&nbsp;col(tt)])&nbsp;/&nbsp;sum(tt)
+&#62;&nbsp;error
+[1]&nbsp;0.01685393
+
+</pre>
+Note that because of the way we randomly divide the observations, you'll see 
+a slightly different table every time you run the <tt>vlda</tt> function.
+
+<div class="p"><!----></div>
+We could use a similar method to apply v-fold cross-validation to the kth
+nearest neighbor classification.  Since the <tt>knn</tt> function accepts a 
+training set and a test set, we can make each fold a test set, using the 
+remainder of the data as a training set.  Here's a function to apply this
+idea:
+
+<pre>
+vknn&nbsp;=&nbsp;function(v,data,cl,k){
+&nbsp;&nbsp;&nbsp;grps&nbsp;=&nbsp;cut(1:nrow(data),v,labels=FALSE)[sample(1:nrow(data))]
+&nbsp;&nbsp;&nbsp;pred&nbsp;=&nbsp;lapply(1:v,function(i,data,cl,k){
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;omit&nbsp;=&nbsp;which(grps&nbsp;==&nbsp;i)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pcl&nbsp;=&nbsp;knn(data[-omit,],data[omit,],cl[-omit],k=k)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},data,cl,k)
+
+&nbsp;&nbsp;&nbsp;wh&nbsp;=&nbsp;unlist(pred)
+&nbsp;&nbsp;&nbsp;table(wh,cl[order(grps)])
+}&nbsp;&nbsp;
+
+</pre>
+  Let's apply the function to the standardized wine data:
+
+<pre>
+&#62;&nbsp;tt&nbsp;=&nbsp;vknn(5,wine.use,wine$Cultivar,5)
+&#62;&nbsp;tt
+&nbsp;&nbsp;&nbsp;
+wh&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;2&nbsp;&nbsp;3
+&nbsp;&nbsp;1&nbsp;59&nbsp;&nbsp;2&nbsp;&nbsp;0
+&nbsp;&nbsp;2&nbsp;&nbsp;0&nbsp;66&nbsp;&nbsp;0
+&nbsp;&nbsp;3&nbsp;&nbsp;0&nbsp;&nbsp;3&nbsp;48
+&#62;&nbsp;sum(tt[row(tt)&nbsp;!=&nbsp;col(tt)])&nbsp;/&nbsp;sum(tt)
+[1]&nbsp;0.02808989
+
+</pre>
+  Note that this is the same misclassification rate as 
+acheived by the "leave-out-one" cross validation provided by
+<tt>knn.cv</tt>.
+
+<div class="p"><!----></div>
+Both the nearest neighbor and linear discriminant methods make it 
+possible to classify new observations, but they don't give much
+insight into what variables are important in the classification.
+The <tt>scaling</tt> element of the object returned by <tt>lda</tt>
+shows the linear combinations of the original variables that were created 
+to distinguish between the groups:
+
+<pre>
+&#62;&nbsp;&nbsp;wine.lda$scaling
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LD1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LD2
+Alcohol&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-0.403399781&nbsp;&nbsp;0.8717930699
+Malic.acid&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.165254596&nbsp;&nbsp;0.3053797325
+Ash&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-0.369075256&nbsp;&nbsp;2.3458497486
+Alkalinity.ash&nbsp;&nbsp;&nbsp;0.154797889&nbsp;-0.1463807654
+Magnesium&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-0.002163496&nbsp;-0.0004627565
+Phenols&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.618052068&nbsp;-0.0322128171
+Flavanoids&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1.661191235&nbsp;-0.4919980543
+NF.phenols&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1.495818440&nbsp;-1.6309537953
+Proanthocyanins&nbsp;&nbsp;0.134092628&nbsp;-0.3070875776
+Color.intensity&nbsp;&nbsp;0.355055710&nbsp;&nbsp;0.2532306865
+Hue&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-0.818036073&nbsp;-1.5156344987
+OD.Ratio&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1.157559376&nbsp;&nbsp;0.0511839665
+Proline&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-0.002691206&nbsp;&nbsp;0.0028529846
+
+</pre>  
+ It's really not that easy to interpret them, but variables with
+large absolute values in the scalings are more likely to influence the 
+process.  For this data, <tt>Flavanoids</tt>, <tt>NF.phenols</tt>, <tt>Ash</tt>,
+ and <tt>Hue</tt> seem to be among the important variables.
+
+<div class="p"><!----></div>
+A different way to get some insight into this  would be to examine the 
+means of each of the variables broken down by the classification
+variable.  Variables which show a large difference among the 
+groups would most likely be the ones that are useful in predicting 
+which group an observation belongs in.  One graphical way of 
+displaying this information is with a barplot.  To make sure we
+can see differences for all the variables, we'll use the 
+standardized version of the data:
+
+<pre>
+&#62;&nbsp;mns&nbsp;=&nbsp;aggregate(wine.use,wine['Cultivar'],mean)
+&#62;&nbsp;rownames(mns)&nbsp;=&nbsp;mns$Cultivar
+&#62;&nbsp;mns$Cultivar&nbsp;=&nbsp;NULL
+&#62;&nbsp;barplot(as.matrix(mns),beside=TRUE,cex.names=.8,las=2)
+
+</pre>
+ The <tt>las</tt> parameter rotates the labels on
+the x-axis so that we can see them all. Here's the plot:
+
+<div class="p"><!----></div>
+<img src="winemns.png">
+
+<div class="p"><!----></div>
+It seems like the big differences are found in <tt>Flavanoids</tt>, 
+<tt>Hue</tt> and <tt>OD.Ratio</tt>
+
+<div class="p"><!----></div>
+Now let's take a look at a method that makes it very clear which variables
+are useful in distinguishing among the groups.
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;Recursive Partitioning</h2>
+An alternative classification method, developed in the 1980s, has attracted a 
+lot of attention in a variety of different fields.  The technique, known as 
+recursive partitioning or CART (Classification and Regression Trees), can be
+use for either classification or regression - here we'll concentrate on its
+use for classification.  The basic idea is to examine, for each of the variables
+that we're using in our classification model, the results of splitting the data
+set based on one of the values of that variable, and then examining how that 
+split helps us distinguish between the different classes of interest.  For example,
+suppose we're using just one variable to help distinguish between two classes:
+
+<pre>
+&#62;&nbsp;mydata&nbsp;=&nbsp;data.frame(x=c(7,12,8,3,4,9,2,19),grp=c(1,2,1,1,1,2,2,2))
+&#62;&nbsp;mydata
+&nbsp;&nbsp;&nbsp;x&nbsp;grp
+1&nbsp;&nbsp;7&nbsp;&nbsp;&nbsp;1
+2&nbsp;12&nbsp;&nbsp;&nbsp;2
+3&nbsp;&nbsp;8&nbsp;&nbsp;&nbsp;1
+4&nbsp;&nbsp;3&nbsp;&nbsp;&nbsp;1
+5&nbsp;&nbsp;4&nbsp;&nbsp;&nbsp;1
+6&nbsp;&nbsp;9&nbsp;&nbsp;&nbsp;2
+7&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;2
+8&nbsp;19&nbsp;&nbsp;&nbsp;2
+
+
+
+</pre>
+We'd consider each value of <tt>x</tt> in the data, and split the data into two
+groups: one where <tt>x</tt> was less than or equal to the value and the other where 
+<tt>x</tt>
+is greater than the value.  We then look at how our classification variable (<tt>grp</tt>
+in this example) breaks down when the data is split this way.  For this example, we 
+can look at all the possible cross-tabulations:
+
+<pre>
+&#62;&nbsp;tbls&nbsp;=&nbsp;sapply(mydata$x,function(val)table(mydata$x&nbsp;&lt;=&nbsp;val,mydata$grp))
+&#62;&nbsp;names(tbls)&nbsp;=&nbsp;mydata$x
+&#62;&nbsp;tbls
+&#62;&nbsp;tbls
+$"7"
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;2
+&nbsp;&nbsp;FALSE&nbsp;1&nbsp;3
+&nbsp;&nbsp;TRUE&nbsp;&nbsp;3&nbsp;1
+
+$"12"
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;2
+&nbsp;&nbsp;FALSE&nbsp;0&nbsp;1
+&nbsp;&nbsp;TRUE&nbsp;&nbsp;4&nbsp;3
+
+$"8"
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;2
+&nbsp;&nbsp;FALSE&nbsp;0&nbsp;3
+&nbsp;&nbsp;TRUE&nbsp;&nbsp;4&nbsp;1
+
+$"3"
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;2
+&nbsp;&nbsp;FALSE&nbsp;3&nbsp;3
+&nbsp;&nbsp;TRUE&nbsp;&nbsp;1&nbsp;1
+
+$"4"
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;2
+&nbsp;&nbsp;FALSE&nbsp;2&nbsp;3
+&nbsp;&nbsp;TRUE&nbsp;&nbsp;2&nbsp;1
+
+$"9"
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;2
+&nbsp;&nbsp;FALSE&nbsp;0&nbsp;2
+&nbsp;&nbsp;TRUE&nbsp;&nbsp;4&nbsp;2
+
+$"2"
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;2
+&nbsp;&nbsp;FALSE&nbsp;4&nbsp;3
+&nbsp;&nbsp;TRUE&nbsp;&nbsp;0&nbsp;1
+
+$"19"
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;2
+&nbsp;&nbsp;TRUE&nbsp;4&nbsp;4
+
+
+</pre>
+If you look at each of these tables, you can see that when we split with the rule
+<tt>x &lt;= 8</tt>, we get the best separation; all three of the cases where
+<tt>x</tt> is greater than
+8 are classified as 2, and four out of five of the cases where <tt>x</tt> is  less than
+8 are classified as 1.
+For this phase of a recursive partitioning, the rule <tt>x &lt;= 8</tt> would be
+chosen to split the data.
+
+<div class="p"><!----></div>
+In real life situations, where there will always be more than one variable, the 
+process would be repeated for each of the variables, and the chosen split would 
+the one from among all the variables that resulted in the best separation or 
+node purity as it is sometimes known.   Now that we've found the single best split,
+our data is divided into two groups based on that split.  Here's where the recursive
+part comes in:  we keep doing the same thing to each side of the split data, searching
+through all values of all variables until we find the one that gives us the best
+separation, splitting the data by that value and then continuing.  As implemented in
+R through the <tt>rpart</tt> function in the <tt>rpart</tt> library, cross validation
+is used internally to determine when we should stop splitting the data, and present a 
+final tree as the output.  There are also options to the rpart function specifying the
+minimum number of observations allowed in a split,  the minimum number of observations
+allowed in one of the final nodes and the maximum number of splits allowed, which can
+be set through the <tt>control=</tt> argument to <tt>rpart</tt>.  See the help page
+for <tt>rpart.control</tt> for more information.
+
+<div class="p"><!----></div>
+To show how information from recursive partitioning is displayed, we'll use the same data
+that we used with <tt>lda</tt>.  Here are the commands to run the analysis:
+
+<pre>
+&#62;&nbsp;library(rpart)
+&#62;&nbsp;wine.rpart&nbsp;=&nbsp;rpart(Cultivar~.,data=wine)
+&#62;&nbsp;wine.rpart&nbsp;
+n=&nbsp;178&nbsp;
+
+node),&nbsp;split,&nbsp;n,&nbsp;loss,&nbsp;yval,&nbsp;(yprob)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;denotes&nbsp;terminal&nbsp;node
+
+&nbsp;1)&nbsp;root&nbsp;178&nbsp;107&nbsp;2&nbsp;(0.33146067&nbsp;0.39887640&nbsp;0.26966292)&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;2)&nbsp;Proline&#62;=755&nbsp;67&nbsp;&nbsp;10&nbsp;1&nbsp;(0.85074627&nbsp;0.05970149&nbsp;0.08955224)&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4)&nbsp;Flavanoids&#62;=2.165&nbsp;59&nbsp;&nbsp;&nbsp;2&nbsp;1&nbsp;(0.96610169&nbsp;0.03389831&nbsp;0.00000000)&nbsp;*
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5)&nbsp;Flavanoids&lt;&nbsp;2.165&nbsp;8&nbsp;&nbsp;&nbsp;2&nbsp;3&nbsp;(0.00000000&nbsp;0.25000000&nbsp;0.75000000)&nbsp;*
+&nbsp;&nbsp;&nbsp;3)&nbsp;Proline&lt;&nbsp;755&nbsp;111&nbsp;&nbsp;44&nbsp;2&nbsp;(0.01801802&nbsp;0.60360360&nbsp;0.37837838)&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6)&nbsp;OD.Ratio&#62;=2.115&nbsp;65&nbsp;&nbsp;&nbsp;4&nbsp;2&nbsp;(0.03076923&nbsp;0.93846154&nbsp;0.03076923)&nbsp;*
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7)&nbsp;OD.Ratio&lt;&nbsp;2.115&nbsp;46&nbsp;&nbsp;&nbsp;6&nbsp;3&nbsp;(0.00000000&nbsp;0.13043478&nbsp;0.86956522)&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;14)&nbsp;Hue&#62;=0.9&nbsp;7&nbsp;&nbsp;&nbsp;2&nbsp;2&nbsp;(0.00000000&nbsp;0.71428571&nbsp;0.28571429)&nbsp;*
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;15)&nbsp;Hue&lt;&nbsp;0.9&nbsp;39&nbsp;&nbsp;&nbsp;1&nbsp;3&nbsp;(0.00000000&nbsp;0.02564103&nbsp;0.97435897)&nbsp;*
+
+</pre>
+The display always starts at the root (all of the data), and reports the splits in the order
+they occured.  So after examining all possible values of all the variables, <tt>rpart</tt>
+found that the <tt>Proline</tt> variable did the best job of dividing up the observations into
+the different cultivars; in particular of the 67 observations for which <tt>Proline</tt>
+was greater than 755, the fraction that had <tt>Cultivar == 1</tt> was .8507.  Since there's
+no asterisk after that line, it indicates that <tt>rpart</tt> could do a better job by considering
+other variables.  In particular if <tt>Proline</tt> was &#62;= 755, and <tt>Flavanoids</tt>
+was &#62;= 2.165, the fraction of Cultivar 1 increases to .9666; the asterisk at the end of a line
+indicates that this is a terminal node, and, when classifying an observation if <tt>Proline</tt>
+was &#62;= 755 and <tt>Flavanoids</tt> was &#62;= 2.165, <tt>rpart</tt> would immediately assign it to 
+Cultivar 1 without having to consider any other variables.  The rest of the output can be determined
+in a similar fashion.
+
+<div class="p"><!----></div>
+An alternative way of viewing the output from <tt>rpart</tt> is a tree diagram, available through
+the <tt>plot</tt> function.  In order to identify the parts of the diagram, the <tt>text</tt> function
+also needs to be called.
+
+<pre>
+&#62;&nbsp;plot(wine.rpart)
+&#62;&nbsp;text(wine.rpart,use.n=TRUE,xpd=TRUE)
+
+</pre>
+The <tt>xpd=TRUE</tt> is a graphics parameter that is useful when a plot gets truncated, as sometimes 
+happens with <tt>rpart</tt> plots.  There are other options to <tt>plot</tt> and <tt>text</tt> which
+will change the appearance of the output; you can find out more by looking at the help pages for 
+<tt>plot.rpart</tt> and <tt>text.rpart</tt>.  The graph appears below.
+
+<div class="p"><!----></div>
+<img src="winerpart.png">
+
+<div class="p"><!----></div>
+In order to calculate the error rate for an <tt>rpart</tt> analysis, we once again use the <tt>predict</tt>
+function:
+
+<pre>
+&#62;&nbsp;pred.rpart&nbsp;=&nbsp;predict(wine.rpart,wine)
+
+</pre>
+As usual we can check for names to see how to access the predicted values:
+
+<pre>
+&#62;&nbsp;names(pred.rpart)
+NULL
+
+</pre>
+Since there are no names, we'll examine the object directly:
+
+<pre>
+&#62;&nbsp;head(pred.rpart)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3
+1&nbsp;0.96610169&nbsp;0.03389831&nbsp;0.00000000
+2&nbsp;0.96610169&nbsp;0.03389831&nbsp;0.00000000
+3&nbsp;0.96610169&nbsp;0.03389831&nbsp;0.00000000
+4&nbsp;0.96610169&nbsp;0.03389831&nbsp;0.00000000
+5&nbsp;0.03076923&nbsp;0.93846154&nbsp;0.03076923
+6&nbsp;0.96610169&nbsp;0.03389831&nbsp;0.00000000
+
+</pre>
+All that <tt>predict</tt> returns in this case is a matrix with estimated probabilities 
+for each cultivar 
+for each observation; we'll need to find which one is highest for each observation.  Doing
+it for one row is easy:
+
+<pre>
+&#62;&nbsp;which.max(rped.rpart[1,])
+1&nbsp;
+1&nbsp;
+
+</pre>
+To repeat this for each row, we can pass <tt>which.max</tt> to <tt>apply</tt>, with a 
+second argument of <tt>1</tt> to indicate we want to apply the function to each row:
+
+<pre>
+&#62;&nbsp;table(apply(pred.rpart,1,which.max),wine$Cultivar)
+&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;2&nbsp;&nbsp;3
+&nbsp;&nbsp;1&nbsp;57&nbsp;&nbsp;2&nbsp;&nbsp;0
+&nbsp;&nbsp;2&nbsp;&nbsp;2&nbsp;66&nbsp;&nbsp;4
+&nbsp;&nbsp;3&nbsp;&nbsp;0&nbsp;&nbsp;3&nbsp;44
+
+</pre>
+
+<div class="p"><!----></div>
+To compare this to other methods, we can again use the <tt>row</tt> and <tt>col</tt> 
+functions:
+
+<pre>
+&#62;&nbsp;sum(tt[row(tt)&nbsp;!=&nbsp;col(tt)])&nbsp;/&nbsp;sum(tt)
+[1]&nbsp;0.06179775
+
+</pre>
+
+<div class="p"><!----></div>
+Since <tt>rpart</tt> uses cross validation internally to build its decision rules, we can 
+probably trust the error rates implied by the table. 
+
+<div class="p"><!----></div>
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.85.<br />On  4 Apr 2011, 10:53.</small>
+</html>

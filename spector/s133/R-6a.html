@@ -1,0 +1,433 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> Functions</title>
+ 
+<h1 align="center">Functions </h1>
+
+
+
+ <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;Functions</h2>
+When you create a function, it defines a separate environment and the variables you 
+create inside your function only exist in that function environment; when you return
+to where you called the function from, those variables no longer exist.  
+You can refer to other objects that are in the calling environment, but if you make any
+changes to them, the changes will only take place in the function environment.
+To get information
+back to the calling environment, you must pass a return value, which will be available
+through the functions name.  R will automatically return the last unassigned value it 
+encounters in your function, or 
+you can place the object you want to return in a 
+call to the <tt>return</tt> function.  You can only return a single object from a function
+in R; if you need to return multiple objects, you need to return a list containing those
+objects, and extract them from the list when you return to the calling environment.
+
+<div class="p"><!----></div>
+As a simple example of a function that returns a value, suppose we want to calculate the
+ratio of the maximum value of a vector to the  minimum value of the vector.  Here's a 
+function definition that will do the job:
+
+<pre>
+maxminratio&nbsp;=&nbsp;function(x)max(x)/min(x)
+
+</pre>
+Notice for a single line function you don't need to use brackets (<tt>{}</tt>) around the 
+function body, but you are free to do so if you like.  Since the final statement wasn't
+assigned to a variable, it will be used as a return value when the function is called.
+Alternatively, the value could be placed in a call to the <tt>return</tt> function.
+If we wanted to find the max to min ratio for all the columns of the matrix,
+we could use our function with the <tt>apply</tt> function:
+
+<pre>
+apply(mymat,2,maxminratio)
+
+</pre>
+ The <tt>2</tt> in the call to apply tells it to operate on the 
+columns of the matrix; a <tt>1</tt> would be used to work on the rows.
+
+<div class="p"><!----></div>
+Before we leave this example, it should be pointed out that this function has
+a weakness - what if we pass it a vector that has missing values?  Since we're
+calling <tt>min</tt> and <tt>max</tt> without the <tt>na.rm=TRUE</tt> argument,
+we'll always get a missing value if our input data has any missing values. 
+One way to solve the problem is to just put the <tt>na.rm=TRUE</tt> argument
+into the calls to <tt>min</tt> and <tt>max</tt>.  A better way would be to
+create a new argument with a default value.  That way, we still only have to
+pass one argument to our function, but we can modify the 
+<tt>na.rm=</tt> argument if we need to. 
+
+<pre>
+maxminratio&nbsp;=&nbsp;function(x,na.rm=TRUE)max(x,na.rm=na.rm)/min(x,na.rm=na.rm)
+
+</pre>
+ If you look at the function definitions for functions in
+R, you'll see that many of them use this method of setting defaults in the 
+argument list.  
+
+<div class="p"><!----></div>
+As your functions get longer and more complex, it becomes more difficult to simply type 
+them into an interactive R session.  To make it easy to edit functions, R provides the 
+<tt>edit</tt> command, which will open an editor appropriate to your operating system.
+When you close the editor,
+the <tt>edit</tt> function will return the edited copy of your function, so it's important
+to remember to assign the return value from <tt>edit</tt> to the function's name. 
+If you've already defined a function, you can edit it by simply passing it to 
+<tt>edit</tt>, as in 
+
+<pre>
+minmaxratio&nbsp;=&nbsp;edit(minmaxratio)
+
+</pre>
+ You may also want to consider the <tt>fix</tt> function, which automates
+the process slightly.
+
+<div class="p"><!----></div>
+To start from scratch, you can use a call to <tt>edit</tt> like this:
+
+<pre>
+newfunction&nbsp;=&nbsp;edit(function(){})
+
+</pre>
+
+<div class="p"><!----></div>
+Suppose we want to write a function that will allow us to calculate
+the mean of all the appropriate columns of a data frame, 
+broken down by a grouping variable, and 
+and including the counts for the grouping variables in the output.
+When you're working on developing a function, it's usually
+easier to solve the problem with a sample data set, and then generalize
+it to a function.
+We'll use the <tt>movies</tt> data frame as an example, with both <tt>weekday</tt> 
+and <tt>month</tt> as potential grouping variables.  First, let's go over the
+steps to create the <tt>movies</tt> data frame with both grouping variables:
+
+<pre>
+&#62;&nbsp;movies&nbsp;=&nbsp;read.delim('http://www.stat.berkeley.edu/classes/s133/data/movies.txt',
++&nbsp;sep='|',stringsAsFactors=FALSE)
+&#62;&nbsp;movies$box&nbsp;=&nbsp;as.numeric(sub('\\$','',movies$box))
+&#62;&nbsp;movies$date&nbsp;=&nbsp;as.Date(movies$date,'%B&nbsp;%d,&nbsp;%Y')
+&#62;&nbsp;movies$weekday&nbsp;=&nbsp;weekdays(movies$date)
+&#62;&nbsp;movies$weekday&nbsp;=&nbsp;factor(weekdays(movies$date),
++&nbsp;&nbsp;&nbsp;&nbsp;levels&nbsp;=&nbsp;c('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'))
+&#62;&nbsp;movies$month&nbsp;=&nbsp;months(movies$date)
+&#62;&nbsp;movies$month&nbsp;=&nbsp;factor(months(movies$date),levels=c('January','February','March',
++&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'April','May','June','July','August','September','October','November','December')
+
+</pre>
+ Since I've done a fair amount of processing to this data set, and since I'm going
+to want to use it later for testing my function, I'm going to use the <tt>save</tt> function
+to write a copy of the data frame to a file.  This function writes out R objects in R's
+internal format, just like the workspace is saved at the end of an R session.  You can also
+transfer a file produced by <tt>save</tt> to a different computer, because R uses the same
+format for its saved objects on all operating systems.  Since <tt>save</tt> accepts a variable
+number of arguments, we need to specify the <tt>file=</tt> argument when we call it:
+
+<pre>
+&#62;&nbsp;save(movies,file='movies.rda')
+
+</pre>
+ You can use whatever extension you want, but <tt>.rda</tt> or <tt>.Rdata</tt> are 
+common choices.  
+
+<div class="p"><!----></div>
+It's often useful to breakdown the steps of a problem like this, and solve each one
+before going on to the next.  Here are the steps we'll need to go through to create
+our function.
+
+<div class="p"><!----></div>
+
+<ol type="1">
+<li>Find the appropriate columns of the data frame for the aggregate
+function.
+<div class="p"><!----></div>
+</li>
+
+<li>
+Write the call to the <tt>aggregate</tt> function that will give us the mean
+for each group.
+<div class="p"><!----></div>
+</li>
+
+<li>
+Write the call to the <tt>function</tt> to get the counts and convert it to
+a data frame.
+<div class="p"><!----></div>
+</li>
+
+<li> 
+Merge together the results from <tt>aggregate</tt> and <tt>table</tt> to give
+us our result.
+<div class="p"><!----></div>
+</li>
+</ol>
+
+<div class="p"><!----></div>
+To find the appropriate variables, we can examine the <tt>class</tt> and <tt>mode</tt>
+of each column of our data frame:
+
+<pre>
+&#62;&nbsp;sapply(movies,class)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rank&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;box&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;date&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;weekday&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;month&nbsp;
+&nbsp;&nbsp;"integer"&nbsp;"character"&nbsp;&nbsp;&nbsp;"numeric"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Date"&nbsp;&nbsp;&nbsp;&nbsp;"factor"&nbsp;&nbsp;&nbsp;&nbsp;"factor"&nbsp;
+&#62;&nbsp;sapply(movies,mode)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rank&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;box&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;date&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;weekday&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;month&nbsp;
+&nbsp;&nbsp;"numeric"&nbsp;"character"&nbsp;&nbsp;&nbsp;"numeric"&nbsp;&nbsp;&nbsp;"numeric"&nbsp;&nbsp;&nbsp;"numeric"&nbsp;&nbsp;&nbsp;"numeric"&nbsp;
+
+</pre>
+ For this data frame, the appropriate variables for aggregation would
+be <tt>rank</tt> and <tt>box</tt>, so we have to come up with some logic that
+would select only those columns.  One easy way is to select those columns whose
+class is either <tt>numeric</tt> or <tt>integer</tt>.  We can use the <tt>|</tt>
+operator which represents a logical "or" to create a logical vector that will
+let us select the columns we want.  (There's also the <tt>&amp;</tt> operator which
+is used to test for a logical "and".)
+
+<pre>
+&#62;&nbsp;classes&nbsp;=&nbsp;sapply(movies,class)
+&#62;&nbsp;numcols&nbsp;=&nbsp;classes&nbsp;==&nbsp;'integer'&nbsp;|&nbsp;classes&nbsp;==&nbsp;'numeric'
+
+</pre>
+ While this will certainly work, R provides an operator that makes expressions
+like this easier to write.  The <tt>%in%</tt> operator allows us to test for equality
+to more than one value at a time, without having to do multiple tests.  In this example
+we can use it as follows:
+
+<pre>
+&#62;&nbsp;numcols&nbsp;=&nbsp;sapply(movies,class)&nbsp;%in%&nbsp;c('integer','numeric')
+
+</pre>
+
+<div class="p"><!----></div>
+Now we need to write a call to the <tt>aggregate</tt> function that will find the 
+means for each variable based on a grouping variable.  To develop the appropriate call,
+we'll use <tt>weekday</tt> as a grouping variable:
+
+<pre>
+&#62;&nbsp;result&nbsp;=&nbsp;aggregate(movies[,numcols],movies['weekday'],mean)
+&#62;&nbsp;result
+&nbsp;&nbsp;&nbsp;&nbsp;weekday&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rank&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;box
+1&nbsp;&nbsp;&nbsp;&nbsp;Monday&nbsp;354.5000&nbsp;148.04620
+2&nbsp;&nbsp;&nbsp;Tuesday&nbsp;498.9545&nbsp;110.42391
+3&nbsp;Wednesday&nbsp;427.1863&nbsp;139.38540
+4&nbsp;&nbsp;Thursday&nbsp;493.7692&nbsp;117.89700
+5&nbsp;&nbsp;&nbsp;&nbsp;Friday&nbsp;520.2413&nbsp;112.44878
+6&nbsp;&nbsp;Saturday&nbsp;577.5714&nbsp;&nbsp;91.18714
+7&nbsp;&nbsp;&nbsp;&nbsp;Sunday&nbsp;338.1818&nbsp;140.45618
+
+</pre>
+ Similarly, we need to create a data frame of counts that can be 
+merged with the result of <tt>aggregate</tt>:
+
+<pre>
+&#62;&nbsp;counts&nbsp;=&nbsp;as.data.frame(table(movies['weekday']))
+&#62;&nbsp;counts
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Var1&nbsp;Freq
+1&nbsp;&nbsp;&nbsp;&nbsp;Monday&nbsp;&nbsp;&nbsp;10
+2&nbsp;&nbsp;&nbsp;Tuesday&nbsp;&nbsp;&nbsp;22
+3&nbsp;Wednesday&nbsp;&nbsp;161
+4&nbsp;&nbsp;Thursday&nbsp;&nbsp;&nbsp;39
+5&nbsp;&nbsp;&nbsp;&nbsp;Friday&nbsp;&nbsp;750
+6&nbsp;&nbsp;Saturday&nbsp;&nbsp;&nbsp;&nbsp;7
+7&nbsp;&nbsp;&nbsp;&nbsp;Sunday&nbsp;&nbsp;&nbsp;11
+
+</pre>
+ Unfortunately, this doesn't name the first column appropriately for
+the <tt>merge</tt> function.  The best way to solve this problem is to change the
+name of the first column of the <tt>counts</tt> data frame to the name of the 
+grouping variable.
+Recall that using the <tt>sort=FALSE</tt> argument 
+to <tt>merge</tt> will retain the order of the grouping variable that we specified with
+the <tt>levels=</tt> argument to <tt>factor</tt>
+
+<pre>
+&#62;&nbsp;names(counts)[1]&nbsp;=&nbsp;'weekday'
+&#62;&nbsp;merge(counts,result,sort=FALSE)
+&nbsp;&nbsp;&nbsp;&nbsp;weekday&nbsp;Freq&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rank&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;box
+1&nbsp;&nbsp;&nbsp;&nbsp;Monday&nbsp;&nbsp;&nbsp;10&nbsp;354.5000&nbsp;148.04620
+2&nbsp;&nbsp;&nbsp;Tuesday&nbsp;&nbsp;&nbsp;22&nbsp;498.9545&nbsp;110.42391
+3&nbsp;Wednesday&nbsp;&nbsp;161&nbsp;427.1863&nbsp;139.38540
+4&nbsp;&nbsp;Thursday&nbsp;&nbsp;&nbsp;39&nbsp;493.7692&nbsp;117.89700
+5&nbsp;&nbsp;&nbsp;&nbsp;Friday&nbsp;&nbsp;750&nbsp;520.2413&nbsp;112.44878
+6&nbsp;&nbsp;Saturday&nbsp;&nbsp;&nbsp;&nbsp;7&nbsp;577.5714&nbsp;&nbsp;91.18714
+7&nbsp;&nbsp;&nbsp;&nbsp;Sunday&nbsp;&nbsp;&nbsp;11&nbsp;338.1818&nbsp;140.45618
+
+</pre>
+ This gives us exactly the result we want, with the columns labeled
+appropriately.
+
+<div class="p"><!----></div>
+To convert this to a function, let's put together all the steps we just 
+performed:
+
+<pre>
+&#62;&nbsp;load('movies.rda')
+&#62;&nbsp;numcols&nbsp;=&nbsp;sapply(movies,class)&nbsp;%in%&nbsp;c('integer','numeric')
+&#62;&nbsp;result&nbsp;=&nbsp;aggregate(movies[,numcols],movies['weekday'],mean)
+&#62;&nbsp;counts&nbsp;=&nbsp;as.data.frame(table(movies['weekday']))
+&#62;&nbsp;names(counts)[1]&nbsp;=&nbsp;'weekday'
+&#62;&nbsp;merge(counts,result,sort=FALSE)
+&nbsp;&nbsp;&nbsp;&nbsp;weekday&nbsp;Freq&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rank&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;box
+1&nbsp;&nbsp;&nbsp;&nbsp;Monday&nbsp;&nbsp;&nbsp;10&nbsp;354.5000&nbsp;148.04620
+2&nbsp;&nbsp;&nbsp;Tuesday&nbsp;&nbsp;&nbsp;22&nbsp;498.9545&nbsp;110.42391
+3&nbsp;Wednesday&nbsp;&nbsp;161&nbsp;427.1863&nbsp;139.38540
+4&nbsp;&nbsp;Thursday&nbsp;&nbsp;&nbsp;39&nbsp;493.7692&nbsp;117.89700
+5&nbsp;&nbsp;&nbsp;&nbsp;Friday&nbsp;&nbsp;750&nbsp;520.2413&nbsp;112.44878
+6&nbsp;&nbsp;Saturday&nbsp;&nbsp;&nbsp;&nbsp;7&nbsp;577.5714&nbsp;&nbsp;91.18714
+7&nbsp;&nbsp;&nbsp;&nbsp;Sunday&nbsp;&nbsp;&nbsp;11&nbsp;338.1818&nbsp;140.45618
+
+</pre>
+ To convert these steps into a function that we could 
+use with any data frame, we need to identify the parts of these
+statements that would change with different data.  In this case,
+there are two variables that we'd have to change: <tt>movies</tt>
+which represents the data frame we're using, and <tt>'weekday'</tt>
+which represents the grouping variable we're using.  Here's a
+function that will perform these operations for any combination
+of data frame and grouping variable.  (I'll change <tt>movies</tt>
+to <tt>df</tt> and <tt>'weekday'</tt> to <tt>grp</tt> to make the
+names more general, and name the function <tt>aggall</tt>:
+
+<pre>
+&#62;&nbsp;aggall&nbsp;=&nbsp;function(df,grp){
++&nbsp;&nbsp;&nbsp;&nbsp;numcols&nbsp;=&nbsp;sapply(df,class)&nbsp;%in%&nbsp;c('integer','numeric')
++&nbsp;&nbsp;&nbsp;&nbsp;result&nbsp;=&nbsp;aggregate(df[,numcols],df[grp],mean)
++&nbsp;&nbsp;&nbsp;&nbsp;counts&nbsp;=&nbsp;as.data.frame(table(df[grp]))
++&nbsp;&nbsp;&nbsp;&nbsp;names(counts)[1]&nbsp;=&nbsp;grp
++&nbsp;&nbsp;&nbsp;&nbsp;merge(counts,result,sort=FALSE)
++&nbsp;}
+
+</pre>
+ I'm taking advantage of the fact the R functions will return
+the result of the last statement in the function that's not assigned
+to a variable, which in this case is the result of the <tt>merge</tt>
+function.  Alternatively, I could assign the result of the merge function
+to a variable and use the <tt>return</tt> function 
+to pass back the result.  At this point it would be a good idea to 
+copy our function into a text file so that we can re-enter it into our
+R session whenever we need it.  You could copy the definition from the 
+console, and remove the <tt>&gt;</tt> prompts, or you could use the
+<tt>history</tt> command to cut and paste the function without the 
+prompts.  (Other ways of saving the text of the function include the 
+<tt>dput</tt> and <tt>dump</tt> functions, or simply making sure you save
+the workspace before quitting R.)  I'll call the text file that I
+paste the definition into <tt>aggall.r</tt>.
+
+<div class="p"><!----></div>
+Now that we have the function written, we need to test it.  
+It's often a good idea to test your functions in a "fresh" R session.
+We can get the <tt>movies</tt> data frame back into our workspace by
+using the <tt>load</tt> command, passing it the name of the file that
+we created earlier with the <tt>save</tt> command, and we can use
+the <tt>source</tt> function to read back the definition of the 
+<tt>aggall</tt> function:
+
+<pre>
+&#62;&nbsp;rm(list=objects())&nbsp;&nbsp;#&nbsp;removes&nbsp;everything&nbsp;from&nbsp;your&nbsp;workspace&nbsp;!!
+&#62;&nbsp;source('aggall.r')
+&#62;&nbsp;load('movies.rda')
+
+</pre>
+
+<div class="p"><!----></div>
+The first 
+test would be to use the <tt>movies</tt> data frame, but with a different
+grouping variable:
+
+<pre>
+&#62;&nbsp;aggall(movies,'month')
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;month&nbsp;Freq&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rank&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;box
+1&nbsp;&nbsp;&nbsp;&nbsp;January&nbsp;&nbsp;&nbsp;40&nbsp;605.0750&nbsp;&nbsp;92.41378
+2&nbsp;&nbsp;&nbsp;February&nbsp;&nbsp;&nbsp;55&nbsp;621.5818&nbsp;&nbsp;90.98182
+3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;March&nbsp;&nbsp;&nbsp;63&nbsp;516.1111&nbsp;107.73638
+4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;April&nbsp;&nbsp;&nbsp;47&nbsp;712.9362&nbsp;&nbsp;77.45891
+5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;May&nbsp;&nbsp;&nbsp;95&nbsp;338.7474&nbsp;168.77575
+6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;June&nbsp;&nbsp;157&nbsp;449.3885&nbsp;125.98888
+7&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;July&nbsp;&nbsp;121&nbsp;454.4298&nbsp;129.67063
+8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;August&nbsp;&nbsp;&nbsp;74&nbsp;562.4865&nbsp;100.53996
+9&nbsp;&nbsp;September&nbsp;&nbsp;&nbsp;31&nbsp;553.2581&nbsp;&nbsp;99.29284
+10&nbsp;&nbsp;&nbsp;October&nbsp;&nbsp;&nbsp;54&nbsp;623.6667&nbsp;&nbsp;86.12557
+11&nbsp;&nbsp;November&nbsp;&nbsp;111&nbsp;441.3423&nbsp;124.22192
+12&nbsp;&nbsp;December&nbsp;&nbsp;158&nbsp;507.9051&nbsp;117.10242
+
+</pre>
+ It seems to work well. 
+
+<div class="p"><!----></div>
+But the real test is to use the function on a different data frame,
+like the <tt>world1</tt> data frame.  Let's recreate it:
+
+<pre>
+&#62;&nbsp;world&nbsp;=&nbsp;read.csv('http://www.stat.berkeley.edu/classes/s133/data/world.txt',header=TRUE)
+&#62;&nbsp;conts&nbsp;=&nbsp;read.csv('http://www.stat.berkeley.edu/classes/s133/data/conts.txt',na.string='.')
+&#62;&nbsp;world1&nbsp;=&nbsp;merge(world,conts)
+&#62;&nbsp;aggall(world1,'cont')
+&nbsp;&nbsp;cont&nbsp;Freq&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gdp&nbsp;&nbsp;&nbsp;&nbsp;income&nbsp;literacy&nbsp;&nbsp;&nbsp;&nbsp;military
+1&nbsp;&nbsp;&nbsp;AF&nbsp;&nbsp;&nbsp;47&nbsp;&nbsp;2723.404&nbsp;&nbsp;3901.191&nbsp;60.52979&nbsp;&nbsp;&nbsp;356440000
+2&nbsp;&nbsp;&nbsp;AS&nbsp;&nbsp;&nbsp;41&nbsp;&nbsp;7778.049&nbsp;&nbsp;8868.098&nbsp;84.25122&nbsp;&nbsp;5006536341
+3&nbsp;&nbsp;&nbsp;EU&nbsp;&nbsp;&nbsp;34&nbsp;19711.765&nbsp;21314.324&nbsp;98.40294&nbsp;&nbsp;6311138235
+4&nbsp;&nbsp;&nbsp;NA&nbsp;&nbsp;&nbsp;15&nbsp;&nbsp;8946.667&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NA&nbsp;85.52000&nbsp;25919931267
+5&nbsp;&nbsp;&nbsp;OC&nbsp;&nbsp;&nbsp;&nbsp;4&nbsp;14625.000&nbsp;15547.500&nbsp;87.50000&nbsp;&nbsp;4462475000
+6&nbsp;&nbsp;&nbsp;SA&nbsp;&nbsp;&nbsp;12&nbsp;&nbsp;6283.333&nbsp;&nbsp;6673.083&nbsp;92.29167&nbsp;&nbsp;2137341667
+
+</pre>
+ We're close, but notice that there's an <tt>NA</tt> for
+income for one of the continents.  Since the <tt>movies</tt>
+data frame didn't have any missing values, we overlooked that detail.
+The most important thing about writing functions is to remember that
+you can always modify them using either the <tt>edit</tt> or <tt>fix</tt>
+function.  For example, if I type
+
+<pre>
+&#62;&nbsp;aggall&nbsp;=&nbsp;edit(aggall)
+
+</pre>
+ I'll see the body of the <tt>aggall</tt> function in a text
+editor where I can modify it.  In this case, I simply need to add the
+<tt>na.rm=TRUE</tt> argument to my call to <tt>aggregate</tt>, resulting
+in this new version of the function:
+
+<pre>
+function(df,grp){
+&nbsp;&nbsp;&nbsp;numcols&nbsp;=&nbsp;sapply(df,class)&nbsp;%in%&nbsp;c('integer','numeric')
+&nbsp;&nbsp;&nbsp;result&nbsp;=&nbsp;aggregate(df[,numcols],df[grp],mean,na.rm=TRUE)
+&nbsp;&nbsp;&nbsp;counts&nbsp;=&nbsp;as.data.frame(table(df[grp]))
+&nbsp;&nbsp;&nbsp;names(counts)[1]&nbsp;=&nbsp;grp
+&nbsp;&nbsp;&nbsp;merge(counts,result,sort=FALSE)
+}
+
+</pre>
+ Testing it again on the <tt>world1</tt> data frame shows that
+we have solved the problem:
+
+<pre>
+&#62;&nbsp;aggall(world1,'cont')
+&nbsp;&nbsp;cont&nbsp;Freq&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gdp&nbsp;&nbsp;&nbsp;&nbsp;income&nbsp;literacy&nbsp;&nbsp;&nbsp;&nbsp;military
+1&nbsp;&nbsp;&nbsp;AF&nbsp;&nbsp;&nbsp;47&nbsp;&nbsp;2723.404&nbsp;&nbsp;3901.191&nbsp;60.52979&nbsp;&nbsp;&nbsp;356440000
+2&nbsp;&nbsp;&nbsp;AS&nbsp;&nbsp;&nbsp;41&nbsp;&nbsp;7778.049&nbsp;&nbsp;8868.098&nbsp;84.25122&nbsp;&nbsp;5006536341
+3&nbsp;&nbsp;&nbsp;EU&nbsp;&nbsp;&nbsp;34&nbsp;19711.765&nbsp;21314.324&nbsp;98.40294&nbsp;&nbsp;6311138235
+4&nbsp;&nbsp;&nbsp;NA&nbsp;&nbsp;&nbsp;15&nbsp;&nbsp;8946.667&nbsp;10379.143&nbsp;85.52000&nbsp;25919931267
+5&nbsp;&nbsp;&nbsp;OC&nbsp;&nbsp;&nbsp;&nbsp;4&nbsp;14625.000&nbsp;15547.500&nbsp;87.50000&nbsp;&nbsp;4462475000
+6&nbsp;&nbsp;&nbsp;SA&nbsp;&nbsp;&nbsp;12&nbsp;&nbsp;6283.333&nbsp;&nbsp;6673.083&nbsp;92.29167&nbsp;&nbsp;2137341667
+
+</pre>
+
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On  4 Feb 2011, 17:45.</small>
+</html>

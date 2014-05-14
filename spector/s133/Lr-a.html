@@ -1,0 +1,753 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> Linear Regression</title>
+ 
+<h1 align="center">Linear Regression </h1>
+
+
+
+ <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;Linear Regression</h2>
+Linear regression is a very popular procedure for modeling the value of one 
+variable on the value(s) of one or more other variables.  The variable that
+we're trying to model or predict is known as the dependent variable, and the 
+variables that we use to make predictions are known as independent variables, 
+or covariates.  Linear regression makes the assumption that the changes in the
+dependent variable can be modeled as a monotonic linear function of the 
+independent variables; that is, we assume that a change of a certain amount
+in the independent variables will result in a change in the dependent variable, 
+and the amount of change in the dependent variable is constant across the range
+of the independent variables.  As a simple example, suppose we're interested in
+the relationship between the horsepower of a car (the independent variable) and 
+the miles per gallon of gas (MPG) of the car.  When we fit a linear regression 
+model, we're saying that a change of one horsepower will have the same effect on
+the MPG regardless of the value of horsepower that we're changing.  In other words,
+a linear regression model would assume that if we had a car with 100 horsepower,
+and compared it to a car with 101 horsepower, we'd see the same difference in
+MPG as if we had a car with 300 horsepower and compared it to a car with 301
+horsepower.  Relationships like this often hold for a limited range of independent
+variable values, but the linear regression model assumes that it applies for the
+entire range of the independent variables.  
+
+<div class="p"><!----></div>
+Even with these limitations, linear regression has proven itself to be a very
+valuable tool for modeling, and it's widely used in many branches of research.
+There are also a variety of diagnostic measures, both numerical and graphical,
+that can help us to determine whether the regression is doing a good job, so 
+it's not unreasonable that many people use linear regression as their first 
+tool when trying to model a variable of interest.
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc2">
+2</a>&nbsp;&nbsp;The <tt>lm</tt> command</h2>
+The <tt>lm</tt> command uses the model-based formula interface that we've already
+seen in the context of lattice graphics.  The dependent variable is placed on the 
+left-hand side of the tilde (<tt>~</tt>), and the independent variables are placed on
+the right-hand side, joined together with plus signs (<tt>+</tt>).   When you want 
+to use all the variables in a data frame (except for the dependent variable) as 
+independent variables, you can use a period (<tt>.</tt>) for the right-hand side of
+the equation.
+
+<div class="p"><!----></div>
+These models correspond to a mathematical model that looks like this:
+
+<br clear="all" /><table border="0" width="100%"><tr><td>
+<table align="center" cellspacing="0"  cellpadding="2"><tr><td nowrap="nowrap" align="center">
+y<sub>i</sub> = <font face="symbol">b</font
+><sub>0</sub> + <font face="symbol">b</font
+><sub>1</sub> x<sub>1</sub> + <font face="symbol">b</font
+><sub>2</sub> x<sub>2</sub> + <sup>...</sup> + <font face="symbol">b</font
+><sub>p</sub> x<sub>p</sub> + e<sub>i</sub>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="roman">for</span> i=1,...,n</td></tr></table>
+</td><td width="1%">(1)</td></tr></table>
+
+
+The <font face="symbol">b</font
+>s represent coefficients that measure how much the dependent variable
+changes for each unit of change in the independent variable, and are often refered
+to as the slopes.  The term <font face="symbol">b</font
+><sub>0</sub> is often known as the intercept.   (To omit
+the intercept in a formula in R, insert the term <tt>-1</tt>.)  The e's represent
+the part of the observed dependent variable that can't be explained by the regression
+model, and in order to do hypothesis testing, we assume that these errors follow
+a normal distribution.  For each term in the model, we test the hypothesis that the 
+<font face="symbol">b</font
+> corresponding to that term is equal to 0, against the alternative that 
+the <font face="symbol">b</font
+> is different from 0.
+
+<div class="p"><!----></div>
+To illustrate the use of the <tt>lm</tt> command, we'll construct a regression model
+to predict the level of <tt>Alcohol</tt> in the <tt>wine</tt> data set, using several
+of the other variables as independent variables.  First, we'll run <tt>lm</tt> to 
+create an <tt>lm</tt> object containing all the information about the regression:
+
+<pre>
+&#62;&nbsp;wine.lm&nbsp;=&nbsp;lm(Alcohol~Malic.acid+Alkalinity.ash+Proanthocyanins+Color.intensity+OD.Ratio+Proline,data=wine[-1])
+
+</pre>
+To see a very brief overview of the results, we can simply view the <tt>lm</tt> object:
+
+<pre>
+&#62;&nbsp;wine.lm
+
+Call:
+lm(formula&nbsp;=&nbsp;Alcohol&nbsp;~&nbsp;Malic.acid&nbsp;+&nbsp;Alkalinity.ash&nbsp;+&nbsp;Proanthocyanins&nbsp;+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Color.intensity&nbsp;+&nbsp;OD.Ratio&nbsp;+&nbsp;Proline,&nbsp;data&nbsp;=&nbsp;wine[-1])
+
+Coefficients:
+&nbsp;&nbsp;&nbsp;&nbsp;(Intercept)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Malic.acid&nbsp;&nbsp;&nbsp;Alkalinity.ash&nbsp;&nbsp;Proanthocyanins
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;11.333283&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.114313&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-0.032440&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-0.129636
+Color.intensity&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OD.Ratio&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Proline
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.158520&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.225453&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.001136
+
+</pre>
+
+<div class="p"><!----></div>
+To get more information about the model, the <tt>summary</tt> function can be called:
+
+<pre>
+&#62;&nbsp;summary(wine.lm)
+
+Call:
+lm(formula&nbsp;=&nbsp;Alcohol&nbsp;~&nbsp;Malic.acid&nbsp;+&nbsp;Alkalinity.ash&nbsp;+&nbsp;Proanthocyanins&nbsp;+
+&nbsp;&nbsp;&nbsp;&nbsp;Color.intensity&nbsp;+&nbsp;OD.Ratio&nbsp;+&nbsp;Proline,&nbsp;data&nbsp;=&nbsp;wine[-1])
+
+Residuals:
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Min&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1Q&nbsp;&nbsp;&nbsp;&nbsp;Median&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3Q&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Max
+-1.502326&nbsp;-0.342254&nbsp;&nbsp;0.001165&nbsp;&nbsp;0.330049&nbsp;&nbsp;1.693639
+
+Coefficients:
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Estimate&nbsp;Std.&nbsp;Error&nbsp;t&nbsp;value&nbsp;Pr(&#62;|t|)
+(Intercept)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;11.3332831&nbsp;&nbsp;0.3943623&nbsp;&nbsp;28.738&nbsp;&nbsp;&lt;&nbsp;2e-16&nbsp;***
+Malic.acid&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.1143127&nbsp;&nbsp;0.0397878&nbsp;&nbsp;&nbsp;2.873&nbsp;&nbsp;0.00458&nbsp;**
+Alkalinity.ash&nbsp;&nbsp;-0.0324405&nbsp;&nbsp;0.0137533&nbsp;&nbsp;-2.359&nbsp;&nbsp;0.01947&nbsp;*
+Proanthocyanins&nbsp;-0.1296362&nbsp;&nbsp;0.0846088&nbsp;&nbsp;-1.532&nbsp;&nbsp;0.12732
+Color.intensity&nbsp;&nbsp;0.1585201&nbsp;&nbsp;0.0231627&nbsp;&nbsp;&nbsp;6.844&nbsp;1.32e-10&nbsp;***
+OD.Ratio&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.2254528&nbsp;&nbsp;0.0834109&nbsp;&nbsp;&nbsp;2.703&nbsp;&nbsp;0.00757&nbsp;**
+Proline&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.0011358&nbsp;&nbsp;0.0001708&nbsp;&nbsp;&nbsp;6.651&nbsp;3.76e-10&nbsp;***
+---
+Signif.&nbsp;codes:&nbsp;&nbsp;0&nbsp;'***'&nbsp;0.001&nbsp;'**'&nbsp;0.01&nbsp;'*'&nbsp;0.05&nbsp;'.'&nbsp;0.1&nbsp;'&nbsp;'&nbsp;1
+
+Residual&nbsp;standard&nbsp;error:&nbsp;0.5295&nbsp;on&nbsp;171&nbsp;degrees&nbsp;of&nbsp;freedom
+Multiple&nbsp;R-Squared:&nbsp;0.5889,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Adjusted&nbsp;R-squared:&nbsp;0.5745
+F-statistic:&nbsp;40.83&nbsp;on&nbsp;6&nbsp;and&nbsp;171&nbsp;DF,&nbsp;&nbsp;p-value:&nbsp;&lt;&nbsp;2.2e-16
+
+</pre>
+The probability levels in the last column of the bottom table are for testing
+the null hypotheses that the slopes for those variables are equal to 0; that is, 
+we're testing the null hypothesis that changes in the independent variable will 
+not result in a linear change in the dependent variable.  We can see that most 
+of the variables in the model do seem to have an effect on the dependent variable.
+
+<div class="p"><!----></div>
+One useful measure of the efficacy of a regression model is the multiple 
+R-Squared statistic.  This essentially measures the squared correlation of 
+the dependent variable values with the values that the model would predict.  
+The usual interpretation of this statistic is that it measures the fraction of 
+variability in the data that is explained by the model, so values approaching 1
+mean that the model is very effective.  Since adding more variables to a model
+will always inflate the R-Squared value, many people prefer
+using the adjusted R-Squared value, 
+which has been adjusted to account for the number of variables included in the model.
+
+<div class="p"><!----></div>
+When you pass a model object to the <tt>plot</tt> function, it will display one or
+more plots that the author of the model fitting function felt were appropriate for
+studying the effectiveness of the model.  For the <tt>lm</tt> object, four plots are
+created by default:
+
+<ol type="1">
+<li>A plot of residuals versus fitted (predicted) values - The residuals are the part 
+of the dependent variable that the model couldn't explain, and they are our best 
+available estimate of the error term from the regression model.  They're calculated by
+subtracting the predicted value from the actual value of the dependent variable.
+Under the usual assumptions for the linear regression model, we don't expect the 
+variability of the residuals to change over the range of the dependent variable, so
+there shouldn't be any discernable pattern to this plot.  Note that outliers in the 
+plot will be labeled by their observation number making it easy to track them down.
+<div class="p"><!----></div>
+</li>
+
+<li>
+A normal quantile-quantile plot of the standardized residuals - For the probabilities
+we saw in the summary table to be accurate, we have assumed that the errors of the 
+model follow a normal distribution.  Thus, we'd expect a normal quantile-quantile plot
+of the residuals to follow a straight line.  Deviations from a straight line could mean
+that the errors don't follow a normal distribution.
+<div class="p"><!----></div>
+</li>
+
+<li>
+A scale-location plot - This plot is similar to the residuals versus fitted values 
+plot, but it uses the square root of the standardized residuals.  Like the first plot,
+there should be no discernable pattern to the plot.
+<div class="p"><!----></div>
+</li>
+
+<li>
+A Cook's distance plot - Cook's distance is a statistic that tries to identify points
+which have more influence than other points.  Generally these are points that are
+distant from other points in the data, either for the dependent variable or one or more
+independent variables.  Each observation is represented as a line whose height is
+indicative of the value of Cook's distance for that observation. There are no hard and fast 
+rules for interpreting Cook's distance, but large values (which will be labeled with
+their observation numbers) represent points which might require further investigation.
+<div class="p"><!----></div>
+</li>
+</ol>
+
+<div class="p"><!----></div>
+Here are the four plots for the <tt>wine.lm</tt> object:
+
+<div class="p"><!----></div>
+<img src="winelmplots.png">
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc3">
+3</a>&nbsp;&nbsp;Using the model object</h2>
+The design of the R modeling functions makes it very easy to do common tasks, regardless
+of the method that was used to model the data.  We'll use <tt>lm</tt> as an example, but
+most of these techniques will work for other modeling functions in R.  
+We've already seen that the <tt>plot</tt> function will produce useful plots after a 
+model is fit.
+Here are some
+of the other functions that are available to work with modeling objects.  In each
+case, the modeling object is passed to the function as its first argument.
+
+<ol type="1">
+<li>Coefficients - The <tt>coef</tt> function will return a vector containing the coefficients
+that the model estimated, in this case, the intercept and the slopes for each of the 
+variables:
+
+<pre>
+&#62;&nbsp;coef(wine.lm)
+&nbsp;&nbsp;&nbsp;&nbsp;(Intercept)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Malic.acid&nbsp;&nbsp;Alkalinity.ash&nbsp;Proanthocyanins&nbsp;Color.intensity
+&nbsp;&nbsp;&nbsp;11.333283116&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.114312670&nbsp;&nbsp;&nbsp;&nbsp;-0.032440473&nbsp;&nbsp;&nbsp;&nbsp;-0.129636226&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.158520051
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OD.Ratio&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Proline
+&nbsp;&nbsp;&nbsp;&nbsp;0.225452840&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.001135776
+
+</pre>
+<div class="p"><!----></div>
+</li>
+
+<li>
+Predicted Values - The <tt>predict</tt> function, called with no additional arguments, 
+will return
+a vector of predicted values for the observations that were used in the modeling process.
+To get predicted values for observations not used in building the model, a data frame
+containing the values of the observations can be passed to <tt>predict</tt> through the
+<tt>newdata=</tt> argument.  The variables in the data frame passed to <tt>predict</tt>
+must have the same names as the variables used to build the model.  For example, to 
+get a predicted value of <tt>Alcohol</tt> for a mythical wine, we could use a statement
+like this:
+
+<pre>
+&#62;&nbsp;predict(wine.lm,newdata=data.frame(Malic.acid=2.3,Alkalinity.ash=19,
++&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Proanthocyanins=1.6,Color.intensity=5.1,OD.Ratio=2,6,Proline=746.9))
+[1]&nbsp;12.88008
+
+</pre>
+<div class="p"><!----></div>
+</li>
+
+<li>
+Residuals - The <tt>residuals</tt> function will return a vector of the residuals from
+a model.
+<div class="p"><!----></div>
+</li>
+</ol>
+In addition, the <tt>summary</tt> function, which is usually used to display a printed
+summary of a model, often contains useful information.  We can see what it contains
+by using the <tt>names</tt> function:
+
+<pre>
+&#62;&nbsp;names(summary(wine.lm))
+&nbsp;[1]&nbsp;"call"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"terms"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"residuals"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"coefficients"
+&nbsp;[5]&nbsp;"aliased"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"sigma"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"df"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"r.squared"
+&nbsp;[9]&nbsp;"adj.r.squared"&nbsp;"fstatistic"&nbsp;&nbsp;&nbsp;&nbsp;"cov.unscaled"
+
+</pre>
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc4">
+4</a>&nbsp;&nbsp;Regression Diagnostics</h2>
+Two statistics which have proven to be useful in identifying influential observations
+are Cook's distance and a statistic known as the hat statistic.  Cook's distance
+is calculated for each observation by comparing the results of the regression with 
+that observation included to the results when that particular observation is removed.
+Thus, it can find observations which are outliers with regard to both the dependent
+variables and the independent variables.  In R, the <tt>cooks.distance</tt> function
+calculates the statistics given an <tt>lm</tt> model object.  The hat statistic is based 
+entirely on the 
+independent variables of the model, so it focuses on observations which are distant
+from the others with regard to the independent variables in the model.  
+In R, the <tt>lm.influence</tt> function will return a list, including a component 
+named <tt>hat</tt>, which contains the hat statistic.
+For simple
+regressions, with just one independent variable, influential observations are usually
+at the far reaches of the range of either the dependent or independent variables. 
+For example, for the <tt>wine.lm</tt> model, <tt>Proline</tt>  was one of the 
+independent variables which seemed effective in predicting alcohol.  Let's 
+perform a simple regression using this variable, and then plot the results, highlighting
+those points that had unusually high Cook's distances or hat statistic values:
+
+<pre>
+&#62;&nbsp;simple.lm&nbsp;=&nbsp;lm(Alcohol~Proline,data=wine)
+&#62;&nbsp;cooks&nbsp;=&nbsp;cooks.distance(simple.lm)
+&#62;&nbsp;hat&nbsp;=&nbsp;&nbsp;lm.influence(simple.lm)$hat
+&#62;&nbsp;par(mfrow=c(2,1))
+&#62;&nbsp;plot(wine$Proline,wine$Alcohol,col=ifelse(cooks&nbsp;&#62;&nbsp;quantile(cooks,.90),'red','black'))
+&#62;&nbsp;plot(wine$Proline,wine$Alcohol,col=ifelse(hat&nbsp;&#62;&nbsp;quantile(hat,.90),'blue','black'))
+
+</pre>
+The plots are displayed below:
+
+<div class="p"><!----></div>
+<img src="infl.png">
+
+<div class="p"><!----></div>
+In the top graph, the points displayed in red represent the observations with large 
+Cook's distances; in the bottom graph, the blue points are those with high hat
+statistic values.  Of course, with more variables in the model, things are not so 
+simple.  Let's look at a plot of predicted values versus actual values for the full 
+regression model for this data, using the same coloring conventions:
+
+<pre>
+&#62;&nbsp;cooks&nbsp;=&nbsp;cooks.distance(wine.lm)
+&#62;&nbsp;hat&nbsp;=&nbsp;lm.influence(wine.lm)$hat
+&#62;&nbsp;par(mfrow=c(2,1))
+&#62;&nbsp;plot(wine$Alcohol,predict(wine.lm),col=ifelse(cooks&nbsp;&#62;&nbsp;quantile(cooks,.9),'red','black'))
+&#62;&nbsp;plot(wine$Alcohol,predict(wine.lm),col=ifelse(hat&nbsp;&#62;&nbsp;quantile(hat,.9),'blue','black'))
+
+</pre>
+Here are the plots:
+
+<div class="p"><!----></div>
+<img src="infl1.png">
+
+<div class="p"><!----></div>
+The extreme Cook's distance points seem to congregate at the outer edges of the 
+predicted values, but the extreme hat statistics points don't follow a simple 
+pattern.  In practice, many statisticians use the rule of thumb that Cook's distances
+bigger than the 10th percentile of an F distribution with p and n-p degrees of freedom
+represent potential problems, where n is the number of observations, and p is the number
+of parameters estimated.  For the wine data, that cutoff point can be calculated as
+follows:
+
+<pre>
+&#62;&nbsp;qf(.1,7,178-7)
+[1]&nbsp;0.4022056
+
+</pre>
+In fact, for this data set none of the Cook's distances are greater than this value.
+
+<div class="p"><!----></div>
+For the hat statistic, a cutoff of 2 * p/n has been proposed; for the wine data
+this corresponds to a value of 0.079.  With the wine example, there are ten such
+points.  Plotting each independent variable against the dependent variable, and 
+highlighting the extreme points in orange helps to show where these points are:
+
+<pre>
+&#62;&nbsp;&nbsp;par(mfrow=c(3,2))
+&#62;&nbsp;sapply(names(coef(wine.lm)[-1]),
++&nbsp;&nbsp;&nbsp;&nbsp;function(x)plot(wine[[x]],wine$Alcohol,
++&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;col=ifelse(hat&nbsp;&#62;.0786&nbsp;,'orange','black'),xlab=x))
+
+</pre>
+Here are the plots:
+
+<div class="p"><!----></div>
+<img src="winehat.png">
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc5">
+5</a>&nbsp;&nbsp;Collinearity</h2>
+Another problem which might occur when using linear regression is known
+as collinearity.  This problem occurs when the independent variables are
+so highly correlated that they contain redundant information, which confuses
+the regression process.   When data is collinear, the standard errors of
+the parameter estimates get very large, and removing one or two variables
+may make the coefficients change dramatically.   In addition, collinearity
+can mask important relationships in the data. The classic data set to
+illustrate collinearity is known as the Longley data set, available in 
+R under the name <tt>longley</tt>.  This data set contains a variety of 
+measurements about the population of the US in an attempt to predict 
+employment.  Let's take a look at the result of regressing <tt>Employed</tt>
+against the other variables in the Longley data set:
+
+<pre>
+&#62;&nbsp;lreg&nbsp;=&nbsp;lm(Employed&nbsp;~&nbsp;.,data=longley)
+&#62;&nbsp;summary(lreg)
+
+Call:
+lm(formula&nbsp;=&nbsp;Employed&nbsp;~&nbsp;.,&nbsp;data&nbsp;=&nbsp;longley)
+
+Residuals:
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Min&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1Q&nbsp;&nbsp;&nbsp;Median&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3Q&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Max&nbsp;
+-0.41011&nbsp;-0.15767&nbsp;-0.02816&nbsp;&nbsp;0.10155&nbsp;&nbsp;0.45539&nbsp;
+
+Coefficients:
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Estimate&nbsp;Std.&nbsp;Error&nbsp;t&nbsp;value&nbsp;Pr(&#62;|t|)&nbsp;&nbsp;&nbsp;&nbsp;
+(Intercept)&nbsp;&nbsp;-3.482e+03&nbsp;&nbsp;8.904e+02&nbsp;&nbsp;-3.911&nbsp;0.003560&nbsp;**&nbsp;
+GNP.deflator&nbsp;&nbsp;1.506e-02&nbsp;&nbsp;8.492e-02&nbsp;&nbsp;&nbsp;0.177&nbsp;0.863141&nbsp;&nbsp;&nbsp;&nbsp;
+GNP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-3.582e-02&nbsp;&nbsp;3.349e-02&nbsp;&nbsp;-1.070&nbsp;0.312681&nbsp;&nbsp;&nbsp;&nbsp;
+Unemployed&nbsp;&nbsp;&nbsp;-2.020e-02&nbsp;&nbsp;4.884e-03&nbsp;&nbsp;-4.136&nbsp;0.002535&nbsp;**&nbsp;
+Armed.Forces&nbsp;-1.033e-02&nbsp;&nbsp;2.143e-03&nbsp;&nbsp;-4.822&nbsp;0.000944&nbsp;***
+Population&nbsp;&nbsp;&nbsp;-5.110e-02&nbsp;&nbsp;2.261e-01&nbsp;&nbsp;-0.226&nbsp;0.826212&nbsp;&nbsp;&nbsp;&nbsp;
+Year&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.829e+00&nbsp;&nbsp;4.555e-01&nbsp;&nbsp;&nbsp;4.016&nbsp;0.003037&nbsp;**&nbsp;
+---
+Signif.&nbsp;codes:&nbsp;&nbsp;0&nbsp;'***'&nbsp;0.001&nbsp;'**'&nbsp;0.01&nbsp;'*'&nbsp;0.05&nbsp;'.'&nbsp;0.1&nbsp;'&nbsp;'&nbsp;1
+
+
+Residual&nbsp;standard&nbsp;error:&nbsp;0.3049&nbsp;on&nbsp;9&nbsp;degrees&nbsp;of&nbsp;freedom
+Multiple&nbsp;R-squared:&nbsp;0.9955,	Adjusted&nbsp;R-squared:&nbsp;0.9925&nbsp;
+F-statistic:&nbsp;330.3&nbsp;on&nbsp;6&nbsp;and&nbsp;9&nbsp;DF,&nbsp;&nbsp;p-value:&nbsp;4.984e-10&nbsp;
+
+</pre>
+
+<div class="p"><!----></div>
+On the surface, nothing seems wrong - in fact, with an 
+adjusted R-squared of .9925, it seems great.  We can see the 
+problem with the data by looking at the pairwise scatterplots,
+using the <tt>pairs</tt> function:
+
+<pre>
+&#62;&nbsp;pairs(longley)
+
+</pre>
+Here's the plot:
+
+<div class="p"><!----></div>
+<img src="lpairs.png">
+
+<div class="p"><!----></div>
+Many of the variables seem to be correlated with each other, so it's
+difficult to see which is causing the problem.  A statistic known as
+VIF (Variance Inflation Factor) can be very useful in situations like
+this.  In R, the <tt>vif</tt> function in the <tt>car</tt> package will
+provide this statistic.    Before using <tt>vif</tt> on the Longley
+data, let's look at the wine data we used previously:
+
+<pre>
+&#62;&nbsp;wine.lm&nbsp;=&nbsp;lm(Alcohol~.,data=subset(wine,select=-Cultivar))
+&#62;&nbsp;library(car)
+&#62;&nbsp;vif(wine.lm)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Malic.acid&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ash&nbsp;&nbsp;Alkalinity.ash&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Magnesium&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Phenols&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.575916&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.180108&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.179282&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.417855&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4.330552&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Flavanoids&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NF.phenols&nbsp;Proanthocyanins&nbsp;Color.intensity&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Hue&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7.029040&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.793883&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.947243&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.493007&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.542273&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OD.Ratio&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Proline&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.736818&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.441810&nbsp;
+
+</pre>
+ None of the inflation factors is bigger than 10, which indicates 
+collinearity is not a problem with the data set, confirmed by looking at the 
+pairs plot for the wine data set:
+<img src="winep.png">
+
+<div class="p"><!----></div>
+There does seem to be a linear relationship between Flavanoids and Phenols - 
+not surprisingly those two variables have the highest VIFs.
+
+<div class="p"><!----></div>
+Now let's return to the Longley data.
+
+<div class="p"><!----></div>
+
+<pre>
+&#62;&nbsp;vif(lreg)
+GNP.deflator&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GNP&nbsp;&nbsp;&nbsp;Unemployed&nbsp;Armed.Forces&nbsp;&nbsp;&nbsp;Population&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Year&nbsp;
+&nbsp;&nbsp;&nbsp;135.53244&nbsp;&nbsp;&nbsp;1788.51348&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;33.61889&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.58893&nbsp;&nbsp;&nbsp;&nbsp;399.15102&nbsp;&nbsp;&nbsp;&nbsp;758.98060&nbsp;
+
+</pre>
+The two largest VIFs are for GNP and Year.  Let's eliminate them from the 
+model, and see how the VIFs change:
+
+<pre>
+&#62;&nbsp;lreg1&nbsp;=&nbsp;lm(Employed&nbsp;~&nbsp;.,data=subset(longley,select=-c(GNP,Year)))
+&#62;&nbsp;summary(lreg1)
+
+Call:
+lm(formula&nbsp;=&nbsp;Employed&nbsp;~&nbsp;.,&nbsp;data&nbsp;=&nbsp;subset(longley,&nbsp;select&nbsp;=&nbsp;-c(GNP,&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;Year)))
+
+Residuals:
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Min&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1Q&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Median&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3Q&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Max&nbsp;
+-0.6561730&nbsp;-0.2576601&nbsp;-0.0008123&nbsp;&nbsp;0.1213544&nbsp;&nbsp;1.2225443&nbsp;
+
+Coefficients:
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Estimate&nbsp;Std.&nbsp;Error&nbsp;t&nbsp;value&nbsp;Pr(&#62;|t|)&nbsp;&nbsp;&nbsp;&nbsp;
+(Intercept)&nbsp;&nbsp;13.781314&nbsp;&nbsp;&nbsp;6.886470&nbsp;&nbsp;&nbsp;2.001&nbsp;0.070657&nbsp;.&nbsp;&nbsp;
+GNP.deflator&nbsp;&nbsp;0.207046&nbsp;&nbsp;&nbsp;0.081376&nbsp;&nbsp;&nbsp;2.544&nbsp;0.027270&nbsp;*&nbsp;&nbsp;
+Unemployed&nbsp;&nbsp;&nbsp;-0.012412&nbsp;&nbsp;&nbsp;0.002780&nbsp;&nbsp;-4.465&nbsp;0.000955&nbsp;***
+Armed.Forces&nbsp;-0.005968&nbsp;&nbsp;&nbsp;0.003325&nbsp;&nbsp;-1.795&nbsp;0.100170&nbsp;&nbsp;&nbsp;&nbsp;
+Population&nbsp;&nbsp;&nbsp;&nbsp;0.306601&nbsp;&nbsp;&nbsp;0.123795&nbsp;&nbsp;&nbsp;2.477&nbsp;0.030755&nbsp;*&nbsp;&nbsp;
+---
+Signif.&nbsp;codes:&nbsp;&nbsp;0&nbsp;'***'&nbsp;0.001&nbsp;'**'&nbsp;0.01&nbsp;'*'&nbsp;0.05&nbsp;'.'&nbsp;0.1&nbsp;'&nbsp;'&nbsp;1
+
+
+Residual&nbsp;standard&nbsp;error:&nbsp;0.5671&nbsp;on&nbsp;11&nbsp;degrees&nbsp;of&nbsp;freedom
+Multiple&nbsp;R-squared:&nbsp;0.9809,	Adjusted&nbsp;R-squared:&nbsp;0.9739&nbsp;
+F-statistic:&nbsp;141.1&nbsp;on&nbsp;4&nbsp;and&nbsp;11&nbsp;DF,&nbsp;&nbsp;p-value:&nbsp;2.26e-09&nbsp;
+
+&#62;&nbsp;vif(lreg1)
+GNP.deflator&nbsp;&nbsp;&nbsp;Unemployed&nbsp;Armed.Forces&nbsp;&nbsp;&nbsp;Population&nbsp;
+&nbsp;&nbsp;&nbsp;35.970754&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.147600&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.497795&nbsp;&nbsp;&nbsp;&nbsp;34.588299&nbsp;
+
+</pre>
+ The reduced model is probably more realistic than the full
+model, but GNP.deflator and Population are still highly correlated
+
+<pre>
+&#62;&nbsp;with(longley,cor(GNP.deflator,Population))
+[1]&nbsp;0.9791634
+
+</pre>
+ Removing GNP.deflator results in a model that seems to make
+sense:
+
+<pre>
+&#62;&nbsp;lreg2&nbsp;=&nbsp;lm(Employed&nbsp;~&nbsp;.,data=subset(longley,select=-c(GNP,Year,GNP.deflator)))
+&#62;&nbsp;summary(lreg2)
+
+Call:
+lm(formula&nbsp;=&nbsp;Employed&nbsp;~&nbsp;.,&nbsp;data&nbsp;=&nbsp;subset(longley,&nbsp;select&nbsp;=&nbsp;-c(GNP,&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;Year,&nbsp;GNP.deflator)))
+
+Residuals:
+&nbsp;&nbsp;&nbsp;&nbsp;Min&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1Q&nbsp;&nbsp;Median&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3Q&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Max&nbsp;
+-1.3835&nbsp;-0.2868&nbsp;-0.1353&nbsp;&nbsp;0.3596&nbsp;&nbsp;1.3382&nbsp;
+
+Coefficients:
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Estimate&nbsp;Std.&nbsp;Error&nbsp;t&nbsp;value&nbsp;Pr(&#62;|t|)&nbsp;&nbsp;&nbsp;&nbsp;
+(Intercept)&nbsp;&nbsp;-1.323091&nbsp;&nbsp;&nbsp;4.211566&nbsp;&nbsp;-0.314&nbsp;&nbsp;0.75880&nbsp;&nbsp;&nbsp;&nbsp;
+Unemployed&nbsp;&nbsp;&nbsp;-0.012292&nbsp;&nbsp;&nbsp;0.003354&nbsp;&nbsp;-3.665&nbsp;&nbsp;0.00324&nbsp;**&nbsp;
+Armed.Forces&nbsp;-0.001893&nbsp;&nbsp;&nbsp;0.003516&nbsp;&nbsp;-0.538&nbsp;&nbsp;0.60019&nbsp;&nbsp;&nbsp;&nbsp;
+Population&nbsp;&nbsp;&nbsp;&nbsp;0.605146&nbsp;&nbsp;&nbsp;0.047617&nbsp;&nbsp;12.709&nbsp;2.55e-08&nbsp;***
+---
+Signif.&nbsp;codes:&nbsp;&nbsp;0&nbsp;'***'&nbsp;0.001&nbsp;'**'&nbsp;0.01&nbsp;'*'&nbsp;0.05&nbsp;'.'&nbsp;0.1&nbsp;'&nbsp;'&nbsp;1
+
+
+Residual&nbsp;standard&nbsp;error:&nbsp;0.6843&nbsp;on&nbsp;12&nbsp;degrees&nbsp;of&nbsp;freedom
+Multiple&nbsp;R-squared:&nbsp;0.9696,	Adjusted&nbsp;R-squared:&nbsp;0.962&nbsp;
+F-statistic:&nbsp;127.7&nbsp;on&nbsp;3&nbsp;and&nbsp;12&nbsp;DF,&nbsp;&nbsp;p-value:&nbsp;2.272e-09&nbsp;
+
+&#62;&nbsp;vif(lreg2)
+&nbsp;&nbsp;Unemployed&nbsp;Armed.Forces&nbsp;&nbsp;&nbsp;Population&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;3.146686&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.918225&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.514335&nbsp;
+
+</pre>
+
+<div class="p"><!----></div>
+Now let's look at some alternatives to ordinary linear regression.
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc6">
+6</a>&nbsp;&nbsp;Generalized Additive Models (<tt>gam</tt>)</h2>
+One of the most useful alternative methods to regression is known as a generalized
+additive model.  Instead of fitting a single linear parameter to try to explain 
+the relationship between independent variables and dependent variables, GAM models
+perform spline smooths on selected variables, and use these smoothed versions of the 
+independent variables to try to explain the values of the dependent variables.  To 
+try to make the information from the analysis similar to the familiar <tt>lm</tt> 
+output, an estimated number of degrees of freedom is calculated for each variable,
+based on how different the fitted spline smooth for that variable is from 
+the  strictly linear relationship that <tt>lm</tt> uses for prediction, and an F-statistic
+is produced for each independent variable to test whether the smoothed version of the 
+variable made a significant contribution to  the predicted value of the dependent variable.
+In R, the <tt>gam</tt> function is provided by the <tt>mgcv</tt> library.  This library 
+also provides the <tt>s</tt> function, which is used by <tt>gam</tt> to identify the 
+variables that should be smoothed before they are used to predict the dependent variable.
+Without prior knowledge, it's not unreasonable to try smoothing on all the variables.
+We can fit a gam model by using the same formula as we used with <tt>lm</tt>, passing each
+variable in the model to the <tt>s</tt> function:
+
+<pre>
+&#62;&nbsp;library(mgcv)
+&#62;&nbsp;wine.gam&nbsp;=&nbsp;gam(Alcohol~s(Malic.acid)+s(Alkalinity.ash)+
++&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s(Proanthocyanins)+s(Color.intensity)+
++&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s(OD.Ratio)+s(Proline),data=wine[-1])
+&#62;&nbsp;wine.gam
+
+Family:&nbsp;gaussian
+Link&nbsp;function:&nbsp;identity
+
+Formula:
+Alcohol&nbsp;~&nbsp;s(Malic.acid)&nbsp;+&nbsp;s(Alkalinity.ash)&nbsp;+&nbsp;s(Proanthocyanins)&nbsp;+
+&nbsp;&nbsp;&nbsp;&nbsp;s(Color.intensity)&nbsp;+&nbsp;s(OD.Ratio)&nbsp;+&nbsp;s(Proline)
+
+Estimated&nbsp;degrees&nbsp;of&nbsp;freedom:
+&nbsp;1&nbsp;7.920717&nbsp;3.492826&nbsp;4.022189&nbsp;1&nbsp;3.567478&nbsp;&nbsp;&nbsp;total&nbsp;=&nbsp;&nbsp;22.00321
+
+GCV&nbsp;score:&nbsp;&nbsp;0.2314599
+
+</pre>
+
+<div class="p"><!----></div>
+Like the <tt>lm</tt> function, <tt>gam</tt> provides a more familiar table when the 
+<tt>summary</tt> method is invoked:
+
+<pre>
+&#62;&nbsp;summary(wine.gam)
+
+Family:&nbsp;gaussian
+Link&nbsp;function:&nbsp;identity
+
+Formula:
+Alcohol&nbsp;~&nbsp;s(Malic.acid)&nbsp;+&nbsp;s(Alkalinity.ash)&nbsp;+&nbsp;s(Proanthocyanins)&nbsp;+
+&nbsp;&nbsp;&nbsp;&nbsp;s(Color.intensity)&nbsp;+&nbsp;s(OD.Ratio)&nbsp;+&nbsp;s(Proline)
+
+Parametric&nbsp;coefficients:
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Estimate&nbsp;Std.&nbsp;Error&nbsp;t&nbsp;value&nbsp;Pr(&#62;|t|)
+(Intercept)&nbsp;13.00062&nbsp;&nbsp;&nbsp;&nbsp;0.03376&nbsp;&nbsp;&nbsp;385.1&nbsp;&nbsp;&nbsp;&lt;2e-16&nbsp;***
+---
+Signif.&nbsp;codes:&nbsp;&nbsp;0&nbsp;'***'&nbsp;0.001&nbsp;'**'&nbsp;0.01&nbsp;'*'&nbsp;0.05&nbsp;'.'&nbsp;0.1&nbsp;'&nbsp;'&nbsp;1
+
+Approximate&nbsp;significance&nbsp;of&nbsp;smooth&nbsp;terms:
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edf&nbsp;Est.rank&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;F&nbsp;&nbsp;p-value
+s(Malic.acid)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.000&nbsp;&nbsp;&nbsp;&nbsp;1.000&nbsp;14.133&nbsp;0.000240&nbsp;***
+s(Alkalinity.ash)&nbsp;&nbsp;7.921&nbsp;&nbsp;&nbsp;&nbsp;9.000&nbsp;&nbsp;4.403&nbsp;3.84e-05&nbsp;***
+s(Proanthocyanins)&nbsp;3.493&nbsp;&nbsp;&nbsp;&nbsp;9.000&nbsp;&nbsp;1.844&nbsp;0.064387&nbsp;.
+s(Color.intensity)&nbsp;4.022&nbsp;&nbsp;&nbsp;&nbsp;9.000&nbsp;&nbsp;8.391&nbsp;3.66e-10&nbsp;***
+s(OD.Ratio)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.000&nbsp;&nbsp;&nbsp;&nbsp;1.000&nbsp;&nbsp;2.246&nbsp;0.135990
+s(Proline)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.567&nbsp;&nbsp;&nbsp;&nbsp;9.000&nbsp;&nbsp;5.508&nbsp;1.42e-06&nbsp;***
+---
+Signif.&nbsp;codes:&nbsp;&nbsp;0&nbsp;'***'&nbsp;0.001&nbsp;'**'&nbsp;0.01&nbsp;'*'&nbsp;0.05&nbsp;'.'&nbsp;0.1&nbsp;'&nbsp;'&nbsp;1
+
+R-sq.(adj)&nbsp;=&nbsp;&nbsp;0.692&nbsp;&nbsp;&nbsp;Deviance&nbsp;explained&nbsp;=&nbsp;72.9%
+GCV&nbsp;score&nbsp;=&nbsp;0.23146&nbsp;&nbsp;&nbsp;Scale&nbsp;est.&nbsp;=&nbsp;0.20285&nbsp;&nbsp;&nbsp;n&nbsp;=&nbsp;178
+
+</pre>
+The relative importance of the variables has changed somewhat from the linear
+regression results.  Notice that the adjusted R-squared value is 0.692, as 
+compared to 0.575 for linear regression, showing an improvement in prediction
+by using the smoothed versions of the independent variable.
+
+<div class="p"><!----></div>
+Applying the <tt>plot</tt> function to a <tt>gam</tt> model is often the most useful part
+of the analysis.  The plots produced show how the independent variable was smoothed 
+before fitting, so a straight (or nearly straight) line for a particular variable means
+a truly linear relationship was found, while deviations from linearity describe the 
+nature of non-linear relationships that exist.  Here's the results of using <tt>plot</tt>
+on our <tt>gam</tt> model.  For convenience, I've put all the plots in a single graphic;
+in practice, you might want to examine each plot separately.  I've used the <tt>par</tt>
+function to adjust the margins so that the individual plots will be a little larger:
+
+<pre>
+&#62;&nbsp;par(mfrow=c(3,2),mar=c(2,4,1,2)+.1,oma=c(0,0,4,0),xpd=FALSE)
+&#62;&nbsp;plot(wine.gam)
+
+</pre>
+Here's the plot:
+
+<div class="p"><!----></div>
+<img src="winegam.png">
+
+<div class="p"><!----></div>
+For the variables <tt>Malic.acid</tt> and <tt>OD.ratio</tt>, the relationships do seem 
+to be linear; this is supported by the fact that <tt>gam</tt> only used a single degree
+of freedom to fit these terms.  For some of the other variables, it's clear that linear
+relationships hold only over a limited range of the data.  The <tt>Alkalinity.ash</tt>
+plot is particularly interesting, but it may indicate oversmoothing.  
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc7">
+7</a>&nbsp;&nbsp;Recursive Partitioning</h2>
+We've already seen how recursive partitioning can be used for classification, but it
+can also be used for regression if the dependent variable passed to <tt>rpart</tt>
+is not a factor.  When used for regression, <tt>rpart</tt> follows a similar strategy
+as for classification; each variable is tested for all possible splits, looking for 
+large separation between the dependent variable values for one side of the split as 
+opposed to the other.  As is the case for classification, <tt>rpart</tt> presents its
+results as a tree, with terminal nodes representing the best prediction the model can
+provide.  Here are the results of using recursive partitioning on the <tt>wine</tt>
+data frame to predict <tt>Alcohol</tt>.  I'm using a period on the right hand side of 
+the model to indicate that <tt>rpart</tt> should consider all of the variables in the 
+data frame (except <tt>Cultivar</tt>): 
+
+<pre>
+&#62;&nbsp;library(rpart)
+&#62;&nbsp;wine.rpart&nbsp;=&nbsp;rpart(Alcohol&nbsp;~&nbsp;.&nbsp;,data=wine[-1])
+&#62;&nbsp;wine.rpart
+n=&nbsp;178
+
+node),&nbsp;split,&nbsp;n,&nbsp;deviance,&nbsp;yval
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;denotes&nbsp;terminal&nbsp;node
+
+&nbsp;1)&nbsp;root&nbsp;178&nbsp;116.654000&nbsp;13.00062
+&nbsp;&nbsp;&nbsp;2)&nbsp;Color.intensity&lt;&nbsp;3.325&nbsp;50&nbsp;&nbsp;&nbsp;9.161498&nbsp;12.13980
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4)&nbsp;Ash&#62;=2.41&nbsp;13&nbsp;&nbsp;&nbsp;1.269369&nbsp;11.86846&nbsp;*
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5)&nbsp;Ash&lt;&nbsp;2.41&nbsp;37&nbsp;&nbsp;&nbsp;6.598724&nbsp;12.23514&nbsp;*
+&nbsp;&nbsp;&nbsp;3)&nbsp;Color.intensity&#62;=3.325&nbsp;128&nbsp;&nbsp;55.969350&nbsp;13.33687
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6)&nbsp;Proline&lt;&nbsp;900&nbsp;79&nbsp;&nbsp;28.974900&nbsp;13.05013
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;12)&nbsp;Color.intensity&lt;&nbsp;8.315&nbsp;61&nbsp;&nbsp;21.586760&nbsp;12.93197
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;24)&nbsp;Proline&lt;&nbsp;722.5&nbsp;43&nbsp;&nbsp;14.291710&nbsp;12.80209
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;48)&nbsp;Malic.acid&lt;&nbsp;3.1&nbsp;27&nbsp;&nbsp;&nbsp;8.142067&nbsp;12.62889
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;96)&nbsp;NF.phenols&#62;=0.33&nbsp;14&nbsp;&nbsp;&nbsp;2.388493&nbsp;12.30929&nbsp;*
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;97)&nbsp;NF.phenols&lt;&nbsp;0.33&nbsp;13&nbsp;&nbsp;&nbsp;2.783477&nbsp;12.97308&nbsp;*
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;49)&nbsp;Malic.acid&#62;=3.1&nbsp;16&nbsp;&nbsp;&nbsp;3.972794&nbsp;13.09437&nbsp;*
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;25)&nbsp;Proline&#62;=722.5&nbsp;18&nbsp;&nbsp;&nbsp;4.837111&nbsp;13.24222&nbsp;*
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;13)&nbsp;Color.intensity&#62;=8.315&nbsp;18&nbsp;&nbsp;&nbsp;3.650294&nbsp;13.45056&nbsp;*
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7)&nbsp;Proline&#62;=900&nbsp;49&nbsp;&nbsp;10.025970&nbsp;13.79918
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;14)&nbsp;Color.intensity&lt;&nbsp;4.44&nbsp;10&nbsp;&nbsp;&nbsp;0.787410&nbsp;13.27700&nbsp;*
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;15)&nbsp;Color.intensity&#62;=4.44&nbsp;39&nbsp;&nbsp;&nbsp;5.812631&nbsp;13.93308&nbsp;*
+
+</pre>
+
+<div class="p"><!----></div>
+Since <tt>rpart</tt> doesn't actually estimate any coefficients, we can't produce a table
+of hypothesis tests as we did for <tt>lm</tt> or <tt>gam</tt>, but we can get a sort
+of multiple R-squared value by squaring the correlation between the true value of the 
+dependent variable and the value that <tt>rpart</tt> predicts:
+
+<div class="p"><!----></div>
+
+<pre>
+&#62;&nbsp;cor(wine$Alcohol,predict(wine.rpart))^2
+[1]&nbsp;0.7248247
+
+</pre>
+This unadjusted R-squared value is a little higher than the adjusted R-squared value 
+from the <tt>gam</tt> model.
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc8">
+8</a>&nbsp;&nbsp;Comparison of the 3 Methods</h2>
+A very simple way to get an idea of how the three methods compare with each other is to 
+make a plot of predicted versus actual values for the three methods, using a different 
+color for each:
+
+<div class="p"><!----></div>
+
+<pre>
+&#62;&nbsp;plot(predict(wine.lm),wine$Alcohol,col='red',xlab='Predicted',ylab='Actual')
+&#62;&nbsp;points(predict(wine.gam),wine$Alcohol,col='blue')
+&#62;&nbsp;points(predict(wine.rpart),wine$Alcohol,col='green')
+&#62;&nbsp;legend('topleft',legend=c('lm','gam','rpart'),col=c('red','blue','green'),pch=1,cex=.8)
+
+</pre>
+Here's the plot:
+
+<div class="p"><!----></div>
+<img src="compare.png">
+
+<div class="p"><!----></div>
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On 25 Apr 2011, 15:27.</small>
+</html>

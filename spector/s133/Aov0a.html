@@ -1,0 +1,445 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> Analysis of Variance</title>
+ 
+<h1 align="center">Analysis of Variance </h1>
+
+
+
+ <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;Analysis of Variance</h2>
+
+<div class="p"><!----></div>
+In its simplest form, analysis of variance (often abbreviated as ANOVA), can be 
+thought of as a generalization of the t-test, because it allows us to test the 
+hypothesis that the means of a dependent variable are the same for several groups,
+not just two as would be the case when using a t-test.  This type of ANOVA is 
+known as a one-way ANOVA.  
+
+<div class="p"><!----></div>
+In cases where there are multiple classification variables, more complex ANOVAs
+are possible.  For example, suppose we have data on test scores for students from
+four schools, where three different teaching methods were used.  This would 
+describe a two-way ANOVA.  In addition to asking whether the means for the 
+different schools were different from each other, and whether the means for the 
+different teaching methods were different from each other, we could also 
+investigate whether the differences in teaching methods were different depending
+on which school we looked at.  This last comparison is known as an interaction,
+and testing for interactions is one of the most important uses of analysis of 
+variance.
+
+<div class="p"><!----></div>
+Before getting to the specifics of ANOVA, it may be useful to ask why we 
+perform an analysis of variance if our interest lies in the differences between 
+means.
+If we were to concentrate on the differences between the means, we would have 
+many different comparisons to make, and the number of comparisons would increase
+as we increased the number of groups we considered.  Thus, we'd need different
+tests depending on how many groups we were looking at.  The reasoning behind
+using variance to test for differences in means is based on the following idea:
+Suppose we have several groups of data, and we calculate their variance in two
+different ways.  First, we put together all the data, and simply calculate its
+variance disregarding the groups from which the data arose.  
+In other words, we evaluate the deviations of the data relative to overall mean
+of the entire data set.
+Next, we calculate
+the variance by adding up the deviations around the mean of each of the groups.
+The idea of analysis of variance is that if the two variance calculations give
+us very similar results, then each of the group means must have been about the 
+same, because using the group means to measure variation didn't result in a big
+change than from using the overall mean.  But if the overall variance is bigger than
+the variance calculated using the group means, then at least one of the group
+means must have been different from the overall mean, so it's unlikely that the 
+means of all the groups were the same.  Using this approach, we only need to 
+compare two values (the overall variance, and the variance calculated using each
+of the group means) to test if any of the means are different, regardless of 
+how many groups we have.  
+
+<div class="p"><!----></div>
+To illustrate how looking at variances can tell us
+about differences in means, consider a data set with
+three groups, where the mean of the first group is
+3, and the mean for the other groups is 1.  We can
+generate a sample as follows:
+
+<pre>
+&#62;&nbsp;mydf&nbsp;=&nbsp;data.frame(group=rep(1:3,rep(10,3)),x=rnorm(30,mean=c(rep(3,10),rep(1,20))))
+
+</pre>
+Under the null hypothesis of no differences among the means,
+we can center each set of data by the appropriate group mean,
+and then compare the data to the same data centered by
+the overall mean.  In R, the <tt>ave</tt> function will return
+a vector the same length as its' input, containing summary statistics
+calculated by grouping variables.  Since <tt>ave</tt> accepts an
+unlimited number of grouping variables, we must identify the function
+that calculates the statistic as the <tt>FUN=</tt> argument.  Let's 
+look at two histograms of the data, first centered by the overall mean,
+and then by the group means.  Recall that under the null hypothesis,
+there should be no difference.
+
+<pre>
+&#62;&nbsp;ovall&nbsp;=&nbsp;mydf$x&nbsp;-&nbsp;mean(mydf$x)
+&#62;&nbsp;group&nbsp;=&nbsp;mydf$x&nbsp;-&nbsp;ave(mydf$x,mydf$group,FUN=mean)
+&#62;&nbsp;par(mfrow=c(2,1))
+&#62;&nbsp;hist(ovall,xlim=c(-2,2.5))
+&#62;&nbsp;hist(group,xlim=c(-2,2.5))
+
+</pre>
+
+<div class="p"><!----></div>
+<img src="hists.png">
+
+<div class="p"><!----></div>
+Notice how much more spread out the data is when we centered by the
+overall mean.  To show that this isn't a trick, let's generate some
+data for which the means are all equal:
+
+<div class="p"><!----></div>
+
+<pre>
+&#62;&nbsp;mydf1&nbsp;=&nbsp;data.frame(group=rep(1:3,rep(10,3)),x=rnorm(30))
+&#62;&nbsp;ovall&nbsp;=&nbsp;mydf1$x&nbsp;-&nbsp;mean(mydf1$x)
+&#62;&nbsp;group&nbsp;=&nbsp;mydf1$x&nbsp;-&nbsp;ave(mydf1$x,mydf1$group,FUN=mean)
+&#62;&nbsp;par(mfrow=c(2,1))
+&#62;&nbsp;hist(ovall,xlim=c(-2.5,3.2))
+&#62;&nbsp;hist(group,xlim=c(-2.5,3.2))
+
+</pre>
+
+<div class="p"><!----></div>
+<img src="hists1.png">
+
+<div class="p"><!----></div>
+Notice how the two histograms are very similar.
+
+<div class="p"><!----></div>
+To formalize the idea of a one-way ANOVA, we have a data set with a dependent
+variable and a grouping variable.  We assume that the observations are 
+independent of each other, and the errors (that part of the data not explained
+by an observation's group mean) follow a normal distribution with the same
+variance for all the observations.  The null hypothesis states that the means
+of all the groups are equal, against an alternative that at least one of the means
+differs from the others.   We can test the null hypothesis by taking the ratio
+of the variance calculated in the two ways described above, and comparing it to
+an F distribution with appropriate degrees of freedom (more on that later).
+
+<div class="p"><!----></div>
+In R, ANOVAs can be performed with the <tt>aov</tt> command.  When you are 
+performing an ANOVA in R, it's very important that all of the grouping variables
+involved in the ANOVA are converted to factors, or R will treat them as if they
+were just independent variables in a linear regression.  
+
+<div class="p"><!----></div>
+As a first example, consider once again the <tt>wine</tt> data frame.  The 
+<tt>Cultivar</tt> variable represents one of three different varieties of wine
+that have been studied.   As a quick preliminary test, we can examine a dotplot
+of <tt>Alcohol</tt> versus Cultivar:
+
+<div class="p"><!----></div>
+<img src="cultdot.png">
+
+<div class="p"><!----></div>
+It does appear that there are some differences, even though there is overlap.
+We can test for these differences with an ANOVA:
+
+<div class="p"><!----></div>
+
+<pre>
+&#62;&nbsp;wine.aov&nbsp;=&nbsp;aov(Alcohol~Cultivar,data=wine)
+&#62;&nbsp;wine.aov
+Call:
+&nbsp;&nbsp;&nbsp;aov(formula&nbsp;=&nbsp;Alcohol&nbsp;~&nbsp;Cultivar,&nbsp;data&nbsp;=&nbsp;wine)
+
+Terms:
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Cultivar&nbsp;Residuals
+Sum&nbsp;of&nbsp;Squares&nbsp;&nbsp;70.79485&nbsp;&nbsp;45.85918
+Deg.&nbsp;of&nbsp;Freedom&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;175
+
+Residual&nbsp;standard&nbsp;error:&nbsp;0.5119106
+Estimated&nbsp;effects&nbsp;may&nbsp;be&nbsp;unbalanced
+&#62;&nbsp;summary(wine.aov)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Df&nbsp;Sum&nbsp;Sq&nbsp;Mean&nbsp;Sq&nbsp;F&nbsp;value&nbsp;&nbsp;&nbsp;&nbsp;Pr(&#62;F)
+Cultivar&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;70.795&nbsp;&nbsp;35.397&nbsp;&nbsp;135.08&nbsp;&lt;&nbsp;2.2e-16&nbsp;***
+Residuals&nbsp;&nbsp;&nbsp;175&nbsp;45.859&nbsp;&nbsp;&nbsp;0.262
+---
+Signif.&nbsp;codes:&nbsp;&nbsp;0&nbsp;'***'&nbsp;0.001&nbsp;'**'&nbsp;0.01&nbsp;'*'&nbsp;0.05&nbsp;'.'&nbsp;0.1&nbsp;'&nbsp;'&nbsp;1
+
+</pre>
+
+<div class="p"><!----></div>
+The <tt>summary</tt> function displays the ANOVA table, which is similar
+to that produced by most statistical software.  It indicates that the
+differences among the means are statistically significant.  To see the 
+values for the means, we can use the <tt>aggregate</tt> function:
+
+<pre>
+&#62;&nbsp;aggregate(wine$Alcohol,wine['Cultivar'],mean)
+&nbsp;&nbsp;Cultivar&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;13.74475
+2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;12.27873
+3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3&nbsp;13.15375
+
+</pre>
+
+<div class="p"><!----></div>
+The default plots from an <tt>aov</tt> object are the same as those for
+an <tt>lm</tt> object.  They're displayed below for the <tt>Alcohol</tt>/<tt>Cultivar</tt> ANOVA we just calculated:
+
+<div class="p"><!----></div>
+<img src="wineaov.png"> 
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc2">
+2</a>&nbsp;&nbsp;Multiple Comparisons</h2>
+In the previous example, notice that the test for <tt>Cultivar</tt>
+is simply answering the question "Are there any significant differences
+among the cultivars?".  This is because the F-test which is used
+to determine significant is based on the two different ways of 
+calculating the variance, not on any particular differences among
+the means.
+Having seen that there is a significant effect for <tt>Cultivar</tt>
+in the previous example, a natural questions is "Which cultivars 
+are different from each other".   One possibility would be to look
+at all possible t-tests between the levels of the cultivar, i.e.
+do t-tests for 1 vs. 2, 1 vs. 3, and 2 vs. 3.  This is a very bad idea
+for at least two reasons:
+
+<ol type="1">
+<li>One of the main goals of ANOVA is to combine together all our data,
+so that we can more accurately estimate the residual variance of our
+model.  In the previous example, notice that there were 175 degrees 
+of freedom used to estimate the residual variance.  Under the assumptions
+of ANOVA, the variance of the dependent variable doesn't change across
+the different levels of the independent variables, so we can (and should)
+use the estimate from the ANOVA for all our tests.  When we use a t-test,
+we'll be estimating the residual variance only using the observations
+for the two groups we're comparing, so we'll have fewer degrees of 
+freedom, and less power in determining differences.
+<div class="p"><!----></div>
+</li>
+
+<li>
+When we're comparing several groups using t-tests, we have to look at
+all possible combinations among the groups.  This will sometimes result
+in many tests, and we can no longer be confident that the probability
+level we use for the individual tests will hold up across all of those
+comparisons we're making.  This is a well-known problem in statistics,
+and many techniques have been developed to adjust probability values to
+handle this case.  However, these techniques tend to be quite conservative,
+and they may prevent us from seeing differences that really exist.
+<div class="p"><!----></div>
+</li>
+</ol>
+
+<div class="p"><!----></div>
+To see how probabilities get adjusted when many comparisons are made,
+consider a data set on the nitrogen levels in 5 varieties of clover.
+We wish to test the hypothesis that the nitrogen level of the different
+varieties of clover is the same.
+
+<pre>
+&#62;&nbsp;clover&nbsp;=&nbsp;read.table('http://www.stat.berkeley.edu/classes/s133/data/clover.txt',header=TRUE)
+&#62;&nbsp;clover.aov&nbsp;=&nbsp;aov(Nitrogen~Strain,data=clover)
+&#62;&nbsp;summary(clover.aov)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Df&nbsp;Sum&nbsp;Sq&nbsp;Mean&nbsp;Sq&nbsp;F&nbsp;value&nbsp;&nbsp;&nbsp;&nbsp;Pr(&#62;F)&nbsp;&nbsp;&nbsp;&nbsp;
+Strain&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5&nbsp;847.05&nbsp;&nbsp;169.41&nbsp;&nbsp;14.370&nbsp;1.485e-06&nbsp;***
+Residuals&nbsp;&nbsp;&nbsp;24&nbsp;282.93&nbsp;&nbsp;&nbsp;11.79&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+---
+Signif.&nbsp;codes:&nbsp;&nbsp;0&nbsp;‘***’&nbsp;0.001&nbsp;‘**’&nbsp;0.01&nbsp;‘*’&nbsp;0.05&nbsp;‘.’&nbsp;0.1&nbsp;‘&nbsp;’&nbsp;1&nbsp;
+
+</pre>
+ Let's say that we want to look at all the possible t-tests
+among pairs of the 6 strains.  First, we can use the <tt>combn</tt>
+function to show us all the possible 2-way combinations of the strains:
+
+<pre>
+&#62;&nbsp;combs&nbsp;=&nbsp;combn(as.character(unique(clover$Strain)),2)
+&#62;&nbsp;combs
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[,1]&nbsp;&nbsp;&nbsp;&nbsp;[,2]&nbsp;&nbsp;&nbsp;&nbsp;[,3]&nbsp;&nbsp;&nbsp;&nbsp;[,4]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[,5]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[,6]&nbsp;&nbsp;&nbsp;&nbsp;[,7]&nbsp;&nbsp;&nbsp;&nbsp;[,8]&nbsp;&nbsp;&nbsp;&nbsp;
+[1,]&nbsp;"3DOK1"&nbsp;"3DOK1"&nbsp;"3DOK1"&nbsp;"3DOK1"&nbsp;&nbsp;"3DOK1"&nbsp;&nbsp;"3DOK5"&nbsp;"3DOK5"&nbsp;"3DOK5"&nbsp;
+[2,]&nbsp;"3DOK5"&nbsp;"3DOK4"&nbsp;"3DOK7"&nbsp;"3DOK13"&nbsp;"COMPOS"&nbsp;"3DOK4"&nbsp;"3DOK7"&nbsp;"3DOK13"
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[,9]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[,10]&nbsp;&nbsp;&nbsp;[,11]&nbsp;&nbsp;&nbsp;&nbsp;[,12]&nbsp;&nbsp;&nbsp;&nbsp;[,13]&nbsp;&nbsp;&nbsp;&nbsp;[,14]&nbsp;&nbsp;&nbsp;&nbsp;[,15]&nbsp;&nbsp;&nbsp;
+[1,]&nbsp;"3DOK5"&nbsp;&nbsp;"3DOK4"&nbsp;"3DOK4"&nbsp;&nbsp;"3DOK4"&nbsp;&nbsp;"3DOK7"&nbsp;&nbsp;"3DOK7"&nbsp;&nbsp;"3DOK13"
+[2,]&nbsp;"COMPOS"&nbsp;"3DOK7"&nbsp;"3DOK13"&nbsp;"COMPOS"&nbsp;"3DOK13"&nbsp;"COMPOS"&nbsp;"COMPOS"
+
+</pre>
+Let's focus on the first column:
+
+<pre>
+&#62;&nbsp;x&nbsp;=&nbsp;combs[,1]
+&#62;&nbsp;tt&nbsp;=&nbsp;t.test(Nitrogen~Strain,data=clover)
+&#62;&nbsp;names(tt)
+[1]&nbsp;"statistic"&nbsp;&nbsp;&nbsp;"parameter"&nbsp;&nbsp;&nbsp;"p.value"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"conf.int"&nbsp;&nbsp;&nbsp;&nbsp;"estimate"&nbsp;&nbsp;&nbsp;
+[6]&nbsp;"null.value"&nbsp;&nbsp;"alternative"&nbsp;"method"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"data.name"&nbsp;&nbsp;
+
+</pre>
+ This suggests a function which would return the probability
+for each combination of strains:
+
+<pre>
+&#62;&nbsp;gettprob&nbsp;=&nbsp;function(x)t.test(Nitrogen~Strain,data=clover[clover$Strain&nbsp;%in%&nbsp;x,])$p.value
+
+</pre>
+We can get the probabilities for all the tests, and combine them with
+the country names for display:
+
+<pre>
+&#62;&nbsp;probs&nbsp;=&nbsp;data.frame(t(combs),probs=apply(combs,2,gettprob))
+&#62;&nbsp;probs&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;probs
+1&nbsp;&nbsp;&nbsp;3DOK1&nbsp;&nbsp;3DOK5&nbsp;1.626608e-01
+2&nbsp;&nbsp;&nbsp;3DOK1&nbsp;&nbsp;3DOK4&nbsp;2.732478e-03
+3&nbsp;&nbsp;&nbsp;3DOK1&nbsp;&nbsp;3DOK7&nbsp;2.511696e-02
+4&nbsp;&nbsp;&nbsp;3DOK1&nbsp;3DOK13&nbsp;3.016445e-03
+5&nbsp;&nbsp;&nbsp;3DOK1&nbsp;COMPOS&nbsp;1.528480e-02
+6&nbsp;&nbsp;&nbsp;3DOK5&nbsp;&nbsp;3DOK4&nbsp;5.794178e-03
+7&nbsp;&nbsp;&nbsp;3DOK5&nbsp;&nbsp;3DOK7&nbsp;7.276336e-02
+8&nbsp;&nbsp;&nbsp;3DOK5&nbsp;3DOK13&nbsp;1.785048e-03
+9&nbsp;&nbsp;&nbsp;3DOK5&nbsp;COMPOS&nbsp;3.177169e-02
+10&nbsp;&nbsp;3DOK4&nbsp;&nbsp;3DOK7&nbsp;4.331464e-02
+11&nbsp;&nbsp;3DOK4&nbsp;3DOK13&nbsp;5.107291e-01
+12&nbsp;&nbsp;3DOK4&nbsp;COMPOS&nbsp;9.298460e-02
+13&nbsp;&nbsp;3DOK7&nbsp;3DOK13&nbsp;4.996374e-05
+14&nbsp;&nbsp;3DOK7&nbsp;COMPOS&nbsp;2.055216e-01
+15&nbsp;3DOK13&nbsp;COMPOS&nbsp;4.932466e-04
+
+</pre>
+These probabilities are for the individual t-tests, each with
+an alpha level of 0.05, but that doesn't guarantee that the experiment-wise
+alpha will be .05.  We can use the <tt>p.adjust</tt> function to adjust
+these probabilities:
+
+<pre>
+&#62;&nbsp;probs&nbsp;=&nbsp;data.frame(probs,adj.prob=p.adjust(probs$probs,method='bonferroni'))
+&#62;&nbsp;probs
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;probs&nbsp;&nbsp;&nbsp;&nbsp;adj.prob
+1&nbsp;&nbsp;&nbsp;3DOK1&nbsp;&nbsp;3DOK5&nbsp;1.626608e-01&nbsp;1.000000000
+2&nbsp;&nbsp;&nbsp;3DOK1&nbsp;&nbsp;3DOK4&nbsp;2.732478e-03&nbsp;0.040987172
+3&nbsp;&nbsp;&nbsp;3DOK1&nbsp;&nbsp;3DOK7&nbsp;2.511696e-02&nbsp;0.376754330
+4&nbsp;&nbsp;&nbsp;3DOK1&nbsp;3DOK13&nbsp;3.016445e-03&nbsp;0.045246679
+5&nbsp;&nbsp;&nbsp;3DOK1&nbsp;COMPOS&nbsp;1.528480e-02&nbsp;0.229272031
+6&nbsp;&nbsp;&nbsp;3DOK5&nbsp;&nbsp;3DOK4&nbsp;5.794178e-03&nbsp;0.086912663
+7&nbsp;&nbsp;&nbsp;3DOK5&nbsp;&nbsp;3DOK7&nbsp;7.276336e-02&nbsp;1.000000000
+8&nbsp;&nbsp;&nbsp;3DOK5&nbsp;3DOK13&nbsp;1.785048e-03&nbsp;0.026775721
+9&nbsp;&nbsp;&nbsp;3DOK5&nbsp;COMPOS&nbsp;3.177169e-02&nbsp;0.476575396
+10&nbsp;&nbsp;3DOK4&nbsp;&nbsp;3DOK7&nbsp;4.331464e-02&nbsp;0.649719553
+11&nbsp;&nbsp;3DOK4&nbsp;3DOK13&nbsp;5.107291e-01&nbsp;1.000000000
+12&nbsp;&nbsp;3DOK4&nbsp;COMPOS&nbsp;9.298460e-02&nbsp;1.000000000
+13&nbsp;&nbsp;3DOK7&nbsp;3DOK13&nbsp;4.996374e-05&nbsp;0.000749456
+14&nbsp;&nbsp;3DOK7&nbsp;COMPOS&nbsp;2.055216e-01&nbsp;1.000000000
+15&nbsp;3DOK13&nbsp;COMPOS&nbsp;4.932466e-04&nbsp;0.007398699
+
+</pre>
+Notice that many of the comparisons that seemed significant when
+using the t-test are no longer significant.  Plus, we didn't take 
+advantage of the increased degrees of freedom.  One technique that 
+uses all the degrees of freedom of the combined test, while still
+correcting for the problem of multiple comparisons is known as 
+Tukey's Honestly Significant Difference (HSD) test.  The <tt>TukeyHSD</tt>
+function takes a model object and the name of a factor, and provides 
+protected probability values for all the two-way comparisons of factor
+levels.  Here's the output of <tt>TukeyHSD</tt> for the clover data:
+
+<pre>
+&#62;&nbsp;tclover&nbsp;=&nbsp;TukeyHSD(clover.aov,'Strain')
+&#62;&nbsp;tclover
+&nbsp;&nbsp;Tukey&nbsp;multiple&nbsp;comparisons&nbsp;of&nbsp;means
+&nbsp;&nbsp;&nbsp;&nbsp;95%&nbsp;family-wise&nbsp;confidence&nbsp;level
+
+Fit:&nbsp;aov(formula&nbsp;=&nbsp;Nitrogen&nbsp;~&nbsp;Strain,&nbsp;data&nbsp;=&nbsp;clover)
+
+$Strain
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;diff&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lwr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;upr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p&nbsp;adj
+3DOK13-3DOK1&nbsp;&nbsp;-15.56&nbsp;-22.27416704&nbsp;-8.845833&nbsp;0.0000029
+3DOK4-3DOK1&nbsp;&nbsp;&nbsp;-14.18&nbsp;-20.89416704&nbsp;-7.465833&nbsp;0.0000128
+3DOK5-3DOK1&nbsp;&nbsp;&nbsp;&nbsp;-4.84&nbsp;-11.55416704&nbsp;&nbsp;1.874167&nbsp;0.2617111
+3DOK7-3DOK1&nbsp;&nbsp;&nbsp;&nbsp;-8.90&nbsp;-15.61416704&nbsp;-2.185833&nbsp;0.0048849
+COMPOS-3DOK1&nbsp;&nbsp;-10.12&nbsp;-16.83416704&nbsp;-3.405833&nbsp;0.0012341
+3DOK4-3DOK13&nbsp;&nbsp;&nbsp;&nbsp;1.38&nbsp;&nbsp;-5.33416704&nbsp;&nbsp;8.094167&nbsp;0.9870716
+3DOK5-3DOK13&nbsp;&nbsp;&nbsp;10.72&nbsp;&nbsp;&nbsp;4.00583296&nbsp;17.434167&nbsp;0.0006233
+3DOK7-3DOK13&nbsp;&nbsp;&nbsp;&nbsp;6.66&nbsp;&nbsp;-0.05416704&nbsp;13.374167&nbsp;0.0527514
+COMPOS-3DOK13&nbsp;&nbsp;&nbsp;5.44&nbsp;&nbsp;-1.27416704&nbsp;12.154167&nbsp;0.1621550
+3DOK5-3DOK4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;9.34&nbsp;&nbsp;&nbsp;2.62583296&nbsp;16.054167&nbsp;0.0029837
+3DOK7-3DOK4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5.28&nbsp;&nbsp;-1.43416704&nbsp;11.994167&nbsp;0.1852490
+COMPOS-3DOK4&nbsp;&nbsp;&nbsp;&nbsp;4.06&nbsp;&nbsp;-2.65416704&nbsp;10.774167&nbsp;0.4434643
+3DOK7-3DOK5&nbsp;&nbsp;&nbsp;&nbsp;-4.06&nbsp;-10.77416704&nbsp;&nbsp;2.654167&nbsp;0.4434643
+COMPOS-3DOK5&nbsp;&nbsp;&nbsp;-5.28&nbsp;-11.99416704&nbsp;&nbsp;1.434167&nbsp;0.1852490
+COMPOS-3DOK7&nbsp;&nbsp;&nbsp;-1.22&nbsp;&nbsp;-7.93416704&nbsp;&nbsp;5.494167&nbsp;0.9926132
+
+&#62;&nbsp;class(tclover)
+[1]&nbsp;"multicomp"&nbsp;"TukeyHSD"&nbsp;
+&#62;&nbsp;names(tclover)
+[1]&nbsp;"Strain"
+&#62;&nbsp;class(tclover$Strain)
+[1]&nbsp;"matrix"
+
+</pre> 
+These probabilities seem more reasonable.  To combine these 
+results with the previous ones, notice that <tt>tclover$Strain</tt>
+is a matrix, with row names indicating the comparisons being made.
+We can put similar row names on our earlier results and then merge 
+them:
+
+<pre>
+&#62;&nbsp;row.names(probs)&nbsp;=&nbsp;paste(probs$X2,probs$X1,sep='-')
+&#62;&nbsp;probs&nbsp;=&nbsp;merge(probs,tclover$Strain[,'p&nbsp;adj',drop=FALSE],by=0)
+&#62;&nbsp;probs
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Row.names&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;probs&nbsp;&nbsp;&nbsp;&nbsp;adj.prob&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p&nbsp;adj
+1&nbsp;&nbsp;&nbsp;3DOK13-3DOK1&nbsp;&nbsp;3DOK1&nbsp;3DOK13&nbsp;0.0030164452&nbsp;0.045246679&nbsp;2.888133e-06
+2&nbsp;&nbsp;&nbsp;&nbsp;3DOK4-3DOK1&nbsp;&nbsp;3DOK1&nbsp;&nbsp;3DOK4&nbsp;0.0027324782&nbsp;0.040987172&nbsp;1.278706e-05
+3&nbsp;&nbsp;&nbsp;&nbsp;3DOK5-3DOK1&nbsp;&nbsp;3DOK1&nbsp;&nbsp;3DOK5&nbsp;0.1626608271&nbsp;1.000000000&nbsp;2.617111e-01
+4&nbsp;&nbsp;&nbsp;&nbsp;3DOK7-3DOK1&nbsp;&nbsp;3DOK1&nbsp;&nbsp;3DOK7&nbsp;0.0251169553&nbsp;0.376754330&nbsp;4.884864e-03
+5&nbsp;&nbsp;&nbsp;&nbsp;3DOK7-3DOK4&nbsp;&nbsp;3DOK4&nbsp;&nbsp;3DOK7&nbsp;0.0433146369&nbsp;0.649719553&nbsp;1.852490e-01
+6&nbsp;&nbsp;&nbsp;&nbsp;3DOK7-3DOK5&nbsp;&nbsp;3DOK5&nbsp;&nbsp;3DOK7&nbsp;0.0727633570&nbsp;1.000000000&nbsp;4.434643e-01
+7&nbsp;&nbsp;&nbsp;COMPOS-3DOK1&nbsp;&nbsp;3DOK1&nbsp;COMPOS&nbsp;0.0152848021&nbsp;0.229272031&nbsp;1.234071e-03
+8&nbsp;&nbsp;COMPOS-3DOK13&nbsp;3DOK13&nbsp;COMPOS&nbsp;0.0004932466&nbsp;0.007398699&nbsp;1.621550e-01
+9&nbsp;&nbsp;&nbsp;COMPOS-3DOK4&nbsp;&nbsp;3DOK4&nbsp;COMPOS&nbsp;0.0929845957&nbsp;1.000000000&nbsp;4.434643e-01
+10&nbsp;&nbsp;COMPOS-3DOK5&nbsp;&nbsp;3DOK5&nbsp;COMPOS&nbsp;0.0317716931&nbsp;0.476575396&nbsp;1.852490e-01
+11&nbsp;&nbsp;COMPOS-3DOK7&nbsp;&nbsp;3DOK7&nbsp;COMPOS&nbsp;0.2055215679&nbsp;1.000000000&nbsp;9.926132e-01
+
+</pre>
+ Finally, we can display the probabilities without scientific
+notation as follows:
+
+<pre>
+&#62;&nbsp;format(probs,scientific=FALSE)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Row.names&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;probs&nbsp;&nbsp;&nbsp;&nbsp;adj.prob&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p&nbsp;adj
+1&nbsp;&nbsp;&nbsp;3DOK13-3DOK1&nbsp;&nbsp;3DOK1&nbsp;3DOK13&nbsp;0.0030164452&nbsp;0.045246679&nbsp;0.000002888133
+2&nbsp;&nbsp;&nbsp;&nbsp;3DOK4-3DOK1&nbsp;&nbsp;3DOK1&nbsp;&nbsp;3DOK4&nbsp;0.0027324782&nbsp;0.040987172&nbsp;0.000012787061
+3&nbsp;&nbsp;&nbsp;&nbsp;3DOK5-3DOK1&nbsp;&nbsp;3DOK1&nbsp;&nbsp;3DOK5&nbsp;0.1626608271&nbsp;1.000000000&nbsp;0.261711120046
+4&nbsp;&nbsp;&nbsp;&nbsp;3DOK7-3DOK1&nbsp;&nbsp;3DOK1&nbsp;&nbsp;3DOK7&nbsp;0.0251169553&nbsp;0.376754330&nbsp;0.004884863746
+5&nbsp;&nbsp;&nbsp;&nbsp;3DOK7-3DOK4&nbsp;&nbsp;3DOK4&nbsp;&nbsp;3DOK7&nbsp;0.0433146369&nbsp;0.649719553&nbsp;0.185248969392
+6&nbsp;&nbsp;&nbsp;&nbsp;3DOK7-3DOK5&nbsp;&nbsp;3DOK5&nbsp;&nbsp;3DOK7&nbsp;0.0727633570&nbsp;1.000000000&nbsp;0.443464260597
+7&nbsp;&nbsp;&nbsp;COMPOS-3DOK1&nbsp;&nbsp;3DOK1&nbsp;COMPOS&nbsp;0.0152848021&nbsp;0.229272031&nbsp;0.001234070633
+8&nbsp;&nbsp;COMPOS-3DOK13&nbsp;3DOK13&nbsp;COMPOS&nbsp;0.0004932466&nbsp;0.007398699&nbsp;0.162154993324
+9&nbsp;&nbsp;&nbsp;COMPOS-3DOK4&nbsp;&nbsp;3DOK4&nbsp;COMPOS&nbsp;0.0929845957&nbsp;1.000000000&nbsp;0.443464260597
+10&nbsp;&nbsp;COMPOS-3DOK5&nbsp;&nbsp;3DOK5&nbsp;COMPOS&nbsp;0.0317716931&nbsp;0.476575396&nbsp;0.185248969392
+11&nbsp;&nbsp;COMPOS-3DOK7&nbsp;&nbsp;3DOK7&nbsp;COMPOS&nbsp;0.2055215679&nbsp;1.000000000&nbsp;0.992613208547
+
+</pre>
+ By using all of the data to estimate the residual error, 
+Tukey's HSD method actually reports some of the probabilities as 
+even lower than the t-tests.
+
+<div class="p"><!----></div>
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On 25 Apr 2011, 15:23.</small>
+</html>

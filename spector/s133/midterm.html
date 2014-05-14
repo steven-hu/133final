@@ -1,0 +1,85 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> Stat 133 Midterm Exam Spring 2011</title>
+ 
+<h1 align="center">Stat 133 Midterm Exam Spring 2011 </h1>
+
+
+
+ <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;Grade Distribution</h2>
+The two graphs shown below illustrate the grade distribution for the 
+midterm:
+
+<div class="p"><!----></div>
+<img src="midterm2011.png">
+<img src="midterm2011-all.png">
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc2">
+2</a>&nbsp;&nbsp;Answers and Grading</h2>
+A copy of the midterm (pdf) with the answers can be found <a href="midterm2011-anno.pdf">here</a>.  The following notes show how I subtracted points for incorrect
+answers:
+
+<pre>
+1 a)  missing which                    -1
+      which(x,na.rm=TRUE)             -.5
+      x[is.na(x)] not sum(is.na(x))   -.5
+  b)  summing x, not !is.na(x)         -1
+      dim instead of length           -.5 
+      is.na instead of !is.na         -.5
+  c)  assign wrong thing               -1
+      using sub instead of =           -1
+  d)  forget return value              -1
+
+2 a)  no ~                            -.5
+  b)  use sort instead of order        -1
+      no indexing                      -1
+      missing ,                       -.5
+      which used incorrectly           -1
+  c)  max instead of which.max         -1
+
+3 a)  using strsplit instead of nchar  -1
+  b)  forgetting sapply                -1
+      average or avg instead of mean  -.5
+  c)  using strsplit instead of nchar  -1
+      using which incorrectly          -1
+      not indexing book                -.5
+
+4 a)  wrong first argument             -.5
+      wrong second argument            -.5 
+      missing na.rm=TRUE               -.5
+  b)  which instead of sum             -1
+      sum of data instead of condition -1
+      wrong logical condition          -1
+      length instead of nrow           -.5
+  d)  not using table                  -1
+
+5 a)  not switching the order          -1
+      not using sub or gsub            -1
+  b)  grep instead of sub              -1
+  c)  not using gregexpr               -1.5  
+      wrong pattern                    -1
+      not using unlist                 -.5
+  d)  using gsub without ^             -.5
+ 
+</pre>
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On  4 Mar 2011, 11:14.</small>
+</html>

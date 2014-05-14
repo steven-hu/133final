@@ -1,0 +1,301 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> Introduction to Concepts in Computing with Data</title>
+ 
+<h1 align="center">Introduction to Concepts in Computing with Data </h1>
+
+
+
+     <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;What's this course about?</h2>
+The goal of this course is to introduce you to a variety of 
+concepts and methods that are useful when dealing with data.
+You can think of data as any information that could potentially
+be studied to learn more about something.
+
+<div class="p"><!----></div>
+Some simple examples:
+
+<ol type="1">
+<li>Sales records for a company
+<div class="p"><!----></div>
+</li>
+
+<li>
+Won/Lost records for a sports team
+<div class="p"><!----></div>
+</li>
+
+<li>
+Web log listings
+<div class="p"><!----></div>
+</li>
+
+<li>
+Email messages
+<div class="p"><!----></div>
+</li>
+
+<li>
+Demographic Information found on the web
+<div class="p"><!----></div>
+</li>
+</ol>
+
+<div class="p"><!----></div>
+What may be surprising is that some of the data (for example web log listings
+or email) consists of text, not numbers.  It's increasingly important to 
+be able to deal with text in order to look at the wide variety of information
+that is available.
+
+<div class="p"><!----></div>
+In most statistics courses, a lot of time is spent working on the 
+preliminaries (formulas, algorithms, statistical concepts) in order to 
+prepare the student for the interesting part of statistics, which is 
+studying data for a problem that matters to you.  Unfortunately, by the 
+time these preliminaries are covered, many students are bored or frustrated,
+and they leave the course with a distorted view of statistics.  In this 
+class, we're going to do things differently.  We will concentrate on:
+
+<div class="p"><!----></div>
+
+<ol type="1">
+<li>Computer Languages - which will let us read in and manipulate data.
+<div class="p"><!----></div>
+</li>
+
+<li>
+Graphical Techniques - which will allow us to display data in a way that
+makes it easier to understand and easier to make decisions based on the data.
+<div class="p"><!----></div>
+</li>
+
+<li>
+Technologies - so that we can present these techniques to someone who's
+not as knowledgeable as us without too much misery.
+<div class="p"><!----></div>
+</li>
+</ol>
+
+<div class="p"><!----></div>
+The main computer language that we will be using in the course is a 
+statistical programming environment known as R 
+(<a href="http://r-project.org">http://r-project.org</a>).
+R is freely downloadable and copyable, and you are strongly encouraged to 
+install R on your own computer for use in this course and beyond.
+We will use this language for both data acquisition, data manipulation and
+producing graphical output.   R is not the ideal language for all of the 
+tasks we're going to do, but in the interest of efficiency, we'll try to
+use it for most things, and point you in the direction of other languages
+that you might want to explore sometime in the future.
+
+<div class="p"><!----></div>
+Another tool that we'll use are UNIX shell commands, which allow you to 
+store, copy and otherwise manipulate files which contain data, documents or
+programs.
+The computer accounts for this course will allow you to access computers
+running a version of the UNIX operating system
+
+<div class="p"><!----></div>
+More and more commonly, data is stored on database servers, not in ordinary
+files.  
+Most database servers use some version of a language known as 
+the Structured Query Language (SQL).  We'll use the open-source MySQL 
+database as an example of an SQL database.
+
+<div class="p"><!----></div>
+While you shouldn't have any problems understanding any of the statistical
+techniques we study in this class, a certain level of complexity arises when
+various techniques are combined together and presented as a start-to-finish
+solution.  To learn how we can make techniques we've developed to others, 
+we'll look at graphical user interfaces (GUIs) as well as using web servers
+to get information from users and display results.  
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc2">
+2</a>&nbsp;&nbsp;Some Basic Concepts in Computing with Data</h2>
+Most real-life projects that involve data can be broken down into several
+steps:
+
+<ol type="1">
+<li>Data Acquisition - we need to find (or collect) the data, and get some 
+representation of it into the computer
+<div class="p"><!----></div>
+</li>
+
+<li>
+Data Cleaning - Inevitably, there will be errors in the data, either because
+they were entered incorrectly, we misunderstood the nature of the data, 
+records were duplicated or omitted.   Many times data is presented for 
+viewing, and extracting the data in some other form becomes a challenge.
+<div class="p"><!----></div>
+</li>
+
+<li>
+Data Organization - Depending on what you want to do, you may need to 
+reorganize your data.  This is especially true when you need to produce
+graphical representations of the data.  Naturally, we need the appropriate
+tools to do these tasks.
+<div class="p"><!----></div>
+</li>
+
+<li>
+Data Modeling and Presentation - We may fit a statistical model to our 
+data, or we may just produce a graph that shows what we think is important.
+Often, a variety of models or graphs needs to be considered.  It's important
+to know what techniques are available and whether they are accepted within
+a particular user community.
+<div class="p"><!----></div>
+</li>
+</ol>
+
+<div class="p"><!----></div>
+Further, techniques such as simulation and resampling have been developed
+to allow us to get information even in cases where we don't have exactly
+the data that we'd like to have.   
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc3">
+3</a>&nbsp;&nbsp;A Short Note on Academic Integrity</h2>
+One of the main ways you are going to learn in this course is by discussing
+the material in class and in lab sections, and I feel that this is one of 
+the most important aspects of the course.  However, the programs you write are
+like an essay or term paper, and you should not share them with others, or ask
+others to give their programs to you.    
+
+<div class="p"><!----></div>
+The University has a very detailed code of student conduct, available at
+<a href="http://students.berkeley.edu/uga/conductiii-vii.asp">http://students.berkeley.edu/uga/conductiii-vii.asp</a>.  Please refer
+to that document or talk to me if there are any questions.
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc4">
+4</a>&nbsp;&nbsp;Introduction to R</h2>
+Here are some basic concepts about R that we'll return to later 
+in more detail:
+
+<ul>
+<li>R can be used as a calculator.  Any statements that you type at the
+R prompt will be executed, and the answer printed:
+
+<pre>
+&#62;&nbsp;12&nbsp;+&nbsp;9
+[1]&nbsp;21
+&#62;&nbsp;17.1*&nbsp;13
+[1]&nbsp;222.3
+&#62;&nbsp;554&nbsp;/3
+[1]&nbsp;184.6667
+
+</pre>
+ Notice that spaces can be placed wherever you'd like, 
+as long as they're not in the middle of a number.
+<div class="p"><!----></div>
+</li>
+
+<li>
+R is just as happy to work with vectors (more than one value) as
+it is with scalars (single values).  The function to create a vector
+from individual values is <tt>c()</tt>:
+
+<pre>
+&#62;&nbsp;c(10,12,19)&nbsp;+&nbsp;c(8,5,9)
+[1]&nbsp;18&nbsp;17&nbsp;28
+&#62;&nbsp;c(1,2,3)&nbsp;*&nbsp;c(3,2,1)
+[1]&nbsp;3&nbsp;4&nbsp;3
+
+</pre>
+ When you use operators like <tt>*</tt>(multiplication) 
+or <tt>+</tt>(addition), R does the operations element by element
+<div class="p"><!----></div>
+</li>
+
+<li> 
+There are three ways to get help in R:
+
+<ol type="1">
+<li> The <tt>help()</tt> command, which can be abbreviated by <tt>?</tt>,
+will open a help page in a browswer with information about a particular
+command.  For example, to get help on the <tt>c</tt> function mentioned
+above, you could type:
+
+<pre>
+&#62;&nbsp;help(c)
+
+</pre>
+ or
+
+<pre>
+&#62;&nbsp;?c
+
+</pre>
+<div class="p"><!----></div>
+</li>
+
+<li> The <tt>help.search()</tt> function, which can be abbreviated by
+<tt>??</tt>, will show other functions already installed in your version
+of R that relate to a particular topic.  For example, to see about functions
+that combine things in R, you could type
+
+<pre>
+&#62;&nbsp;??combine
+
+</pre>
+  <tt>help.search()</tt> only looks for functions already installed
+on your computer.
+<div class="p"><!----></div>
+</li>
+
+<li>
+The <tt>RSiteSearch()</tt> command will open a browser to a searchable
+database of questions and answers posted on the R-help mailing list. (See
+<a href="http://www.r-project.org/mail.html">http://www.r-project.org/mail.html</a>
+for more information on the R-help mailing list.)
+<div class="p"><!----></div>
+</li>
+</ol>
+<div class="p"><!----></div>
+</li>
+
+<li>
+When you type the name of an object into R, it will display that object.
+This can be frustrating when you want to actually run the object.  For
+example, if you type <tt>q</tt> at the R prompt, you'll see:
+
+<pre>
+&#62;&nbsp;q
+function&nbsp;(save&nbsp;=&nbsp;"default",&nbsp;status&nbsp;=&nbsp;0,&nbsp;runLast&nbsp;=&nbsp;TRUE)&nbsp;
+.Internal(quit(save,&nbsp;status,&nbsp;runLast))
+&lt;environment:&nbsp;namespace:base&#62;
+
+</pre>
+ To actually execute the <tt>q</tt> command, type
+
+<pre>
+&#62;&nbsp;q()
+
+</pre>
+<div class="p"><!----></div>
+</li>
+</ul>
+
+<div class="p"><!----></div>
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On 19 Jan 2011, 15:34.</small>
+</html>

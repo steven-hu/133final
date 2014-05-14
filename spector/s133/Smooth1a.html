@@ -1,0 +1,167 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> Smoothers</title>
+ 
+<h1 align="center">Smoothers </h1>
+
+
+
+ <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;Spline Smoothers</h2>
+Another type of smoothing is known as spline smoothing, named after a tool formerly
+used by draftsmen.  A spline is a flexible piece of metal (usually lead) which could
+be used as a guide for drawing smooth curves.  A set of points (known as knots) would
+be selected, and the spline would be held down at a particular x,y point, then bent to
+go through the next point, and so on.  Due to the flexibility of the metal, this 
+process would result in a smooth curve through the points.
+
+<div class="p"><!----></div>
+Mathematically, the process can be reproduced by choosing the knot points and using 
+(usually cubic) regression to estimate points in between the knots, and using calculus 
+to make sure that the curve is smooth whenever the individual regression lines are
+joined together.   
+The <tt>smooth.spline</tt> function in R performs these operations.
+The degree of smoothness is controlled by an argument called <tt>spar=</tt>, which 
+usually ranges between 0 and 1.
+To illustrate, consider a data set consisting of the wheat production of the United 
+States from 1910 to 2004.  The data set can be found at
+<a href="http://www.stat.berkeley.edu/classes/s133/data/wheat.txt">http://www.stat.berkeley.edu/classes/s133/data/wheat.txt</a>.
+The following lines will produce a plot of the data, and superimpose a spline smooth.
+
+<pre>
+&#62;&nbsp;wheat&nbsp;=&nbsp;read.table('http://www.stat.berkeley.edu/classes/s133/data/wheat.txt',header=TRUE)
+&#62;&nbsp;plot(wheat$year,wheat$production)
+&#62;&nbsp;lines(smooth.spline(wheat$year,wheat$production))
+
+</pre>
+
+<div class="p"><!----></div>
+Here's the result:
+
+<div class="p"><!----></div>
+<img src="wheatspl.png">
+
+<div class="p"><!----></div>
+The amount of smoothing that <tt>smooth.spline</tt> applies is controlled by 
+the argument <tt>spar</tt>.  We can examine the effect of <tt>spar</tt> by 
+producing several plots, each with a different value of <tt>spar</tt>.
+
+<div class="p"><!----></div>
+
+<pre>
+plotfn&nbsp;=&nbsp;function(spar){
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;plot(wheat$year,wheat$production,main=spar)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lines(smooth.spline(wheat$year,wheat$production,spar=spar),col='red')
+}
+spars&nbsp;=&nbsp;seq(.1,1,by=.1)
+par(mfrow=c(5,2),mar=c(2,4,2,1)+.1)
+sapply(spars,plotfn)
+
+</pre>
+
+<div class="p"><!----></div>
+The plot appears below:
+
+<div class="p"><!----></div>
+<img src="wheatspar.png">
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc2">
+2</a>&nbsp;&nbsp;Supersmoother</h2>
+While most smoothers require specification of a bandwidth, fraction of data, or level
+of smoothing, supersmoother is different in that it figures these things out for 
+itself.  Thus, it's an excellent choice for situations where smoothing needs to be done
+without any user intervention.  Supersmoother works by performing lots of simple 
+local regression smooths, and, at each x-value it uses those smooths to decide the best 
+y-value to use.  In R, supersmoother is made available through the <tt>supsmu</tt> 
+function.
+
+<div class="p"><!----></div>
+To illustrate, consider the car data which we used earlier when we were studying 
+cluster analysis.  The following lines produce a plot of <tt>weight</tt> 
+versus <tt>MPG</tt>, and superimposes a supersmoother line.
+
+<pre>
+&#62;&nbsp;plot(cars$Weight,cars$MPG)
+&#62;&nbsp;lines(supsmu(cars$Weight,cars$MPG))
+
+</pre>
+
+<div class="p"><!----></div>
+The plot appears below:
+
+<div class="p"><!----></div>
+<img src="carssup.png">
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc3">
+3</a>&nbsp;&nbsp;Smoothers with Lattice Plots</h2>
+When working with lattice graphics, we've already seen the use of <tt>panel.lmline</tt>,
+which displays the best regression line in each panel of a lattice plot.  A similar 
+function, <tt>panel.loess</tt>, is available to superimpose a locally weighted regression
+smoother in each panel of a plot.  As a simple illustration, consider the built-in
+<tt>Orange</tt> data set, which has information about the age and circumference of 
+several orange trees.  First, let's look at a plot with the best regression line 
+smoother superimposed on the plot of <tt>age</tt> versus <tt>circumference</tt> for
+each <tt>Tree</tt>:
+
+<pre>
+&#62;&nbsp;library(lattice)
+&#62;&nbsp;xyplot(circumference~age|Tree,data=Orange,
++&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;panel=function(x,y,...){panel.xyplot(x,y,...);panel.lmline(x,y,...)})
+
+</pre>
+Here's the plot:
+
+<div class="p"><!----></div>
+<img src="http://www.stat.berkeley.edu/users/spector/s133/orangelm.png.png">
+
+<div class="p"><!----></div>
+To create the same plot, but using the <tt>panel.loess</tt> function, we can use 
+the following:
+
+<pre>
+&#62;&nbsp;xyplot(circumference~age|Tree,data=Orange,&nbsp;
++&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;panel=function(x,y,...){panel.xyplot(x,y,...);panel.loess(x,y,...)})
+
+</pre>
+Here's  how the plot looks:
+
+<div class="p"><!----></div>
+<img src="orangelo.png">
+
+<div class="p"><!----></div>
+If a <tt>panel.</tt> function doesn't exist for a smoother you'd like to use,
+you can use the <tt>panel.lines</tt> function to plot it directly:
+
+<pre>
+&#62;&nbsp;xyplot(circumference~age|Tree,data=Orange,&nbsp;
++&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;panel=function(x,y,...){panel.xyplot(x,y,...);z=supsmu(x,y);panel.lines(z$x,z$y,...)})
+
+</pre>
+In this case supersmoother came closer to a straight line than lowess.
+
+<div class="p"><!----></div>
+<img src="orangesup.png">
+
+<div class="p"><!----></div>
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On 20 Apr 2011, 16:02.</small>
+</html>

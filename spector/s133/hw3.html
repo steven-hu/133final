@@ -1,0 +1,140 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+   
+<title>Stat 133 Spring 2011 Assignment 3</title>
+
+
+<center><font size="+1">Stat 133, Spring 2011<br />
+Homework 3: Graphics and Databases<br />
+Due Friday, Apr. 1 at 11:59PM<br />
+</font></center>
+
+<table align="center" border="0"><tr><td>
+<font size="+2">Graphics and Databases</font></td></tr></table><!--hboxt-->
+
+
+<ol type="1">
+<li>At the web site <a href="http://www.fao.org/es/esc/prices/PricesServlet.jsp?lang=en">http://www.fao.org/es/esc/prices/PricesServlet.jsp?lang=en</a> 
+is an applet that allows you to download data for prices of various commodities
+over ranges in time.  Note that you can make multiple choices of commodities and dates by pressing 
+the control key while clicking on the choices, or by clicking on a first choice and shift-clicking
+on a final choice.  You can
+copy the link to the CSV file that appears after you click 'Submit Query' to download directly
+into R, or download the CSV file to your computer in the usual way.
+
+<div class="p"><!----></div>
+Choose between four and eight commodities of interest, and download the 
+monthly data for as many years as are available.  Convert the dates to 
+one of R's date types, and plot each commodity's price over time in such a way
+that it's easy to compare the changes in the different commodity's prices over time.
+<div class="p"><!----></div>
+</li>
+
+<li>
+At the web site <a href="http://www.dof.ca.gov/HTML/FS_DATA/STAT-ABS/Toc_xls.htm">http://www.dof.ca.gov/HTML/FS_DATA/STAT-ABS/Toc_xls.htm</a>
+are links to several Excel spreadsheets containing statistical information 
+about California.
+
+<div class="p"><!----></div>
+Choose a spreadsheet from that web page that interests you, download it, 
+and read it into R using one of the methods presented in class.  You should
+choose a spreadsheet that has at least one variable for every county in 
+California.  Choose a suitable gradient, and divide the variable into a
+reasonable number of groups, and create a map of California with the colors
+of the gradient representing the value of the variable for each county.
+<div class="p"><!----></div>
+</li>
+
+<li>
+I have placed a copy of the SQLite albums database that was used in lecture
+at <a href="http://www.stat.berkeley.edu/classes/s133/albums.db">http://www.stat.berkeley.edu/classes/s133/albums.db</a>.  Use the database to answer the following questions:
+
+<ul>
+<li>  List the names of the ten songs which appear the most times in the collection, along with the number of times they appear.
+<div class="p"><!----></div>
+</li>
+
+<li>  List the names of the ten artists who have the most albums in the collection,
+along with the number of albums.
+<div class="p"><!----></div>
+</li>
+
+<li> List the names of the ten artists who have the most tracks in the collection,
+along with the number of tracks.
+<div class="p"><!----></div>
+</li>
+
+<li> List the names of the ten artists who have the most total time (length) for
+all their tracks in the collection, along with the total time.
+<div class="p"><!----></div>
+</li>
+</ul>
+<div class="p"><!----></div>
+</li>
+
+<li>
+The next part of the assignment uses a baseball database which was 
+downloaded from <a href="http://www.baseball-databank.org/">http://www.baseball-databank.org/</a>.  
+You will need to access the MySQL server running on <tt>springer.berkeley.edu</tt>
+using the username and password given in class, and, if you're not using an SCF
+machine, you'll have to set up an SSH tunnel.
+There are 25 data tables in the database, many of which you won't need 
+to use.   Answer the following three questions using at least one data summary
+and/or graph to support your answer.
+
+<ol type="a">
+<li>Which college has produced the baseball players with the highest batting average?
+Batting average can be calculated by taking the number of hits (column <tt>H</tt> 
+in the <tt>Batting</tt> table) and dividing by the number of at-bats 
+(column <tt>AB</tt> in the <tt>Batting</tt> table).  You may want to eliminate 
+players who have had fewer than, say, 50 at-bats from the calculations.
+<div class="p"><!----></div>
+</li>
+
+<li>
+Do players who hit more home runs receive  higher salaries than players who hit 
+fewer home runs?
+<div class="p"><!----></div>
+</li>
+
+<li>
+Do players who have nick names (<tt>nameNick</tt> in the <tt>Master</tt> table)
+tend to receive higher salaries than players that don't have nick names?
+Can you think of a reason why this may be true?
+<div class="p"><!----></div>
+</li>
+</ol>
+
+<div class="p"><!----></div>
+Notice that for the last two questions it's important to take time into account.
+In other words, you'll have to break down your analysis to handle each year 
+separately.
+<div class="p"><!----></div>
+</li>
+</ol>
+
+<div class="p"><!----></div>
+Your submission should be contained in a <em>single</em> pdf file. 
+Email this file to me<br />
+(<tt>s133@stat.berkeley.edu</tt>), 
+by 11:59PM (plus or minus a minute)
+on the due date. Make certain to save a copy of your email submission.
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On 11 Mar 2011, 15:54.</small>
+</html>

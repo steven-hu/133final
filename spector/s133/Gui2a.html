@@ -1,0 +1,473 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> Graphical User Interfaces</title>
+ 
+<h1 align="center">Graphical User Interfaces </h1>
+
+
+
+ <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;Plotting</h2>
+When developing a TK-based GUI for plotting, there are two possibilities available.
+The first, which is the only choice if you need to interact with the graph using
+<tt>locator</tt> or <tt>identify</tt>, is to create a GUI with the controls for the 
+plot, and to let R open a normal plotting window.   The second option utilizes the
+<tt>tkrplot</tt> library, available from CRAN, to create a label widget with an image
+of the plot; this label can be placed anywhere that any other widget can be placed.
+
+<div class="p"><!----></div>
+To illustrate the use of a GUI with  plotting, consider
+the problem of mixtures of normal distributions.  Many times a sample will 
+actually contain
+two separate distributions, even though it will be treated as a single distribution.
+Obviously data like this will create problems when we try to analyze it, so it's
+important to be able to recognize such data, using, say a density plot.  To get
+an idea of how the density of mixtures of distributions would look, we can create
+a GUI using a scale or slider widget that will allow us to control the fraction
+of each of two distributions that will be combined.  Many times the first step
+in making a GUI is writing the function that the GUI will eventually call to 
+actually do the work.  This helps to identify the parameters that need to be 
+supplied to the function so that the GUI can be designed in such a way to get all
+the necessary information.  For this case, we'll want to specify the mean and 
+standard deviation of the first distribution, the mean and standard deviation of
+the second distribution, and the fraction of the second distribution to use.  (The
+fraction for the first distribution will just be 1 minus the fraction for the 
+first distribution.)  Here's such a function:
+
+<pre>
+genplot&nbsp;=&nbsp;function(m1,s1,m2,s2,frac,n=100){
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dat&nbsp;=&nbsp;c(rnorm((1-frac)*n,m1,s1),rnorm(frac*n,m2,s2))
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;plot(density(dat),type='l',main='Density&nbsp;of&nbsp;Mixtures')
+}
+
+</pre>
+Now we can create the interface.  We'll make three frames: the first will accept
+the mean and standard deviation for the first distribution, the second will have 
+the mean and standard deviation for the second distribution, and the third will
+have the slider to determine the fraction of each distribution to use.  Recall that
+we need to create <tt>tcl</tt> variables, and then convert them into R variables 
+before we can call our function, so I'll use an intermediate function which will
+do the translations and then call <tt>genplot</tt> as a callback.  Although there
+is a fair amount of code, most of it is very similar.
+
+<pre>
+require(tcltk)
+
+doplot&nbsp;=&nbsp;function(...){
+&nbsp;&nbsp;&nbsp;m1&nbsp;=&nbsp;as.numeric(tclvalue(mean1))
+&nbsp;&nbsp;&nbsp;m2&nbsp;=&nbsp;as.numeric(tclvalue(mean2))
+&nbsp;&nbsp;&nbsp;s1&nbsp;=&nbsp;as.numeric(tclvalue(sd1))
+&nbsp;&nbsp;&nbsp;s2&nbsp;=&nbsp;as.numeric(tclvalue(sd2))
+&nbsp;&nbsp;&nbsp;fr&nbsp;=&nbsp;as.numeric(tclvalue(frac))
+&nbsp;&nbsp;&nbsp;genplot(m1,s1,m2,s2,fr,n=100)
+}
+
+base&nbsp;=&nbsp;tktoplevel()
+tkwm.title(base,'Mixtures')
+mainfrm&nbsp;=&nbsp;tkframe(base)
+
+mean1&nbsp;=&nbsp;tclVar(10)
+mean2&nbsp;=&nbsp;tclVar(10)
+sd1&nbsp;&nbsp;&nbsp;=&nbsp;tclVar(1)
+sd2&nbsp;&nbsp;&nbsp;=&nbsp;tclVar(1)
+frac&nbsp;&nbsp;=&nbsp;tclVar(.5)
+
+m1&nbsp;=&nbsp;tkframe(mainfrm)
+tkpack(tklabel(m1,text='Mean1,&nbsp;SD1',width=10),side='left')
+tkpack(tkentry(m1,width=5,textvariable=mean1),side='left')
+tkpack(tkentry(m1,width=5,textvariable=sd1),side='left')
+tkpack(m1,side='top')
+
+m2&nbsp;=&nbsp;tkframe(mainfrm)
+tkpack(tklabel(m2,text='Mean2,&nbsp;SD2',width=10),side='left')
+tkpack(tkentry(m2,width=5,textvariable=mean2),side='left')
+tkpack(tkentry(m2,width=5,textvariable=sd2),side='left')
+tkpack(m2,side='top')
+
+m3&nbsp;=&nbsp;tkframe(mainfrm)
+tkpack(tkscale(m3,command=doplot,from=0,to=1,showvalue=TRUE,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;variable=frac,resolution=.01,orient='horiz'))
+tkpack(m3,side='top')
+
+tkpack(mainfrm)
+
+</pre>
+Here's how the interface looks:
+
+<div class="p"><!----></div>
+<img src="mix.png">
+
+<div class="p"><!----></div>
+To produce the same sort of GUI, but with the plot in the same frame as the 
+slider, we can use the <tt>tkrplot</tt> library.   To place the plot in the
+same frame as the slider, we must first create a <tt>tkrplot</tt> widget, using
+the <tt>tkrplot</tt> function.  After loading the <tt>tkrplot</tt> library,
+we call this function with two arguments; the frame in which the plot is to 
+be displayed, and a callback function (using <tt>...</tt> as the only argument)
+that will draw the desired plot.  In this example, we can use the same function
+(<tt>doplot</tt>) as in the standalone version:
+
+<pre>
+img&nbsp;=&nbsp;tkrplot(mainfrm,doplot)
+
+</pre>
+ Since the <tt>tkrplot</tt> widget works by displaying an image of the 
+plot, the only way to change the plot is to change this image, which is exactly
+what the <tt>tkrreplot</tt> function does.  The only argument to <tt>tkrreplot</tt>
+is the <tt>tkrplot</tt> widget that will need to be redrawn.  Thus, the slider 
+can be constructed with the following statements:
+
+<pre>
+scalefunc&nbsp;=&nbsp;function(...)tkrreplot(img)
+s&nbsp;=&nbsp;tkscale(mainfrm,command=scalefunc,from=0,to=1,showvalue=TRUE,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;variable='frac',resolution=.01,orient='horiz')
+
+</pre>
+By packing the <tt>tkrplot</tt> object first, followed by the frames for the mean
+and standard deviations, and packing the slider widget last, we can produce the 
+GUI shown below:
+
+<div class="p"><!----></div>
+<img src="tkrplot.png">
+
+<div class="p"><!----></div>
+The complete code for this GUI is as follows:
+
+<pre>
+require(tcltk)
+require(tkrplot)
+
+genplot&nbsp;=&nbsp;function(m1,s1,m2,s2,frac,n=100){
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dat&nbsp;=&nbsp;c(rnorm((1-frac)*n,m1,s1),rnorm(frac*n,m2,s2))
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;plot(density(dat),type='l',main='Density&nbsp;of&nbsp;Mixtures')
+	&nbsp;&nbsp;}
+
+doplot&nbsp;=&nbsp;function(...){
+&nbsp;&nbsp;&nbsp;m1&nbsp;=&nbsp;as.numeric(tclvalue(mean1))
+&nbsp;&nbsp;&nbsp;m2&nbsp;=&nbsp;as.numeric(tclvalue(mean2))
+&nbsp;&nbsp;&nbsp;s1&nbsp;=&nbsp;as.numeric(tclvalue(sd1))
+&nbsp;&nbsp;&nbsp;s2&nbsp;=&nbsp;as.numeric(tclvalue(sd2))
+&nbsp;&nbsp;&nbsp;fr&nbsp;=&nbsp;as.numeric(tclvalue(frac))
+&nbsp;&nbsp;&nbsp;genplot(m1,s1,m2,s2,fr,n=100)
+}
+
+
+base&nbsp;=&nbsp;tktoplevel()
+tkwm.title(base,'Mixtures')
+mainfrm&nbsp;=&nbsp;tkframe(base)
+
+mean1&nbsp;=&nbsp;tclVar(10)
+mean2&nbsp;=&nbsp;tclVar(10)
+sd1&nbsp;&nbsp;&nbsp;=&nbsp;tclVar(1)
+sd2&nbsp;&nbsp;&nbsp;=&nbsp;tclVar(1)
+frac&nbsp;&nbsp;=&nbsp;tclVar(.5)
+
+img&nbsp;=&nbsp;tkrplot(mainfrm,doplot)
+scalefunc&nbsp;=&nbsp;function(...)tkrreplot(img)
+s&nbsp;=&nbsp;tkscale(mainfrm,command=scalefunc,from=0,to=1,showvalue=TRUE,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;variable=frac,resolution=.01,orient='horiz')
+tkpack(img)
+
+m1&nbsp;=&nbsp;tkframe(mainfrm)
+tkpack(tklabel(m1,text='Mean1,&nbsp;SD1',width=10),side='left')
+tkpack(tkentry(m1,width=5,textvariable=mean1),side='left')
+tkpack(tkentry(m1,width=5,textvariable=sd1),side='left')
+tkpack(m1,side='top')
+m2&nbsp;=&nbsp;tkframe(mainfrm)
+tkpack(tklabel(m2,text='Mean2,&nbsp;SD2',width=10),side='left')
+tkpack(tkentry(m2,width=5,textvariable=mean2),side='left')
+tkpack(tkentry(m2,width=5,textvariable=sd2),side='left')
+tkpack(m2,side='top')
+
+tkpack(s)
+
+tkpack(mainfrm)
+
+</pre>
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc2">
+2</a>&nbsp;&nbsp;Binding</h2>
+For those widgets that naturally have an action or variable associated
+with them, the Tk interface provides arguments like <tt>textvariable=</tt>,
+or <tt>command=</tt> to make it easy to get these widgets working as they
+should.  But we're not limited to associating actions with only those 
+widgets that provide such arguments.  By using the <tt>tkbind</tt> command,
+we can associate a function (similar to those accepted by functions 
+that use a <tt>command=</tt> argument) to any of a large number of possible
+events.  To indicate an event, a character string with the event's name 
+surrounded by angle brackets is used.  The following table shows some of
+the actions that can have commands associated with them.   In the table,
+a lower case x is used to represent any key on the keyboard.
+
+<div class="p"><!----></div>
+
+<div class="p"><!----></div>
+<a name="tth_tAb1">
+</a> 
+<table border="1">
+<tr><td><tt>&lt;Return&#62;</tt></td><td><tt>&lt;FocusIn&#62;</tt></td></tr>
+<tr><td><tt>&lt;Key-x&#62;</tt></td><td><tt>&lt;FocusOut&#62;</tt></td></tr>
+<tr><td><tt>&lt;Alt-x&#62;</tt></td><td><tt>&lt;Button-1&#62;, &lt;Button-2&#62;</tt>, etc.</td></tr>
+<tr><td><tt>&lt;Control-x&#62;</tt></td><td><tt>&lt;ButtonRelease-1&#62;, &lt;ButtonRelease-2&#62;</tt>, etc.</td></tr>
+<tr><td><tt>&lt;Destroy&#62;</tt></td><td><tt>&lt;Double-Button-1&#62;, &lt;Double-Button-2&#62;</tt> , etc.</td></tr></table>
+
+
+<div class="p"><!----></div>
+As an example, suppose we wish to create a GUI that will allow the user to
+type in the name of a data frame, and when the user hits return in the 
+entry field, a set of radio buttons, one for each variable in the data
+frame, will open up below the entry field.  Finally, a button will allow
+for the creation of a histogram from the selected variable.
+
+<div class="p"><!----></div>
+
+<pre>
+require(tcltk)
+
+makehist&nbsp;=&nbsp;function(...){
+&nbsp;&nbsp;&nbsp;df&nbsp;=&nbsp;get(tclvalue(dfname))
+&nbsp;&nbsp;&nbsp;thevar&nbsp;=&nbsp;tclvalue(varname)
+&nbsp;&nbsp;&nbsp;var&nbsp;=&nbsp;as.numeric(df[[thevar]])
+&nbsp;&nbsp;&nbsp;hist(var,main=paste("Histogram&nbsp;of",thevar),xlab=thevar)
+}
+
+showb&nbsp;=&nbsp;function(...){
+&nbsp;&nbsp;&nbsp;&nbsp;df&nbsp;=&nbsp;get(tclvalue(dfname))
+&nbsp;&nbsp;&nbsp;&nbsp;vars&nbsp;=&nbsp;names(df)
+&nbsp;&nbsp;&nbsp;&nbsp;frms&nbsp;=&nbsp;list()
+&nbsp;&nbsp;&nbsp;&nbsp;k&nbsp;=&nbsp;1
+
+&nbsp;&nbsp;&nbsp;&nbsp;mkframe&nbsp;=&nbsp;function(var){
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fr&nbsp;=&nbsp;tkframe(base)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tkpack(tklabel(fr,width=15,text=var),side='left')
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tkpack(tkradiobutton(fr,variable=varname,value=var),side='left')
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tkpack(fr,side='top')
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fr
+&nbsp;&nbsp;&nbsp;&nbsp;}
+
+&nbsp;&nbsp;&nbsp;&nbsp;frms&nbsp;=&nbsp;sapply(vars,mkframe)
+
+&nbsp;&nbsp;&nbsp;&nbsp;tkpack(tkbutton(base,text='Run',command=makehist),side='top')
+}
+
+base&nbsp;=&nbsp;tktoplevel()
+tkwm.title(base,'Chooser')
+
+dfname&nbsp;=&nbsp;tclVar()
+varname&nbsp;=&nbsp;tclVar()
+
+efrm&nbsp;=&nbsp;tkframe(base)
+
+tkpack(tklabel(efrm,text='Dataframe:&nbsp;'),side='left')
+dfentry&nbsp;=&nbsp;tkentry(efrm,textvariable=dfname,width=20)
+tkbind(dfentry,'&lt;Return&#62;',showb)
+tkpack(dfentry,side='left')
+tkpack(efrm)
+
+</pre>
+
+<div class="p"><!----></div>
+Here's a picture of the widget in both the "closed" and "open" views:
+
+<div class="p"><!----></div>
+
+<center><table border="0"><tr><td><img src="ch0.png">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<img src="ch1.png">
+</td></tr></table><!--hboxt-->
+</center>
+
+<div class="p"><!----></div>
+As another example, recall the calculator we developed earlier.  To allow us
+to enter values from the keyboard in addition to clicking on the calculator 
+"key", we could modify the <tt>mkput</tt> function from that example as 
+follows:
+
+<pre>
+mkput&nbsp;=&nbsp;function(sym){
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fn&nbsp;=&nbsp;function(...){
+	&nbsp;&nbsp;calcinp&nbsp;&lt;&lt;-&nbsp;paste(calcinp,sym,sep='')
+	&nbsp;&nbsp;tkconfigure(display,text=calcinp)
+	&nbsp;&nbsp;}
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tkbind(base,sym,fn)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fn
+}
+
+</pre>
+  When we define each key, we also bind that key to the same
+action in the <tt>base</tt> window.   
+Similar actions could be done for the "C" and "=" keys:
+
+<pre>
+tkbind(base,'c',clearit)
+tkbind(base,'=',docalc)
+
+</pre>
+  Now input from the calculator can come from mouse clicks or the 
+keyboard.
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc3">
+3</a>&nbsp;&nbsp;Checkbuttons</h2>
+When we created radiobuttons, it was fairly simple, because we only  needed
+to create one <tt>tcl</tt> variable, which would contain the value 
+of the single chosen radiobutton.  With checkbuttons, the user can choose
+as many selections as they want, so each button must have a separate 
+<tt>tcl</tt> variable associated with it.  While it's possible to do this
+by hand for each choice provided, the following example shows how to use 
+the <tt>sapply</tt> function to do this in a more general way.  Notice that
+special care must be taken when creating a list of <tt>tcl</tt> variables to
+insure that they are properly stored. In this simple example, we 
+print the choices, by using <tt>sapply</tt> to convert the list of <tt>tcl</tt>
+variables to R variables.   Remember that all the toplevel variables that you
+create in an R GUI are available in the console while the GUI is running, so
+you examine them in order to see how their information is stored.
+
+<pre>
+require(tcltk)
+tt&nbsp;&lt;-&nbsp;tktoplevel()
+choices&nbsp;=&nbsp;c('Red','Blue','Green')
+bvars&nbsp;=&nbsp;lapply(choices,function(i)tclVar('0'))
+#&nbsp;or&nbsp;bvars&nbsp;=&nbsp;rep(list(tclVar('0')),length(bvars))
+names(bvars)&nbsp;=&nbsp;choices
+mkframe&nbsp;=&nbsp;function(x){
+&nbsp;&nbsp;&nbsp;nn&nbsp;=&nbsp;tkframe(tt)
+&nbsp;&nbsp;&nbsp;tkpack(tklabel(nn,text=x,width=10),side='left')
+&nbsp;&nbsp;&nbsp;tkpack(tkcheckbutton(nn,variable=bvars[[x]]),side='right')
+&nbsp;&nbsp;&nbsp;tkpack(nn,side='top')
+}
+
+sapply(choices,mkframe)
+
+showans&nbsp;=&nbsp;function(...){
+&nbsp;&nbsp;&nbsp;res&nbsp;=&nbsp;sapply(bvars,tclvalue)
+&nbsp;&nbsp;&nbsp;res&nbsp;=&nbsp;names(res)[which(res&nbsp;==&nbsp;'1')]
+&nbsp;&nbsp;&nbsp;tkconfigure(result,text&nbsp;=&nbsp;paste(res,collapse='&nbsp;'))
+}
+
+result&nbsp;=&nbsp;tklabel(tt,text='')
+tkpack(result,side='top')
+
+bfrm&nbsp;=&nbsp;tkframe(tt)
+tkpack(tkbutton(bfrm,command=showans,text='Select'),side='top')
+tkpack(bfrm,side='top')
+
+</pre>
+
+<div class="p"><!----></div>
+The figure below shows what the GUI looks like after two choices
+have been made, and the button is pressed.
+
+<div class="p"><!----></div>
+<img src="checkbox.png">
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc4">
+4</a>&nbsp;&nbsp;Opening Files and Displaying Text</h2>
+While it would be very simple (and not necessarily a bad idea) to use an
+entry field to specify a file name, the Tk toolkit provides a file browser
+which will return the name of a file which a user has chosen, and will usually
+be a better choice if you need to open a file.
+
+<div class="p"><!----></div>
+Another issue that arises has to do with displaying output.  If the output is
+a plot, it's simple to just open a graph window; if the output is text, you 
+can just print it in the normal way, and it will display in the same place
+as you typed the R command to display the GUI.  While this is useful while
+debugging your program, if there are printed results they should usually be
+displayed in a separate window.  For this purpose, Tk provides the 
+<tt>tktext</tt> object.  To display output in this way, we can use the 
+<tt>capture.output</tt> function, which takes the output of any R command
+and, instead of displaying it to the screen, stores the output in a 
+vector of character values.
+Alternatively, 
+the output could be written to a file, 
+then read back into a character vector.
+
+<div class="p"><!----></div>
+The following example program invokes <tt>tkgetOpenFile</tt> to get the name of a file 
+to be opened; it then opens the file, reads it as a CSV file and displays the
+results in a text window with scrollbars.  The <tt>wrap='none'</tt> argument
+tells the text window not to wrap the lines; this is appropriate when you have
+a scrollbar in the x-dimension.  Finally, to give an idea of how the text
+window can be modified, a button is added to change the text window's display
+from the listing of the data frame to a data frame summary.
+
+<div class="p"><!----></div>
+
+<pre>
+
+require(tcltk)
+
+summ&nbsp;=&nbsp;function(...){
+&nbsp;&nbsp;&nbsp;thestring&nbsp;=&nbsp;capture.output(summary(myobj))
+&nbsp;&nbsp;&nbsp;thestring&nbsp;=&nbsp;paste(thestring,collapse='\n')
+&nbsp;&nbsp;&nbsp;tkdelete(txt,'@0,0','end')
+&nbsp;&nbsp;&nbsp;tkinsert(txt,'@0,0',thestring)
+}
+
+fileName&lt;-tclvalue(tkgetOpenFile())
+
+myobj&nbsp;=&nbsp;read.csv(fileName)
+
+base&nbsp;=&nbsp;tktoplevel()
+tkwm.title(base,'File&nbsp;Open')
+yscr&nbsp;&lt;-&nbsp;tkscrollbar(base,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;command=function(...)tkyview(txt,...))
+xscr&nbsp;&lt;-&nbsp;tkscrollbar(base,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;command=function(...)tkxview(txt,...),orient='horiz')
+txt&nbsp;&lt;-&nbsp;tktext(base,bg="white",font="courier",
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;yscrollcommand=function(...)tkset(yscr,...),
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xscrollcommand=function(...)tkset(xscr,...),
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wrap='none',
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;font=tkfont.create(family='lucidatypewriter',size=14))
+
+
+tkpack(yscr,side='right',fill='y')
+tkpack(xscr,side='bottom',fill='x')
+tkpack(txt,fill='both',expand=1)
+
+tkpack(tkbutton(base,command=summ,text='Summary'),side='bottom')
+
+thestring&nbsp;=&nbsp;capture.output(print(myobj))
+thestring&nbsp;=&nbsp;paste(thestring,collapse='\n')
+tkinsert(txt,"end",thestring)
+tkfocus(txt)
+
+</pre>
+
+<div class="p"><!----></div>
+The first picture shows the file chooser (as displayed on a Linux system);
+the second picture shows the diabetes data set displayed in a text window,
+and the third picture shows the result of pressing the summary button.
+
+<div class="p"><!----></div>
+<img src="ofile0.png">
+
+<div class="p"><!----></div>
+<img src="ofile1.png">
+
+<div class="p"><!----></div>
+<img src="ofile2.png">
+
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On 11 Apr 2011, 18:09.</small>
+</html>

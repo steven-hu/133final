@@ -1,0 +1,431 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> t-Tests</title>
+ 
+<h1 align="center">t-Tests </h1>
+
+
+
+     <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;t-tests</h2>
+One of the most common tests in statistics is the t-test, used to determine whether the 
+means of two groups are equal to each other.  The assumption for the test is that both
+groups are sampled from normal distributions with equal variances.   The null hypothesis
+is that the two means are equal, and the alternative is that they are not.  It is known
+that under the null hypothesis, we can calculate a t-statistic that will follow a 
+t-distribution with n1 + n2 - 2 degrees of freedom.  
+There is also a widely used modification of the t-test, known as 
+Welch's t-test
+that adjusts the number of 
+degrees of freedom when the variances are thought not to be equal to each other.
+Before we can explore the test much
+further, we need to find an easy way to calculate the t-statistic.  
+
+<div class="p"><!----></div>
+The function <tt>t.test</tt> is available in R for performing t-tests.  Let's test it
+out on a simple example, using data simulated from a normal distribution.
+
+<pre>
+&#62;&nbsp;x&nbsp;=&nbsp;rnorm(10)
+&#62;&nbsp;y&nbsp;=&nbsp;rnorm(10)
+&#62;&nbsp;t.test(x,y)
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Welch&nbsp;Two&nbsp;Sample&nbsp;t-test
+
+data:&nbsp;&nbsp;x&nbsp;and&nbsp;y
+t&nbsp;=&nbsp;1.4896,&nbsp;df&nbsp;=&nbsp;15.481,&nbsp;p-value&nbsp;=&nbsp;0.1564
+alternative&nbsp;hypothesis:&nbsp;true&nbsp;difference&nbsp;in&nbsp;means&nbsp;is&nbsp;not&nbsp;equal&nbsp;to&nbsp;0
+95&nbsp;percent&nbsp;confidence&nbsp;interval:
+&nbsp;-0.3221869&nbsp;&nbsp;1.8310421
+sample&nbsp;estimates:
+&nbsp;mean&nbsp;of&nbsp;x&nbsp;&nbsp;mean&nbsp;of&nbsp;y
+&nbsp;0.1944866&nbsp;-0.5599410
+
+</pre>
+
+<div class="p"><!----></div>
+Before we can use this function in a simulation, we need to find out how to 
+extract the t-statistic (or some other quantity of interest) from the output
+of the <tt>t.test</tt> function.  For this function, the R help page has a 
+detailed list of what the object returned by the function contains.  A general
+method for a situation like this is to use the <tt>class</tt> and <tt>names</tt>
+functions to find where the quantity of interest is.  In addition, for some 
+hypothesis tests, you may need to pass the object from the hypothesis test to 
+the <tt>summary</tt> function and examine its contents.  For <tt>t.test</tt> it's
+easy to figure out what we want:
+
+<pre>
+&#62;&nbsp;ttest&nbsp;=&nbsp;t.test(x,y)
+&#62;&nbsp;names(ttest)
+[1]&nbsp;"statistic"&nbsp;&nbsp;&nbsp;"parameter"&nbsp;&nbsp;&nbsp;"p.value"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"conf.int"&nbsp;&nbsp;&nbsp;&nbsp;"estimate"
+[6]&nbsp;"null.value"&nbsp;&nbsp;"alternative"&nbsp;"method"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"data.name"
+
+</pre>
+The value we want is named "<tt>statistic</tt>".  To extract it, we can use the 
+dollar sign notation, or double square brackets:
+
+<pre>
+&#62;&nbsp;ttest$statistic
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t
+1.489560
+&#62;&nbsp;ttest[['statistic']]
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t
+1.489560
+
+</pre>
+Of course, just one value doesn't let us do very much - we need to generate many such
+statistics before we can look at their properties.  In R, the <tt>replicate</tt> function
+makes this very simple.  The first argument to <tt>replicate</tt> is the number of samples
+you want, and the second argument is an expression (not a function name or definition!)
+that will generate one of the samples you want.  To generate 1000 t-statistics from testing
+two groups of 10 standard random normal numbers, we can use:
+
+<pre>
+&#62;&nbsp;ts&nbsp;=&nbsp;replicate(1000,t.test(rnorm(10),rnorm(10))$statistic)
+
+</pre>
+
+<div class="p"><!----></div>
+Under the assumptions of normality and equal variance, we're assuming that the statistic
+will have a t-distribution with 10 + 10 - 2 = 18 degrees of freedom.  (Each observation
+contributes a degree of freedom, but we lose two because we have to estimate the mean
+of each group.)  How can we test if that is true?  
+
+<div class="p"><!----></div>
+One way is to plot the theoretical density of the t-statistic we should be seeing, and 
+superimposing the density of our sample on top of it.  To get an idea of what range of
+x values we should use for the theoretical density, we can view the range of our 
+simulated data:
+
+<pre>
+&#62;&nbsp;range(ts)
+&#62;&nbsp;range(ts)
+[1]&nbsp;-4.564359&nbsp;&nbsp;4.111245
+
+</pre>
+Since the distribution is supposed to be symmetric, we'll use a range from -4.5
+to 4.5.   We can generate equally spaced x-values in this range with <tt>seq</tt>:
+
+<pre>
+&#62;&nbsp;pts&nbsp;=&nbsp;seq(-4.5,4.5,length=100)
+&#62;&nbsp;plot(pts,dt(pts,df=18),col='red',type='l')
+
+</pre>
+Now we can add a line to the plot showing the density for our simulated sample:
+
+<pre>
+&#62;&nbsp;lines(density(ts))
+
+</pre>
+The plot appears below.
+
+<div class="p"><!----></div>
+<img src="tdens.png">
+
+<div class="p"><!----></div>
+Another way to compare two densities is with a quantile-quantile plot.  In this
+type of plot, the quantiles of two samples are calculated at a variety of points
+in the range of 0 to 1, and then are plotted against each other.  If the two 
+samples came from the same distribution with the same parameters, we'd see a 
+straight line through the origin with a slope of 1; in other words, we're  testing
+to see if various quantiles of the data are identical in the two samples.  If the 
+two samples came from similar distributions, but their parameters were different, we'd
+still see a straight line, but not through the origin.  For this reason, it's very
+common to draw a straight line through the origin with a slope of 1 on plots like this.
+We can produce a quantile-quantile plot (or QQ plot as they are commonly known), using
+the <tt>qqplot</tt> function.  To use qqplot, pass it two vectors that contain the 
+samples that you want to compare.  When comparing to a theoretical distribution, you
+can pass a random sample from that distribution.  Here's a QQ plot for the simulated
+t-test data:
+
+<pre>
+&#62;&nbsp;qqplot(ts,rt(1000,df=18))
+&#62;&nbsp;abline(0,1)
+
+</pre>
+
+<div class="p"><!----></div>
+<img src="qqt.png">
+
+<div class="p"><!----></div>
+We can see that the central points of the graph seems to agree fairly well, but there
+are some discrepancies near the tails (the extreme values on either end of the 
+distribution).  The tails of a distribution are the most 
+difficult part to accurately measure, which is unfortunate, since those are often the
+values that interest us most, that is, the ones which will provide us with enough
+evidence to reject a null hypothesis.  Because the tails of a distribution are so 
+important, another way to test to see if a distribution of a sample follows some 
+hypothesized distribution is to calculate the quantiles of some tail probabilities
+(using the <tt>quantile</tt> function) and compare them to the theoretical probabilities 
+from the distribution (obtained from the function for that distribution whose first 
+letter is "q").  Here's such a comparison for our simulated data:
+
+<pre>
+&#62;&nbsp;probs&nbsp;=&nbsp;c(.9,.95,.99)
+&#62;&nbsp;quantile(ts,probs)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;90%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;95%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;99%
+1.427233&nbsp;1.704769&nbsp;2.513755
+&#62;&nbsp;qt(probs,df=18)
+[1]&nbsp;1.330391&nbsp;1.734064&nbsp;2.552380
+
+</pre> 
+The quantiles agree fairly well, especially at the .95 and .99 quantiles.  Performing
+more simulations, or using a large sample size for the two groups would probably result
+in values even closer to what we have theoretically predicted.
+
+<div class="p"><!----></div>
+One final method for comparing distributions is worth mentioning.  We noted previously
+that one of the assumptions for the t-test is that the variances of the two samples 
+are equal.  However, a modification of the t-test known as Welch's test is said to 
+correct for this problem by estimating the variances, and adjusting the degrees of 
+freedom to use in the test.   This correction is performed by default, but can be 
+shut off by using the <tt>var.equal=TRUE</tt> argument.  Let's see how it works:
+
+<pre>
+&#62;&nbsp;t.test(x,y)
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Welch&nbsp;Two&nbsp;Sample&nbsp;t-test
+
+data:&nbsp;&nbsp;x&nbsp;and&nbsp;y
+t&nbsp;=&nbsp;-0.8103,&nbsp;df&nbsp;=&nbsp;17.277,&nbsp;p-value&nbsp;=&nbsp;0.4288
+alternative&nbsp;hypothesis:&nbsp;true&nbsp;difference&nbsp;in&nbsp;means&nbsp;is&nbsp;not&nbsp;equal&nbsp;to&nbsp;0
+95&nbsp;percent&nbsp;confidence&nbsp;interval:
+&nbsp;-1.0012220&nbsp;&nbsp;0.4450895
+sample&nbsp;estimates:
+mean&nbsp;of&nbsp;x&nbsp;mean&nbsp;of&nbsp;y
+0.2216045&nbsp;0.4996707
+
+&#62;&nbsp;t.test(x,y,var.equal=TRUE)
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Two&nbsp;Sample&nbsp;t-test
+
+data:&nbsp;&nbsp;x&nbsp;and&nbsp;y
+t&nbsp;=&nbsp;-0.8103,&nbsp;df&nbsp;=&nbsp;18,&nbsp;p-value&nbsp;=&nbsp;0.4284
+alternative&nbsp;hypothesis:&nbsp;true&nbsp;difference&nbsp;in&nbsp;means&nbsp;is&nbsp;not&nbsp;equal&nbsp;to&nbsp;0
+95&nbsp;percent&nbsp;confidence&nbsp;interval:
+&nbsp;-0.9990520&nbsp;&nbsp;0.4429196
+sample&nbsp;estimates:
+mean&nbsp;of&nbsp;x&nbsp;mean&nbsp;of&nbsp;y
+0.2216045&nbsp;0.4996707
+
+</pre>
+Since the statistic is the same in both cases, it doesn't matter whether we
+use the correction or not; either way we'll see identical results when we 
+compare the two methods using the techniques we've already described.  Since 
+the degree of freedom correction changes depending on the data, we can't 
+simply perform the simulation and compare it to a different number of degrees
+of freedom.  The other thing that changes when we apply the correction is the
+p-value that we would use to decide if there's enough evidence to reject the null 
+hypothesis.  What is the behaviour of the p-values?  While not necessarily 
+immediately obvious, under the null hypothesis, the p-values for any statistical
+test should form a uniform distribution between 0 and 1; that is, any value in 
+the interval 0 to 1 is just as likely to occur as any other value.  For a uniform
+distribution, the quantile function is just the identity function.  A value of 
+.5 is greater than 50% of the data; a value of .95 is greater than 95% of the 
+data.  
+As a quick check of this notion, let's look at the density of probability values
+when the null hypothesis is true:
+
+<pre>
+&#62;&nbsp;tps&nbsp;=&nbsp;replicate(1000,t.test(rnorm(10),rnorm(10))$p.value)
+&#62;&nbsp;plot(density(tps))
+
+</pre>
+The graph appears below.  
+
+<div class="p"><!----></div>
+<img src="pdens.png">
+
+<div class="p"><!----></div>
+Another way to check to see if the probabilities follow a uniform distribution
+is with a QQ plot:
+
+<pre>
+&#62;&nbsp;qqplot(tps,runif(1000))
+&#62;&nbsp;abline(0,1)
+
+</pre>
+The graph appears below.
+
+<div class="p"><!----></div>
+<img src="pqq.png">
+
+<div class="p"><!----></div>
+The idea that the probabilities follow a uniform distribution seems reasonable.
+
+<div class="p"><!----></div>
+Now, let's look at some of the quantiles of the p-values when we force
+the <tt>t.test</tt> function to use <tt>var.equal=TRUE</tt>:
+
+<pre>
+&#62;&nbsp;tps&nbsp;=&nbsp;replicate(1000,t.test(rnorm(10),rnorm(10),var.equal=TRUE)$p.value)
+&#62;&nbsp;probs&nbsp;=&nbsp;c(.5,.7,.9,.95,.99)
+&#62;&nbsp;quantile(tps,probs)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;50%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;70%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;90%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;95%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;99%
+0.4873799&nbsp;0.7094591&nbsp;0.9043601&nbsp;0.9501658&nbsp;0.9927435
+
+</pre>
+The agreement actually looks very good.  What about when we let <tt>t.test</tt>
+decide whether to make the correction or not?
+
+<pre>
+&#62;&nbsp;tps&nbsp;=&nbsp;replicate(1000,t.test(rnorm(10),rnorm(10))$p.value)
+&#62;&nbsp;quantile(tps,probs)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;50%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;70%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;90%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;95%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;99%
+0.4932319&nbsp;0.7084562&nbsp;0.9036533&nbsp;0.9518775&nbsp;0.9889234
+
+</pre>
+There's not that much of a difference, but, of course, the variances in this 
+example were equal.  How does the correction work when the variances are 
+not equal?
+
+<pre>
+&#62;&nbsp;tps&nbsp;=&nbsp;replicate(1000,t.test(rnorm(10),rnorm(10,sd=5),var.equal=TRUE)$p.value)
+&#62;&nbsp;quantile(tps,probs)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;50%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;70%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;90%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;95%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;99%
+0.5221698&nbsp;0.6926466&nbsp;0.8859266&nbsp;0.9490947&nbsp;0.9935562
+&#62;&nbsp;tps&nbsp;=&nbsp;replicate(1000,t.test(rnorm(10),rnorm(10,sd=5))$p.value)
+&#62;&nbsp;quantile(tps,probs)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;50%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;70%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;90%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;95%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;99%
+0.4880855&nbsp;0.7049834&nbsp;0.8973062&nbsp;0.9494358&nbsp;0.9907219
+
+</pre>
+There is an improvement, but not so dramatic.  
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc2">
+2</a>&nbsp;&nbsp;Power of the t-test</h2>
+
+<div class="p"><!----></div>
+Of course, all of this is concerned with the null hypothesis.  Now let's start to
+investigate the power of the t-test.  With a sample size of 10, we obviously aren't
+going to expect truly great performance, so let's consider a case that's not too 
+subtle.  When we don't specify a standard deviation for <tt>rnorm</tt> it uses a 
+standard deviation of 1.  That means about 68% of the data will fall in the range 
+of -1 to 1.  Suppose we have a difference in means equal to just one standard deviation,
+and we want to calculate the power for detecting that difference.  We can follow
+the same procedure as the coin tossing experiment: specify an alpha level, calculate the 
+rejection region,
+simulate data under the alternative hypothesis, and see how many times we'd reject the 
+null hypothesis.  As in the coin toss example, a function will make things much easier:
+
+<pre>
+t.power&nbsp;=&nbsp;function(nsamp=c(10,10),nsim=1000,means=c(0,0),sds=c(1,1)){
+&nbsp;&nbsp;&nbsp;&nbsp;lower&nbsp;=&nbsp;qt(.025,df=sum(nsamp)&nbsp;-&nbsp;2)
+&nbsp;&nbsp;&nbsp;&nbsp;upper&nbsp;=&nbsp;qt(.975,df=sum(nsamp)&nbsp;-&nbsp;2)
+&nbsp;&nbsp;&nbsp;&nbsp;ts&nbsp;=&nbsp;replicate(nsim,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t.test(rnorm(nsamp[1],mean=means[1],sd=sds[1]),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rnorm(nsamp[2],mean=means[2],sd=sds[2]))$statistic)
+
+&nbsp;&nbsp;&nbsp;&nbsp;sum(ts&nbsp;&lt;&nbsp;lower&nbsp;|&nbsp;ts&nbsp;&#62;&nbsp;upper)&nbsp;/&nbsp;nsim
+}
+
+
+</pre>
+
+<div class="p"><!----></div>
+Let's try it with our simple example:
+
+<pre>
+&#62;&nbsp;t.power(means=c(0,1))
+[1]&nbsp;0.555
+
+</pre>
+Not bad for a sample size of 10!
+
+<div class="p"><!----></div>
+Of course, if the differences in means are smaller, it's going to
+be harder to reject the null hypothesis:
+
+<pre>
+&#62;&nbsp;t.power(means=c(0,.3))
+[1]&nbsp;0.104
+
+</pre>
+
+<div class="p"><!----></div>
+How large a sample size would we need to detect that difference of .3 with
+95% power?
+
+<pre>
+&#62;&nbsp;samps&nbsp;=&nbsp;c(100,200,300,400,500)
+&#62;&nbsp;res&nbsp;=&nbsp;sapply(samps,function(n)t.power(means=c(0,.3),nsamp=c(n,n)))
+&#62;&nbsp;names(res)&nbsp;=&nbsp;samps
+&#62;&nbsp;res
+&nbsp;&nbsp;100&nbsp;&nbsp;&nbsp;200&nbsp;&nbsp;&nbsp;300&nbsp;&nbsp;&nbsp;400&nbsp;&nbsp;&nbsp;500
+0.567&nbsp;0.841&nbsp;0.947&nbsp;0.992&nbsp;0.999
+
+</pre>
+It would take over 300 samples in each group to be able to detect such a 
+difference.
+
+<div class="p"><!----></div>
+Now we can return to the issue of unequal variances.  We saw that Welch's adjustment
+to the degrees of freedom helped a little bit under the null hypothesis.  Now let's see
+if the power of the test is improved using Welch's test when the variances are unequal.
+To do this, we'll need to modify our <tt>t.power</tt> function a little:
+
+<pre>
+t.power1&nbsp;=&nbsp;function(nsamp=c(10,10),nsim=1000,means=c(0,0),sds=c(1,1),var.equal=TRUE){
+&nbsp;&nbsp;&nbsp;tps&nbsp;=&nbsp;replicate(nsim,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t.test(rnorm(nsamp[1],mean=means[1],sd=sds[1]),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rnorm(nsamp[2],mean=means[2],sd=sds[2]))$p.value)
+
+&nbsp;&nbsp;&nbsp;&nbsp;sum(tps&nbsp;&lt;&nbsp;.025&nbsp;|&nbsp;tps&nbsp;&#62;&nbsp;.975)&nbsp;/&nbsp;nsim
+}
+
+</pre>
+Since I set <tt>var.equal=TRUE</tt> by default, Welch's adjustment will not be used unless
+we specify <tt>var.equal=FALSE</tt>.  Let's see what the power is for a sample of size
+10, assuming the mean of one of the groups is 1, and its standard deviation is 2, while
+the other group is left at the default of mean=0 and sd=1:
+
+<pre>
+&#62;&nbsp;t.power1(nsim=10000,sds=c(1,2),mean=c(1,2))
+[1]&nbsp;0.1767
+&#62;&nbsp;t.power1(nsim=10000,sds=c(1,2),mean=c(1,2),var.equal=FALSE)
+[1]&nbsp;0.1833
+
+</pre>
+There does seem to be an improvement, but not so dramatic.
+
+<div class="p"><!----></div>
+We can look at the same thing for a variety of sample sizes:
+
+<pre>
+&#62;&nbsp;res1&nbsp;=&nbsp;sapply(sizes,function(n)t.power1(nsim=10000,sds=c(1,2),
++&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mean=c(1,2),nsamp=c(n,n)))
+&#62;&nbsp;names(res1)&nbsp;=&nbsp;sizes
+&#62;&nbsp;res1
+&nbsp;&nbsp;&nbsp;&nbsp;10&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;20&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;50&nbsp;&nbsp;&nbsp;&nbsp;100
+0.1792&nbsp;0.3723&nbsp;0.8044&nbsp;0.9830
+&#62;&nbsp;res2&nbsp;=&nbsp;sapply(sizes,function(n)t.power1(nsim=10000,sds=c(1,2),
++&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mean=c(1,2),nsamp=c(n,n),var.equal=FALSE))
+&#62;&nbsp;names(res2)&nbsp;=&nbsp;sizes
+&#62;&nbsp;res2
+&nbsp;&nbsp;&nbsp;&nbsp;10&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;20&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;50&nbsp;&nbsp;&nbsp;&nbsp;100
+0.1853&nbsp;0.3741&nbsp;0.8188&nbsp;0.9868
+
+</pre>
+
+<div class="p"><!----></div>
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On  8 Apr 2011, 15:11.</small>
+</html>

@@ -1,0 +1,226 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> Accessing the Statistical Computing Facility Remotely</title>
+ 
+<h1 align="center">Accessing the Statistical Computing Facility Remotely </h1>
+    <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;Introduction</h2>
+In order connect to the SCF from
+a remote (non-SCF) computer, you must have a 
+program which uses the secure shell (SSH) protocol 
+to communicate with other computers. 
+An SSH program alone will not allow you to 
+view graphics or images remotely.
+For these purposes, you need an X Windows server 
+(sometimes known as X11)
+either running natively on your computer, or via an
+X Windows emulator.  
+
+<div class="p"><!----></div>
+Depending on your operating system, one or both of
+these programs may already be installed on your computer.
+The next section will explain how to obtain the
+necessary programs if they are not already available, followed by 
+information on transfering files from the SCF to your local computer.
+
+<div class="p"><!----></div>
+If you don't have a broadband connection,
+you may find that the response when using X Windows remotely
+may be too slow to be useful; but
+with patience, you should
+be able to access the SCF remotely with few problems.
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc2">
+2</a>&nbsp;&nbsp;Software</h2>
+
+     <h3><a name="tth_sEc2.1">
+2.1</a>&nbsp;&nbsp;Linux</h3>
+Linux natively runs the X Windows system, and most Linux systems
+have the <tt>ssh</tt> program available to securely connect  to 
+remote systems.  
+
+<div class="p"><!----></div>
+     <h3><a name="tth_sEc2.2">
+2.2</a>&nbsp;&nbsp;Mac OS X</h3>
+The <tt>ssh</tt> command is available through the Terminal application
+(available in <tt>/Applications/Utilities/Terminal.app</tt>).  For versions
+of Mac OS X since Panther, there is 
+an installation package for X11 (<tt>X11User.pkg</tt>) on the Developer Disk.  
+
+<div class="p"><!----></div>
+     <h3><a name="tth_sEc2.3">
+2.3</a>&nbsp;&nbsp;Microsoft Windows</h3>
+To connect to the SCF remotely, you can use a free program called
+<tt>putty</tt>.  You can download it from
+<a href="http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html">http://www.chiark.greenend.org.uk/&#126;sgtatham/putty/download.html</a>
+This will allow you to  run programs remotely, but it will not allow
+you to use the display manager, or to view graphics.
+To do this, you need an X Windows emulator.
+If you have a CalNet ID, you can download Exceed 2008 from
+<a href="http://software-central.berkeley.edu">UC Berkeley Software Distribution</a>
+A free alternative to Exceed is the
+<tt>Cygwin X Windows System</tt>.  There are excellent instructions
+for installing this software at <a href="http://x.cygwin.com">Cygwin/X</a>.
+Basically, you first download a program called <tt>setup.exe</tt>, which
+makes it possible to install a wide variety of software; you need choose
+only four packages: <tt>xorg-x11-base</tt>, <tt>X-startup-scripts</tt>, <tt>inetutils</tt> and
+<tt>openssh</tt> (Clicking on the <tt>View</tt> button in the <tt>setup.exe</tt>
+window until it displays "<tt>Full</tt>" makes it easier to find the
+packages you need).  Once everything is installed you can double click on
+<tt>c:\cygwin\usr\X11R6\bin\startxwin.bat</tt> to start the system.
+A terminal window will
+open, and you can use the ssh command as described below.
+The <a href="http://x.cygwin.com/docs/ug/cygwin-x-ug.html">User's Guide</a>
+covers just about every step of installation and use of the software.
+
+<div class="p"><!----></div>
+     <h3><a name="tth_sEc2.4">
+2.4</a>&nbsp;&nbsp;Commands</h3>
+
+      <h4><a name="tth_sEc2.4.1">
+2.4.1</a>&nbsp;&nbsp;Microsoft Windows: putty</h4>
+To connect to a remote host using <tt>putty</tt>, click on the <tt>Session</tt> category
+in the left-hand pane of <tt>putty</tt>'s window, and enter the hostname in the appropriate box.  Click
+<tt>Open</tt>, and a terminal will appear, prompting for you login name and
+password.
+
+<div class="p"><!----></div>
+To display graphics through putty, you need to activate 
+X11 Forwarding.   In the left hand pane of <tt>putty</tt>'s window,
+click on the plus sign near <tt>SSH</tt> under the <tt>Connection</tt> category.
+A choice of <tt>X11</tt> should appear; click on it, and check the box
+labeled <tt>Enable X11 forwarding</tt>.
+Once forwarding has been enabled (you should only need to do it once), and 
+<tt>Exceed</tt> has been started, 
+graphics programs on the remote host will display on your computer.
+
+<div class="p"><!----></div>
+      <h4><a name="tth_sEc2.4.2">
+2.4.2</a>&nbsp;&nbsp;The <tt>ssh</tt> command</h4>
+If you're using a system with the <tt>ssh</tt> command, type
+
+<pre>
+ssh&nbsp;-X&nbsp;username@hostname
+
+</pre>
+to connect to an SCF computer.
+The <tt>-X</tt> (upper case X) in the <tt>ssh</tt> command sets up the X11 Tunneling
+necessary for displaying graphics.
+
+ <h2><a name="tth_sEc3">
+3</a>&nbsp;&nbsp;File Transfer</h2>
+If you want to print out your programs, listings and graphics on your
+local printer, the easiest route is to copy the files from the SCF
+computers to your computer and then to print them in the usual way.
+The best way is to use a file transfer program on your local computer,
+although other means are possible.  
+
+<div class="p"><!----></div>
+     <h3><a name="tth_sEc3.1">
+3.1</a>&nbsp;&nbsp;Linux</h3>
+The command line <tt>scp</tt> command, described below,  is probably 
+the best way to transfer files from one computer to another.  If you'd
+prefer a graphical client, programs like konqueror will accept the
+<tt>sftp://</tt> protocol.  For example, if your username is  s133xy, you
+would be able to access your files on the SCF computers by going to
+
+<pre>
+sftp://hostname.berkeley.edu/class/u/s133/s133xy
+
+</pre>
+
+     <h3><a name="tth_sEc3.2">
+3.2</a>&nbsp;&nbsp;Mac OS X</h3>
+The command line <tt>scp</tt> command, described below, can be accessed
+through the terminal (<tt>/Applications/Utilities/Terminal.app</tt>).  Although
+the finder doesn't directly support the sftp protocol, the freeware 
+program <a href="http://rsug.itd.umich.edu/software/fugu/">Fugu</a> provides a
+nice graphical frontend to the sftp command.  To use <tt>Fugu</tt>, enter 
+your username and 
+an appropriate hostname in the <tt>Connect to:</tt> field;  you'll be 
+prompted for a password when <tt>Fugu</tt> connects to the remote server.
+Your remote files will appear in <tt>Fugu</tt>'s right-hand pane, where
+they can be dragged and dropped to a location of your choice in the (local)
+left-hand pane.
+
+     <h3><a name="tth_sEc3.3">
+3.3</a>&nbsp;&nbsp;Microsoft Windows</h3>
+If you've installed the SSH Secure Server software, there should be a 
+desktop icon labeled <tt>SSH Secure File Transfer Client</tt>.  Double
+click on the icon, and click on <tt>Quick Connect</tt>, and a window prompting 
+for
+hostname and username will appear.  Leave the other options at their default
+values.   Once you're connected, your remote (SCF) files will appear in the
+right hand pane; you can drag and drop them to a suitable local location. 
+
+<div class="p"><!----></div>
+There are also a number of free graphical sftp clients available for Windows; 
+one nice and easy-to-use one is <a href="http://winscp.sourceforge.net/eng/download.php">WinSCP</a>.  
+If you choose the Explorer view instead of the default 
+Norton Commander view, your SCF account will appear as a normal 
+explorer window, allowing you to drag and drop files; simply enter
+your username and a suitable hostname to connect.
+
+     <h3><a name="tth_sEc3.4">
+3.4</a>&nbsp;&nbsp;If All Else Fails</h3>
+If you can't use the previously described methods, you can email
+files from the SCF system to an email account of your choice.  
+One way is to use the command line program <tt>pine</tt>.  To send files
+as attachments with pine, enter the following command:
+
+<pre>
+pine&nbsp;emailaddress&nbsp;-attach&nbsp;file1&nbsp;-attach&nbsp;file2&nbsp;...
+
+</pre>
+After hitting Return, type control-X to send the mail, and <tt>Y</tt> to 
+confirm it.
+<b>Note:</b>&nbsp;&nbsp;There is a 5 Mb limit on attachments to emails sent through
+the SCF.  While this should pose no problems with text files saved from the 
+program editor, complex graphics may be too large to send through email.
+Please check the size of the file you're sending (with the UNIX command
+<tt>ls -l</tt>) before reporting a problem.
+
+<div class="p"><!----></div>
+     <h3><a name="tth_sEc3.5">
+3.5</a>&nbsp;&nbsp;The <tt>scp</tt> command</h3>
+The syntax for the scp command is: 
+
+<pre>
+scp&nbsp;username@hostname:file&nbsp;local-directory
+
+</pre>
+You'll be prompted for your password;  after entering it and hitting 
+Return, the file transfer will start.
+
+<div class="p"><!----></div>
+To use wildcard patterns on the remote (SCF) machine, precede the 
+wildcard character with a backslash (<tt>\</tt>).  For example to copy
+all the pdf files from your SCF account, to the current directory on
+your local computer, 
+use a command like:
+
+<pre>
+scp&nbsp;username@hostname:\*.pdf&nbsp;.
+
+</pre>
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On 23 Jan 2009, 15:57.</small>
+</html>

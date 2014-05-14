@@ -1,0 +1,366 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> Unix</title>
+ 
+<h1 align="center">Unix </h1>
+
+
+
+     <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;Software for Remote Access</h2> 
+To learn about the software you'll need to access the SCF UNIX machines 
+remotely see <a href="http://www.stat.berkeley.edu/classes/s133/remote.html">Accessing the SCF remotely</a>.  
+To see a list
+of all the SCF computers go to the <a href="http://www.stat.berkeley.edu/cgi-bin/ingrid.cgi">Computer Grid</a> page.
+
+ <h2><a name="tth_sEc2">
+2</a>&nbsp;&nbsp;Basics of Unix</h2>
+On a UNIX system, most commands are entered into a shell.  There is
+a large amount (sometimes too much) of online documentation for all 
+UNIX commands, through the <tt>man</tt> command.  For example, to find
+out more about the <tt>ls</tt> command, which lists the files in a directory,
+type 
+
+<pre>
+man&nbsp;ls
+
+</pre>
+at the UNIX prompt.
+
+<div class="p"><!----></div>
+Another way to use the <tt>man</tt> command is to use keywords; type either
+
+<pre>
+man&nbsp;-k&nbsp;keyword
+
+</pre>
+or
+
+<pre>
+apropos&nbsp;keyword
+
+</pre>
+at the UNIX prompt to find a list of commands that involve "keyword".
+
+<div class="p"><!----></div>
+One attractive feature of UNIX shells is tab completion; if you type only
+the first few letters of a command or file name, and then hit the tab key,
+the shell will complete the name you started to type provided that there is
+only one match.  If there's more than one match, hitting tab twice will
+list all the names that match.
+
+<div class="p"><!----></div>
+A properly configured UNIX file system has permission controls to prevent 
+unauthorized access to files, and to make sure that users do not accidently
+remove or modify key files.  If you want to adjust the permissions on the 
+files you own, take a look at the man page for the <tt>chmod</tt> command. 
+
+<div class="p"><!----></div>
+I'm not going to make a big distinction between UNIX, Linux and the UNIX core
+of Mac OSX, so the commands we're going to look at here should work under
+any of these operating systems.
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc3">
+3</a>&nbsp;&nbsp;Command Path</h2>
+When you type a command into the shell, it will search through a number of
+directories looking for a command that matches the name you typed.  The 
+directories it looks through are called the search path.  You can display 
+your search path by typing
+
+<pre>
+echo&nbsp;$PATH
+
+</pre>
+To see the complete list of commands that are available on a given computer,
+you could look at all the files (commands) in all of the directories on 
+your search path.  (There are well over 2000 commands on most UNIX systems.)
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc4">
+4</a>&nbsp;&nbsp;Basic Commands</h2>
+
+<div class="p"><!----></div>
+The table below shows some of the most commonly used UNIX commands:
+
+<div class="p"><!----></div>
+
+<div class="p"><!----></div>
+<a name="tth_tAb1">
+</a> 
+<table border="1">
+<tr><td>Command</td><td>Description</td><td>Examples</td></tr>
+<tr><td><tt>ls</tt></td><td>Lists files in a given directory</td><td><tt>ls /some/directory</tt></td></tr>
+<tr><td></td><td></td><td><tt>ls #</tt> with no args, lists current dir</td></tr>
+<tr><td><tt>cd</tt></td><td>Change Working Directory</td><td><tt>cd /some/directory</tt></td></tr>
+<tr><td></td><td></td><td><tt>cd #</tt>with no args, cd to home dir</td></tr>
+<tr><td><tt>pwd</tt></td><td>Print Working Directory</td><td><tt>pwd</tt></td></tr>
+<tr><td><tt>mkdir</tt></td><td>Create New Directory</td><td><tt>mkdir subdirectory</tt></td></tr>
+<tr><td><tt>less</tt></td><td>Display file one screen at a time</td><td><tt>less filename</tt></td></tr>
+<tr><td><tt>cp</tt></td><td>Copy files</td><td><tt>cp file1 newfile1</tt></td></tr>
+<tr><td></td><td></td><td><tt>cp file1 file2 file3 somedirectory</tt></td></tr>
+<tr><td><tt>mv</tt></td><td>Move or rename a file</td><td><tt>mv oldfile newfile</tt></td></tr>
+<tr><td></td><td></td><td><tt>mv file1 file2 file3 somedirectory</tt></td></tr>
+<tr><td><tt>rm</tt></td><td>Remove a file</td><td><tt>rm file1 file2</tt></td></tr>
+<tr><td></td><td></td><td><tt>rm -r dir #</tt>removes all directories and subdirectories</td></tr>
+<tr><td><tt>rmdir</tt></td><td>Remove a (empty) directory</td><td><tt>rmdir mydir</tt></td></tr>
+<tr><td><tt>history</tt></td><td>Display previously typed commands</td><td><tt>history</tt></td></tr>
+<tr><td><tt>grep</tt></td><td>Find strings in files</td><td><tt>grep Error file.out</tt></td></tr>
+<tr><td><tt>head</tt></td><td>Show the first few lines of a file</td><td><tt>head myfile</tt></td></tr>
+<tr><td></td><td></td><td><tt>head -20 myfile</tt></td></tr>
+<tr><td><tt>tail</tt></td><td>Show the last few lines of a file</td><td><tt>tail myfile</tt></td></tr>
+<tr><td></td><td></td><td><tt>tail -20 myfile</tt></td></tr>
+<tr><td><tt>file</tt></td><td>Identify the type of a file</td><td><tt>file myfile</tt></td></tr></table>
+
+
+<div class="p"><!----></div>
+Each of these commands has many options which you can learn about by 
+viewing their man page.  For example, to get more information about the 
+<tt>ls</tt> command, type
+
+<pre>
+man&nbsp;ls
+
+</pre>
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc5">
+5</a>&nbsp;&nbsp;Command History</h2>
+Another useful feature of most UNIX shells is the ability to retrieve and
+review the commands you've previously typed into that instance of the shell.
+The arrow keys can be used to scroll up or down through previous commands.
+Once a command appears on the command line (where you would normally type
+a command), you can use the arrow and/or backspace keys to edit the command.
+A number of control key combinations can also be used to navigate your 
+command history and are displayed in the table below; 
+these same control sequences will work in the Emacs editor.
+
+<div class="p"><!----></div>
+
+<div class="p"><!----></div>
+<a name="tth_tAb1">
+</a> 
+<table border="1">
+<tr><td>Command</td><td>Meaning</td><td>Command</td><td>Meaning</td></tr>
+<tr><td>control-p</td><td>Previous line</td><td>control-n</td><td>Next line</td></tr>
+<tr><td>control-f</td><td>One character forward</td><td>control-b</td><td>One character backward</td></tr>
+<tr><td>control-a</td><td>Beginning of line</td><td>control-e</td><td>End of line</td></tr>
+<tr><td>control-d</td><td>Delete one character</td><td>control-k</td><td>Delete to end of line</td></tr></table>
+
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc6">
+6</a>&nbsp;&nbsp;Editors</h2>
+Most programming tasks involve a stored copy of a program in a file somewhere,
+along with a file which could contain necessary data.  On a UNIX system, it 
+becomes very important to be able to view and modify files, and the program
+that does that is known as an editor.  The kind of editor you use to work with
+files on a UNIX system is very different than a word processor, or other 
+document handling program, as it's not concerned with formatting, fonts, 
+or other issues of appearance - it basically just holds the bit patterns that
+represent the commands in your program or the information in your data.  There
+are many editors available on UNIX systems, but the two most popular are 
+<tt>emacs</tt> and <tt>vi</tt>.  Some of the other editors you might encounter
+on a UNIX system are <tt>pico</tt>, <tt>nano</tt>, <tt>vim</tt>, 
+<tt>xemacs</tt>, <tt>gedit</tt>, and <tt>kate</tt>.
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc7">
+7</a>&nbsp;&nbsp;Wildcards</h2>
+Along with file completion, UNIX shells offer another way to save typing
+when entering filenames.  Certain characters (known as wildcards)
+have special meaning when 
+included as a filename, and the shell will expand these characters to 
+represent multiple filenames.   The most commonly used wildcard is the 
+asterisk (<tt>*</tt>), which will match anything in a file name; other
+possibilities are in the table below. To see
+what will be matched for any string containing wildcards, use the UNIX
+<tt>echo</tt> command.  
+
+<div class="p"><!----></div>
+
+<div class="p"><!----></div>
+<a name="tth_tAb1">
+</a> 
+<table border="1">
+<tr><td>Wildcard</td><td>Meaning</td></tr>
+<tr><td><tt>*</tt></td><td>Zero or more of any character</td></tr>
+<tr><td><tt>?</tt></td><td>Any single character</td></tr>
+<tr><td><tt>[...]</tt></td><td>Any of the characters between the brackets</td></tr>
+<tr><td><tt>[^...]</tt></td><td>Any characters except those between the brackets</td></tr>
+<tr><td><tt>[x-y]</tt></td><td>Any character in the range x to y <tt>[0-9]</tt> <tt>[a-z]</tt></td></tr>
+<tr><td><tt>string-1,string-2,string-3</tt></td><td>Each of the strings in turn</td></tr></table>
+
+
+<div class="p"><!----></div>
+In addition, the shell will recognize the tilda (<tt>~</tt>) as representing
+your home directory, and <tt>~user</tt> as <tt>user</tt>'s home directory.
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc8">
+8</a>&nbsp;&nbsp;Redirection</h2>
+Unix systems manage their input and output through three so-called streams,
+known as standard input, standard output and standard error.  
+Normally, you
+don't have to do anything - standard input will be whatever you type, and
+standard output and error will be your computer screen.  However, sometimes
+it's useful to redirect input from some other source, or to redirect output
+to some other source.  For example, suppose you wanted a list of files in 
+your current directory.  You could run the <tt>ls</tt> command and redirect
+the output to a file, say <tt>myfiles</tt> as follows
+
+<pre>
+ls&nbsp;&#62;&nbsp;myfiles
+
+</pre>
+ Such a command will overwrite the file <tt>myfiles</tt>
+if it already existed.  To redirect output to the end of a file, leaving any
+content intact, use
+
+<pre>
+ls&nbsp;&#62;&#62;&nbsp;myfiles
+
+</pre>
+
+<div class="p"><!----></div>
+To have a command read its input from a file instead from standard input the 
+less-than sign (<tt>&lt;</tt>) can be used.
+
+<div class="p"><!----></div>
+Another useful form of redirection is known as a pipe.  In this case, the 
+standard output of one program is used as the standard input to another 
+program.  A very common use of pipes is to view the output of a command 
+through a pager, like <tt>less</tt>.  This allows you to view a screen at
+a time by pressing the space bar, to move up in the file by using 
+control-u, and to move down using control-d.  For example, suppose that 
+you are listing the files in a directory that contains many, many files.
+If you simply type <tt>ls</tt>, the output will go streaming by too fast
+to read.  But by typing
+
+<pre>
+ls&nbsp;|&nbsp;less
+
+</pre>
+the output will be displayed one screen at a time, and you can navigate using
+the commands described above. As another example, suppose we want to find 
+which files we've modified recently.  The <tt>-lt</tt> option of the 
+<tt>ls</tt> command will provide a long display of files in reverse
+chronological order; to display, say the five most recently modified files
+we could use
+
+<pre>
+ls&nbsp;-lt&nbsp;|&nbsp;head&nbsp;-5
+
+</pre>
+
+ <h2><a name="tth_sEc9">
+9</a>&nbsp;&nbsp;Job Control</h2>
+Normally, you type a command into the shell and, while the command is 
+running, you can't type any more commands into that shell.  This is known
+as running in the foreground.  When a job is running in the foreground, you
+can signal it to stop with control-C, which is known as an interrupt signal.
+Some programs, like R, will catch this signal and do something useful. For
+example, R will stop working and return to its normal prompt when it receives
+an interrupt signal.  Other programs, (like <tt>ls</tt>) will simply 
+terminate when they receive that signal.  Another signal you can send to a 
+foreground program is control-<tt>\</tt>, which is known as a kill signal.
+Programs are not capable of catching this signal, so when you use 
+control-<tt>\</tt> it will terminate your foreground program unless there is
+some larger problem.
+
+<div class="p"><!----></div>
+When you are sitting in front of the computer, it's not too much of a burden
+to open a second window, but if you're computing remotely it's nice to be
+able to run a command and get back the shell prompt to continue working.
+In addition, when you run jobs in the foreground, they will always terminate
+when you log out of the computer.  The alternative to running in the foreground
+is running in the background.  You can run any command in the background by
+putting an ampersand (<tt>&amp;</tt>) at the end of your command.  If a job is 
+running in the background and you log off from the computer, it will continue
+to run, but any output that is not redirected will be lost.   
+
+<div class="p"><!----></div>
+If you've got a job running in the foreground, and you'd like to put it in
+the background, you need to carry out two separate steps.
+First, signal the program with control-Z which will suspend the 
+program.   Once the program is suspended, and the shell prompt returns, 
+type
+
+<pre>
+bg
+
+</pre>
+to put it in the background.  Notice that jobs that are suspended with
+control-Z continue to use resources even if they are not running, so
+when you really want to stop a job you should use control-C or 
+control-<tt>\</tt>.  If you want to put a suspended job in the foreground,
+use the <tt>fg</tt> command.
+
+<div class="p"><!----></div>
+We've seen how to manage jobs when we 
+still have access to the shell from which we started them, but sometimes
+you need to find out about jobs for which we don't have access to their
+originating shells.  For example, you may remotely log in to a computer,
+start a job, log out and then want to find out if it's running, or to 
+stop it.   The <tt>ps</tt> command can be used to find out about all the 
+programs that are running on a computer.   Remember that for a networked
+system of computers, the <tt>ps</tt> command will only display information
+about commands that are running on the particular computer you're using,
+so if you put a job in the background and log off, it's a very good idea
+to remember the name of the computer you were using so that you can check
+on its progress later.   To find all the commands you're running on a 
+particular computer type:
+
+<div class="p"><!----></div>
+
+<pre>
+ps&nbsp;-aux&nbsp;|&nbsp;grep&nbsp;username
+
+</pre>
+ where <tt>username</tt> is the account name you logged in with.
+A single line of <tt>ps</tt> output looks like this:
+
+<pre>
+spector&nbsp;&nbsp;&nbsp;1325&nbsp;10380&nbsp;&nbsp;0&nbsp;09:48&nbsp;pts/10&nbsp;&nbsp;&nbsp;00:00:00&nbsp;/bin/bash&nbsp;/usr/local/linux/bin/R
+
+</pre>
+ Notice that the name of the program that's running is shown at the 
+end of the line.  You can identify a particular program by looking for its
+name there, or by using a second grep command when invoking <tt>ps</tt>.  The
+second column of the output contains the process id or PID of the process;
+this number uniquely identifies your job on a particular computer.  If you
+want to terminate a job whose pid you know, type
+
+<pre>
+kill&nbsp;pid
+
+</pre>
+This is similar to control-C.  To get the same affect as control-<tt>\</tt>,
+type
+
+<pre>
+kill&nbsp;-9&nbsp;pid
+
+</pre>
+ where <tt>pid</tt> is the number from the <tt>ps</tt> output.
+
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On 31 Jan 2011, 15:28.</small>
+</html>

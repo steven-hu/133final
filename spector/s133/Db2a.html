@@ -1,0 +1,156 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> Spreadsheets</title>
+ 
+<h1 align="center">Spreadsheets </h1>
+
+
+
+As a simple example, consider a spreadsheet with listings for the top 200
+educational institutions in the US with respect to the number of postdoctoral
+students, which I found at <a href="http://mup.asu.edu/Top200-III/2_2005_top200_postdoc.xls">http://mup.asu.edu/Top200-III/2_2005_top200_postdoc.xls</a>
+
+<div class="p"><!----></div>
+Here's a view of how the data looks in the UNIX gnumeric spreadsheet:
+
+<div class="p"><!----></div>
+<img src="spreadsheet.png">
+
+<div class="p"><!----></div>
+Here are the first few lines of the file created when I use File-&#62;Save As, 
+and choose the CSV format:
+
+<pre>
+"The&nbsp;Top&nbsp;200&nbsp;Institutions--Postdoctoral&nbsp;Appointees
+(2005)",,,,,
+,,,,,
+"Top&nbsp;50&nbsp;Institutions
+in&nbsp;Postdoctoral&nbsp;Appointees
+(2005)","Number&nbsp;of&nbsp;Postdocs","National&nbsp;Rank","Control&nbsp;Rank",,"Institutional
+Control"
+"Harvard&nbsp;University",4384,1,1,,Private
+"Johns&nbsp;Hopkins&nbsp;University",1442,2,2,,Private
+"Stanford&nbsp;University",1259,3,3,,Private
+"University&nbsp;of&nbsp;California&nbsp;-&nbsp;Los&nbsp;Angeles",1094,4,1,,Public
+"Yale&nbsp;University",1012,5,4,,Private
+"University&nbsp;of&nbsp;California&nbsp;-&nbsp;San&nbsp;Francisco",1003,6,2,,Public
+"University&nbsp;of&nbsp;Washington&nbsp;-&nbsp;Seattle",963,7,3,,Public
+"University&nbsp;of&nbsp;California&nbsp;-&nbsp;San&nbsp;Diego",886,8,4,,Public
+"Massachusetts&nbsp;Institute&nbsp;of&nbsp;Technology",851,9,5,,Private
+"University&nbsp;of&nbsp;Pennsylvania",815,10,6,,Private
+"Columbia&nbsp;University",793,11,7,,Private
+"University&nbsp;of&nbsp;California&nbsp;-&nbsp;Berkeley",774,12,5,,Public
+
+</pre>
+While the data itself looks fine, it's unlikely that the header information
+will be of much use.  Since there are 7 header lines, I could use the 
+following statements to read the data into R:
+
+<pre>
+&#62;&nbsp;fromcsv&nbsp;=&nbsp;read.csv('2_2005_top200_postdoc.csv',header=FALSE,skip=7,stringsAsFactors=FALSE)
+&#62;&nbsp;dim(fromcsv)
+[1]&nbsp;206&nbsp;&nbsp;&nbsp;6
+&#62;&nbsp;head(fromcsv)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V1&nbsp;&nbsp;&nbsp;V2&nbsp;V3&nbsp;V4&nbsp;V5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V6
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Harvard&nbsp;University&nbsp;4384&nbsp;&nbsp;1&nbsp;&nbsp;1&nbsp;NA&nbsp;Private
+2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Johns&nbsp;Hopkins&nbsp;University&nbsp;1442&nbsp;&nbsp;2&nbsp;&nbsp;2&nbsp;NA&nbsp;Private
+3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Stanford&nbsp;University&nbsp;1259&nbsp;&nbsp;3&nbsp;&nbsp;3&nbsp;NA&nbsp;Private
+4&nbsp;&nbsp;&nbsp;University&nbsp;of&nbsp;California&nbsp;-&nbsp;Los&nbsp;Angeles&nbsp;1094&nbsp;&nbsp;4&nbsp;&nbsp;1&nbsp;NA&nbsp;&nbsp;Public
+5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Yale&nbsp;University&nbsp;1012&nbsp;&nbsp;5&nbsp;&nbsp;4&nbsp;NA&nbsp;Private
+6&nbsp;University&nbsp;of&nbsp;California&nbsp;-&nbsp;San&nbsp;Francisco&nbsp;1003&nbsp;&nbsp;6&nbsp;&nbsp;2&nbsp;NA&nbsp;&nbsp;Public
+
+</pre>
+The fifth column can be removed (take a look at the spreadsheet to see why),
+and we should supply some names to the spreadsheet.  One problem with this
+spreadsheet is that it repeats its header information several times part way 
+through the spreadsheet.  These lines will have to be removed manually.
+The can be identified by the fact that the sixth variable should be either
+Public or Private, and could be eliminated as follows:
+
+<pre>
+&#62;&nbsp;fromcsv&nbsp;=&nbsp;fromcsv[fromcsv$V6&nbsp;%in%&nbsp;c('Public','Private'),]
+
+</pre>
+The fifth variable can be removed by setting it to <tt>NULL</tt>, and the 
+columns can be named.
+
+<pre>
+&#62;&nbsp;fromcsv$V5&nbsp;=&nbsp;NULL
+&#62;&nbsp;names(fromcsv)&nbsp;=&nbsp;c('Institution','NPostdocs','Rank','ControlRank','Control')
+
+</pre>
+Finally, a check of the columns shows that, because of the header problem, 
+the numeric variables explicitly need to be converted:
+
+<pre>
+&#62;&nbsp;sapply(fromcsv,class)
+Institution&nbsp;&nbsp;&nbsp;NPostdocs&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Rank&nbsp;ControlRank&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Control
+"character"&nbsp;"character"&nbsp;"character"&nbsp;"character"&nbsp;"character"
+&#62;&nbsp;fromcsv[,c(2,3,4)]&nbsp;=&nbsp;sapply(fromcsv[,c(2,3,4)],as.numeric)
+
+</pre>
+
+<div class="p"><!----></div>
+A similar procedure could be carried out with <tt>read.xls</tt>, although it 
+might take some experimentation with <tt>skip=</tt> to make things work 
+properly.  The only other difference between <tt>read.xls</tt> and <tt>read.csv</tt>
+for this example is that a space mysteriously appeared at the end of one of the
+variables when using <tt>read.xls</tt>:
+
+<pre>
+library(gdata)
+fromreadxls&nbsp;=&nbsp;read.xls('2_2005_top200_postdoc.xls',stringsAsFactors=FALSE,header=FALSE,skip=2)
+fromreadxls&nbsp;=&nbsp;fromreadxls[-1,-c(1,6)]
+fromreadxls$V7&nbsp;=&nbsp;sub('&nbsp;$','',fromreadxls$V7)
+fromreadxls&nbsp;=&nbsp;fromreadxls[fromreadxls$V7&nbsp;%in%&nbsp;c('Public','Private'),]
+fromreadxls[,c(2,3,4)]&nbsp;=&nbsp;sapply(fromreadxls[,c(2,3,4)],as.numeric)
+names(fromreadxls)&nbsp;=&nbsp;c('Institution','NPostdocs','Rank','ControlRank','Control')
+
+</pre>
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;Writing Spreadsheets</h2>
+As with reading a spreadsheet, one option for writing a spreadsheet is
+to write out a comma- or tab-separated file, and to use a spreadsheet
+program to read it and then save it as a ".xls" file.  The 
+<tt>write.csv</tt>, and <tt>write.table</tt> functions are useful in
+this regard.  For example, we could create a comma-seperated version
+of the <tt>world</tt> data frame as follows:
+
+<pre>
+&#62;&nbsp;write.csv(world,file='world.csv')
+
+</pre>
+ Here's the result of reading the csv file with a spreadsheet program:
+<img src="worldspr.png">
+  The <tt>File-&#62;Save As</tt> menu would allow saving the 
+spreadsheet in an appropriate format.
+
+<div class="p"><!----></div>
+To automate the process of writing spreadsheets, the Windows-only 
+<tt>xlsReadWrite</tt> package provides a <tt>write.xls</tt> function;
+for other operating systems, this function is provided by the 
+<tt>dataframe2xls</tt> package.
+
+<div class="p"><!----></div>
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On  9 Mar 2011, 16:12.</small>
+</html>

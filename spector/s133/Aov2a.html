@@ -1,0 +1,288 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> Analysis of Variance</title>
+ 
+<h1 align="center">Analysis of Variance </h1>
+
+
+
+As another example, consider a data set with information about experience, gender, 
+and wages.  Experience is recorded as number of years on the job, and gender is recorded
+as 0 or 1.  To see if the slope of the line relating experience to wages is different
+for the two genders, we can proceed as follows:
+
+<pre>
+&#62;&nbsp;wages&nbsp;=&nbsp;read.delim('http://www.stat.berkeley.edu/classes/s133/data/wages.tab')
+&#62;&nbsp;wages$gender&nbsp;=&nbsp;factor(wages$gender)
+&#62;&nbsp;wages.aov&nbsp;=&nbsp;aov(wage&nbsp;~&nbsp;experience*gender,data=wages)
+&#62;&nbsp;anova(wages.aov)
+Analysis&nbsp;of&nbsp;Variance&nbsp;Table
+
+Response:&nbsp;wage
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Df&nbsp;&nbsp;Sum&nbsp;Sq&nbsp;Mean&nbsp;Sq&nbsp;F&nbsp;value&nbsp;&nbsp;&nbsp;&nbsp;Pr(&#62;F)&nbsp;&nbsp;&nbsp;&nbsp;
+experience&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;106.7&nbsp;&nbsp;106.69&nbsp;&nbsp;4.2821&nbsp;&nbsp;&nbsp;0.03900&nbsp;*&nbsp;&nbsp;
+gender&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;635.8&nbsp;&nbsp;635.78&nbsp;25.5175&nbsp;6.042e-07&nbsp;***
+experience:gender&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;128.9&nbsp;&nbsp;128.94&nbsp;&nbsp;5.1752&nbsp;&nbsp;&nbsp;0.02331&nbsp;*&nbsp;&nbsp;
+Residuals&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;530&nbsp;13205.3&nbsp;&nbsp;&nbsp;24.92&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+---
+Signif.&nbsp;codes:&nbsp;&nbsp;0&nbsp;'***'&nbsp;0.001&nbsp;'**'&nbsp;0.01&nbsp;'*'&nbsp;0.05&nbsp;'.'&nbsp;0.1&nbsp;'&nbsp;'&nbsp;1
+
+</pre>
+ The significant probability value for <tt>experience:gender</tt> indicates
+that the effect of experience on wages is different depending on the gender of the 
+employee.  By performing two separate regressions, we can see the values for the 
+slopes for the different genders:
+
+<pre>
+&#62;&nbsp;coef(lm(wage~experience,data=subset(wages,gender&nbsp;==&nbsp;0)))
+(Intercept)&nbsp;&nbsp;experience&nbsp;
+&nbsp;8.62215280&nbsp;&nbsp;0.08091533&nbsp;
+&#62;&nbsp;coef(lm(wage~experience,data=subset(wages,gender&nbsp;==&nbsp;1)))
+(Intercept)&nbsp;&nbsp;experience&nbsp;
+7.857197368&nbsp;0.001150118&nbsp;
+
+</pre>
+
+This indicates that there is a small increase in wages as experience increases
+for gender == 0, but virtually no increase for gender == 1.
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;Constructing Formulas</h2>
+For the examples we've looked at, there weren't so many terms in the model that
+it became tedious entering them by hand, but in models with many interactions
+it can quickly become a nuisance to have to enter every term into the model.
+When the terms are all main effects, you can often save typing by using a 
+<tt>data=</tt> argument specifying a data set with just the variables you are
+interested in and using the period (<tt>.</tt>) as the right-hand side of the 
+model, but that will not automatically generate interactions.
+
+<div class="p"><!----></div>
+The <tt>formula</tt> function will accept a text string containing a formula,
+and convert it to a formula that can be passed to any of the modeling functions.
+While it doesn't really make sense for the <tt>wine</tt> data, suppose we
+wanted to add <tt>Cultivar</tt> and all the interactions between <tt>Cultivar</tt>
+and the independent variables to our original regression model.
+The first step is to create a vector of the variables we want to work with.
+This can usually be done pretty easily using the <tt>names</tt> of the data frame
+we're working with. 
+
+<pre>
+&#62;&nbsp;vnames&nbsp;=&nbsp;names(wine)[c(3,5,10,11,13,14)]
+
+</pre>
+For the main part of the model we need to join together these names with 
+plus signs (<tt>+</tt>):
+
+<pre>
+&#62;&nbsp;main&nbsp;=&nbsp;paste(vnames,collapse='&nbsp;+&nbsp;')
+
+</pre>
+The interactions can be created by pasting together <tt>Cultivar</tt>
+with each of the continuous variables, using a colon (<tt>:</tt>) as a
+separator, and then joining them together with plus signs:
+
+<pre>
+&#62;&nbsp;ints&nbsp;=&nbsp;paste(paste('Cultivar',vnames,sep=':'),collapse="&nbsp;+&nbsp;")
+
+</pre>
+Finally, we put the dependent variable and <tt>Cultivar</tt> into the model,
+and paste everything together:
+
+<pre>
+&#62;&nbsp;mymodel&nbsp;=&nbsp;paste('Alcohol&nbsp;~&nbsp;Cultivar',main,ints,sep='+')
+&#62;&nbsp;mymodel
+[1]&nbsp;"Alcohol&nbsp;~&nbsp;Cultivar+Malic.acid&nbsp;+&nbsp;Alkalinity.ash&nbsp;+&nbsp;Proanthocyanins&nbsp;+&nbsp;Color.intensity&nbsp;+&nbsp;OD.Ratio&nbsp;+&nbsp;Proline+Cultivar:Malic.acid&nbsp;+&nbsp;Cultivar:Alkalinity.ash&nbsp;+&nbsp;Cultivar:Proanthocyanins&nbsp;+&nbsp;Cultivar:Color.intensity&nbsp;+&nbsp;Cultivar:OD.Ratio&nbsp;+&nbsp;Cultivar:Proline"
+
+</pre>
+To run this, we need to pass it to a modeling function through the <tt>formula</tt>
+function:
+
+<pre>
+&#62;&nbsp;wine.big&nbsp;=&nbsp;aov(formula(mymodel),data=wine)
+&#62;&nbsp;anova(wine.big)
+Analysis&nbsp;of&nbsp;Variance&nbsp;Table
+
+Response:&nbsp;Alcohol
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Df&nbsp;Sum&nbsp;Sq&nbsp;Mean&nbsp;Sq&nbsp;&nbsp;F&nbsp;value&nbsp;&nbsp;&nbsp;&nbsp;Pr(&#62;F)
+Cultivar&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;70.795&nbsp;&nbsp;35.397&nbsp;154.1166&nbsp;&lt;&nbsp;2.2e-16&nbsp;***
+Malic.acid&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;0.013&nbsp;&nbsp;&nbsp;0.013&nbsp;&nbsp;&nbsp;0.0573&nbsp;&nbsp;&nbsp;0.81106
+Alkalinity.ash&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;0.229&nbsp;&nbsp;&nbsp;0.229&nbsp;&nbsp;&nbsp;0.9955&nbsp;&nbsp;&nbsp;0.31993
+Proanthocyanins&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;0.224&nbsp;&nbsp;&nbsp;0.224&nbsp;&nbsp;&nbsp;0.9755&nbsp;&nbsp;&nbsp;0.32483
+Color.intensity&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;4.750&nbsp;&nbsp;&nbsp;4.750&nbsp;&nbsp;20.6808&nbsp;1.079e-05&nbsp;***
+OD.Ratio&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;0.031&nbsp;&nbsp;&nbsp;0.031&nbsp;&nbsp;&nbsp;0.1335&nbsp;&nbsp;&nbsp;0.71536
+Proline&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;0.262&nbsp;&nbsp;&nbsp;0.262&nbsp;&nbsp;&nbsp;1.1410&nbsp;&nbsp;&nbsp;0.28708
+Cultivar:Malic.acid&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;0.116&nbsp;&nbsp;&nbsp;0.058&nbsp;&nbsp;&nbsp;0.2524&nbsp;&nbsp;&nbsp;0.77727
+Cultivar:Alkalinity.ash&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;0.876&nbsp;&nbsp;&nbsp;0.438&nbsp;&nbsp;&nbsp;1.9071&nbsp;&nbsp;&nbsp;0.15194
+Cultivar:Proanthocyanins&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;1.176&nbsp;&nbsp;&nbsp;0.588&nbsp;&nbsp;&nbsp;2.5610&nbsp;&nbsp;&nbsp;0.08045&nbsp;.
+Cultivar:Color.intensity&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;0.548&nbsp;&nbsp;&nbsp;0.274&nbsp;&nbsp;&nbsp;1.1931&nbsp;&nbsp;&nbsp;0.30602
+Cultivar:OD.Ratio&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;0.415&nbsp;&nbsp;&nbsp;0.207&nbsp;&nbsp;&nbsp;0.9024&nbsp;&nbsp;&nbsp;0.40769
+Cultivar:Proline&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;1.160&nbsp;&nbsp;&nbsp;0.580&nbsp;&nbsp;&nbsp;2.5253&nbsp;&nbsp;&nbsp;0.08328&nbsp;.
+Residuals&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;157&nbsp;36.060&nbsp;&nbsp;&nbsp;0.230
+---
+Signif.&nbsp;codes:&nbsp;&nbsp;0&nbsp;'***'&nbsp;0.001&nbsp;'**'&nbsp;0.01&nbsp;'*'&nbsp;0.05&nbsp;'.'&nbsp;0.1&nbsp;'&nbsp;'&nbsp;1
+
+</pre>
+
+<div class="p"><!----></div>
+As expected there isn't anything too startling.  If we wanted to investigate,
+say, the <tt>Cultivar:Proanthocyanins</tt> interaction, we could look at a 
+scatter plot using separate colors for the points and corresponding best 
+regression lines for each <tt>Cultivar</tt>:
+
+<pre>
+&#62;&nbsp;plot(wine$Proanthocyanins,wine$Alcohol,col=c('red','blue','green')[wine$Cultivar])
+&#62;&nbsp;abline(lm(Alcohol~Proanthocyanins,data=wine,subset=Cultivar==1),col='red')&nbsp;
+&#62;&nbsp;abline(lm(Alcohol~Proanthocyanins,data=wine,subset=Cultivar==2),col='blue')&nbsp;
+&#62;&nbsp;abline(lm(Alcohol~Proanthocyanins,data=wine,subset=Cultivar==3),col='green')&nbsp;
+&#62;&nbsp;legend('topleft',legend=levels(wine$Cultivar),pch=1,col=c('red','blue','green'))&nbsp;
+
+</pre>
+The plot appears below:
+
+<div class="p"><!----></div>
+<img src="intplot.png">
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc2">
+2</a>&nbsp;&nbsp;Alternatives for ANOVA</h2>
+Not all data is suitable for ANOVA - in particular, if the variance
+varies dramatically between different groups, the assumption of equal
+variances is violated, and ANOVA results may not be valid.  We've seen
+before  that log transformations often help with ratios or percentages,
+but they may not always be effective.
+
+<div class="p"><!----></div>
+As an example of a data set not suitable for ANOVA, consider the builtin
+data set <tt>airquality</tt> which has daily measurements of ozone and other 
+quantities for a 153 day period.   The question to be answered is whether
+or not the average level of ozone is the same over the five months sampled.
+
+<div class="p"><!----></div>
+On the surface, this data seems suitable for ANOVA, so let's examine
+the diagnostic plots that would result from performing the ANOVA:
+
+<div class="p"><!----></div>
+
+<pre>
+&#62;&nbsp;airquality$Month&nbsp;=&nbsp;factor(airquality$Month)
+&#62;&nbsp;ozone.aov&nbsp;=&nbsp;aov(Ozone~Month,data=airquality)
+&#62;&nbsp;plot(ozone.aov)
+
+</pre>
+
+<div class="p"><!----></div>
+<img src="ozonediag.png">
+
+<div class="p"><!----></div>
+There are deviations at both the low and high ends of the Q-Q plot,
+and some deviation from a constant in the Scale-Location plot.  Will
+a log transformation help?
+
+<div class="p"><!----></div>
+
+<pre>
+&#62;&nbsp;ozonel.aov&nbsp;=&nbsp;aov(log(Ozone)~Month,data=airquality)
+&#62;&nbsp;plot(ozonel.aov)
+
+</pre>
+
+<div class="p"><!----></div>
+<img src="ozoneldiag.png">
+
+<div class="p"><!----></div>
+In this case, the transformation didn't really help.
+
+<div class="p"><!----></div>
+It might
+be possible to find a more suitable transformation, but we can also
+use a statistical test that makes fewer assumptions about our data.
+One such test is the Kruskal-Wallis test.  Basically, the test replaces
+the data with the ranks of the data, and performs an ANOVA on those
+ranks.   It assumes that observations are independent from each other,
+but doesn't demand equality of variance across the groups, or that 
+the observations follow a normal distribution.
+The <tt>kruskal.test</tt> function in R performs the test,
+using the same formula interface as <tt>aov</tt>.
+
+<div class="p"><!----></div>
+
+<pre>
+&#62;&nbsp;ozone.kruskal&nbsp;=&nbsp;kruskal.test(Ozone~Month,data=airquality)
+&#62;&nbsp;ozone.kruskal
+
+	Kruskal-Wallis&nbsp;rank&nbsp;sum&nbsp;test
+
+data:&nbsp;&nbsp;Ozone&nbsp;by&nbsp;Month&nbsp;
+Kruskal-Wallis&nbsp;chi-squared&nbsp;=&nbsp;29.2666,&nbsp;df&nbsp;=&nbsp;4,&nbsp;p-value&nbsp;=&nbsp;6.901e-06
+
+</pre>
+
+<div class="p"><!----></div>
+All that's reported is the significance level for the test, which tells
+us that the differences between the Ozone levels for different months
+is very significant.   To see where the differences come from, we can
+use the <tt>kruskalmc</tt> function in the strangely-named <tt>pgirmess</tt>
+package.  Unfortunately this function doesn't use the model interface -
+you simply provide the response variable and the (factor) grouping variable.
+
+<div class="p"><!----></div>
+
+<pre>
+&#62;&nbsp;library(pgirmess)
+&#62;&nbsp;kruskalmc(airquality$Ozone,airquality$Month)
+Multiple&nbsp;comparison&nbsp;test&nbsp;after&nbsp;Kruskal-Wallis&nbsp;
+p.value:&nbsp;0.05&nbsp;
+Comparisons
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;obs.dif&nbsp;critical.dif&nbsp;difference
+5-6&nbsp;57.048925&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;31.85565&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRUE
+5-7&nbsp;38.758065&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;31.59346&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRUE
+5-8&nbsp;37.322581&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;31.59346&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRUE
+5-9&nbsp;&nbsp;2.198925&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;31.85565&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FALSE
+6-7&nbsp;18.290860&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;31.85565&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FALSE
+6-8&nbsp;19.726344&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;31.85565&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FALSE
+6-9&nbsp;54.850000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;32.11571&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRUE
+7-8&nbsp;&nbsp;1.435484&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;31.59346&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FALSE
+7-9&nbsp;36.559140&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;31.85565&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRUE
+8-9&nbsp;35.123656&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;31.85565&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRUE
+
+</pre>
+Studying these results shows that months 6,7, and 8 are 
+very similar, but different from months 5 and 9.
+
+<div class="p"><!----></div>
+To understand why this data is not suitable for ANOVA, we can
+look at boxplots of the Ozone levels for each month:
+
+<pre>
+&#62;&nbsp;boxplot(with(airquality,split(Ozone,Month)))
+
+</pre>
+
+<div class="p"><!----></div>
+<img src="ozonebox.png">
+The variances are clearly not equal across months, and the 
+lack of symmetry for months 5 and 6 brings the normal assumption
+into doubt.
+
+<div class="p"><!----></div>
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On  6 May 2011, 11:07.</small>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+<title> Setting up an SSH Tunnel to Access the MySQL server</title>
+ 
+<h1 align="center">Setting up an SSH Tunnel to Access the MySQL server </h1>
+In order to access the MySQL server from outside the SCF network under 
+Windows, you'll
+need to set up an SSH tunnel using <tt>putty</tt>.
+It's a very simple procedure which you
+only need to set up once.  (For Linux and Mac OSX, look at the last 
+paragraph to see how to set up an SSH tunnel.)
+
+<div class="p"><!----></div>
+If you don't already have <tt>putty</tt>, 
+you can download it from <a href="http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html">http://www.chiark.greenend.org.uk/&nbsp;sgtatham/putty/download.html</a>.  To set up a tunnel
+using <tt>putty</tt>, first click the plus sign by the <tt>SSH</tt> menu choice in
+the left pane of the main window, and then click on <tt>Tunnels</tt>.  Fill in the
+information as shown in this screenshot:
+
+<div class="p"><!----></div>
+<img src="putty.png">
+
+<div class="p"><!----></div>
+Once the information is in place, click the <tt>Add</tt> button to create the 
+tunnel.  Make sure that the string "<tt>L3306</tt>" appears in the box which
+describes the forwarded ports.
+
+<div class="p"><!----></div>
+Now, click on the <tt>Session</tt> menu choice at the top of the left-hand pane, and
+enter any valid SCF host in the <tt>Host Name</tt> window.  Click on <tt>Open</tt>,
+and log in with your SCF username and password.   Note that you
+you must be logged in for the tunnel to be activated, even if you won't be typing
+any commands into the shell.
+
+<div class="p"><!----></div>
+Once the tunnel is established, any MySQL client (like the graphical one you 
+can find at <a href="http://www.mysql.com/downloads/workbench/">mysql.com</a>
+ or R) will be able to connect to the standard MySQL
+port on your computer, using the id and password from class, and the tunnel will 
+transfer the connection to the 
+SCF machine on which the database is running.  If you need a hostname, use
+"127.0.0.1".
+
+<div class="p"><!----></div>
+If you're using Mac OSX or Linux on your own computer, you can set up an SSH tunnel to 
+the mysql server by typing the following command in a terminal window.  (On a Mac, you
+can find the terminal application in <tt>/Applications/Utilities/Terminal.app</tt>)
+
+<pre>
+ssh&nbsp;-N&nbsp;-L&nbsp;3306:springer.berkeley.edu:3306&nbsp;s133xx@any-scf-host
+
+</pre>
+ where <tt>any-scf-host</tt> is the name of any scf host (except gandalf), and
+<tt>s133xx</tt> is your SCF login id.
+You'll be prompted for your password; once you enter it, you can put the <tt>ssh</tt>
+command in the background by typing Control-z, and then <tt>bg</tt>.
+On a Mac, you'll need to include <tt>host="127.0.0.1"</tt> in your call to 
+<tt>dbConnect</tt> when using an SSH tunnel to connect to the MySQL database.
+
+<div class="p"><!----></div>
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On 15 Mar 2011, 14:49.</small>
+</html>

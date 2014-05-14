@@ -1,0 +1,121 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+   
+<title>No Title</title>
+
+
+<center><font size="+1">Stat 133, Spring 2011<br />
+Homework 1: Introduction to R<br />
+Due Friday, Feb. 11 at 11:59 PM<br />
+</font></center>
+
+<div class="p"><!----></div>
+<br />
+<table align="center" border="0"><tr><td>
+<font size="+2">Traffic Flow on Highways in California</font></td></tr></table><!--hboxt-->
+
+<div class="p"><!----></div>
+Data was collected by  loop detectors at one particular location of eastbound 
+Interstate 80 in Sacramento, California. There are six columns and 1740 rows 
+in the data set. The rows correspond to successive five minute intervals from 
+March 14 to 20, 2003, where the data values in a row report the flow (number of cars) 
+and occupancy (the proportion of time there was a car over the loop) in each 
+of three lanes on the freeway. Lane 1 is the leftmost lane, lane 2 is in the 
+center, and lane 3 is the rightmost.  The data set can be found at
+<a href="http://www.stat.berkeley.edu/classes/s133/data/flow-occ.csv">http://www.stat.berkeley.edu/classes/s133/data/flow-occ.csv</a>
+The original data are from the 
+Freeway Performance Measurement System (PEMS) website
+(<a href="http://pems.eecs.berkeley.edu/Public/">Freeway Performance Measurement System (PEMS) website</a>)
+
+<div class="p"><!----></div>
+
+<ol type="1">
+<li> Read the data in R.  Note that you don't need to actually download
+the data in order to read it.
+<div class="p"><!----></div>
+</li>
+
+<li>  Is there a particular lane for which the flow of traffic is consistently higher 
+than the other lanes?
+<div class="p"><!----></div>
+</li>
+
+<li> Is there a relationship between flow and occupancy?
+<div class="p"><!----></div>
+</li>
+</ol>
+The data for this problem was provided by John Rice of the UC Berkeley statistics 
+department.
+
+<div class="p"><!----></div>
+<br />
+<table align="center" border="0"><tr><td>
+<font size="+2">Ages of United States Senators</font></td></tr></table><!--hboxt-->
+
+<div class="p"><!----></div>
+A lot of excitement was generated when Barack Obama was elected president because
+of his youth.  Does the same trend in age hold in the United States Senate?
+
+<div class="p"><!----></div>
+At <a href="http://www.stat.berkeley.edu/classes/s133/data/senate.txt">http://www.stat.berkeley.edu/classes/s133/data/senate.txt</a> is a tab-separated file with the following columns, recorded for each past and present United States senator: 
+<tt>Name</tt>, the name of the senator;
+<tt>start</tt>, the first year that the senator served in office; <tt>end</tt>, the last year 
+they served; <tt>State</tt>, the state from which they were elected; <tt>Party</tt>, their
+political party, and <tt>Birthday</tt>, when they were born.
+
+<div class="p"><!----></div>
+Plot the average age of the senators against time, for all the 
+years of available data.  The start and end years are recorded so that
+a senator is active if the year in question is 
+greater than or equal to the start year and less than or equal to the end year.
+Are senators getting younger over time?
+
+<div class="p"><!----></div>
+<br />
+<table align="center" border="0"><tr><td>
+<font size="+2">Temperatures in Berkeley in January</font></td></tr></table><!--hboxt-->
+
+<div class="p"><!----></div>
+In my backyard, I have a temperature sensor attached to a computer which records
+the temperature every fifteen minutes.  I've extracted the minimum, mean  and maximum
+temperature for each day in January over the last seven years into <br />
+<a href="http://www.stat.berkeley.edu/classes/s133/data/january.tab">http://www.stat.berkeley.edu/classes/s133/data/january.tab</a>.  The columns are <tt>min</tt>, the minimum
+temperature for the day; <tt>mean</tt>, the average of all 96 temperaures for the day;
+<tt>max</tt>, the maximum temperature for the day;
+<tt>year</tt>; and <tt>day</tt>.  Remember that this data is only for the last
+seven Januaries.
+
+<div class="p"><!----></div>
+
+<ol type="1">
+<li>Over the last seven years, which year had the hottest January?  Which year 
+had the coldest?
+<div class="p"><!----></div>
+</li>
+
+<li>
+The computer to which the sensor is connected was broken for a few days in
+January one year.  Which year was it?  Explain how you found the answer -
+simply examining the data by eye is not acceptable.
+<div class="p"><!----></div>
+</li>
+</ol>
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On  1 Feb 2011, 09:52.</small>
+</html>

@@ -1,0 +1,589 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> Analysis of Variance</title>
+ 
+<h1 align="center">Analysis of Variance </h1>
+
+
+
+ <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;Two-Way ANOVA</h2>
+To express the idea of an interaction in the R modeling language, we need to 
+introduce two new operators.  The colon (<tt>:</tt>) is used to indicate an 
+interaction between two or more variables in model formula.   The asterisk
+(<tt>*</tt>) is use to indicate all main effects and interactions among the 
+variables that it joins.  So, for example the term <tt>A*B</tt> would expand
+to the three terms <tt>A</tt>, <tt>B</tt>, and <tt>A:B</tt>.  As an example
+of a two-way ANOVA, consider a  study to determine the effects of physical
+activity on obesity.  Subjects were rated for their physical activity on a 
+three point scale with 1=not very active, 2=somewhat active, and 3=very active.
+In addition, the race (either 1 or 2) of the participant was recorded, along 
+with their Body Mass Index (BMI).  We want 
+to answer the 
+following three questions:
+
+<ol type="1">
+<li>Were the means for BMI the same for the two races?
+<div class="p"><!----></div>
+</li>
+
+<li>
+Were the means for BMI the same for the three activity levels?
+<div class="p"><!----></div>
+</li>
+
+<li>
+Is the effect of activity level different depending on race?, or 
+equivalently Is the effect of race different depending on activity level?
+<div class="p"><!----></div>
+</li>
+</ol>
+
+<div class="p"><!----></div>
+The first two questions can be answered by looking at the <tt>race</tt> and
+<tt>activity</tt> main effects, while the third question describes the 
+<tt>race</tt> by <tt>activity</tt> interaction.  The data can be found at
+<a href="http://www.stat.berkeley.edu/classes/s133/data/activity.csv">http://www.stat.berkeley.edu/classes/s133/data/activity.csv</a>.  Here are the R statements to run
+the ANOVA:
+
+<pre>
+&#62;&nbsp;activity&nbsp;=&nbsp;read.csv('activity.csv')
+&#62;&nbsp;activity$race&nbsp;=&nbsp;factor(activity$race)
+&#62;&nbsp;activity$activity&nbsp;=&nbsp;factor(activity$activity)
+&#62;&nbsp;activity.aov&nbsp;=&nbsp;aov(bmi~race*activity,data=activity)
+&#62;&nbsp;summary(activity.aov)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Df&nbsp;Sum&nbsp;Sq&nbsp;Mean&nbsp;Sq&nbsp;&nbsp;F&nbsp;value&nbsp;&nbsp;Pr(&#62;F)
+race&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;3552&nbsp;&nbsp;&nbsp;&nbsp;3552&nbsp;102.5894&nbsp;&lt;&nbsp;2e-16&nbsp;***
+activity&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;2672&nbsp;&nbsp;&nbsp;&nbsp;1336&nbsp;&nbsp;38.5803&nbsp;&lt;&nbsp;2e-16&nbsp;***
+race:activity&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;301&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;151&nbsp;&nbsp;&nbsp;4.3508&nbsp;0.01303&nbsp;*
+Residuals&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1865&nbsp;&nbsp;64574&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;35
+---
+Signif.&nbsp;codes:&nbsp;&nbsp;0&nbsp;'***'&nbsp;0.001&nbsp;'**'&nbsp;0.01&nbsp;'*'&nbsp;0.05&nbsp;'.'&nbsp;0.1&nbsp;'&nbsp;'&nbsp;1
+
+</pre>
+Notice that there are two degrees of freedom for <tt>activity</tt> - this means
+two parameters will be estimated in order to explain <tt>activity</tt>'s effect on
+<tt>bmi</tt>.  Unlike linear regression, where only a single parameter is 
+estimated, and the only relationship that can be fit is a linear one, using two
+parameters (to account for the three levels of activity) provides more flexibility
+than would be possible with linear regression.
+
+<div class="p"><!----></div>
+To see if the analysis was reasonable, we can look at the default plots:
+
+<div class="p"><!----></div>
+
+<pre>
+&#62;&nbsp;plot(activity.aov)
+
+</pre>
+
+<div class="p"><!----></div>
+The graphs appear below:
+
+<div class="p"><!----></div>
+<img src="activity.png">
+
+<div class="p"><!----></div>
+There seems to some deviation from normality when looking at
+the Normal Q-Q plot (recall that, if the residuals did follow a normal
+distribution, we would see a straight line.)   When this situation arises,
+analyzing the logarithm of the dependent variable often helps.  Here are the 
+same results for the  analysis of <tt>log(bmi)</tt>:
+
+<div class="p"><!----></div>
+
+<pre>
+&#62;&nbsp;activity1.aov&nbsp;=&nbsp;aov(log(bmi)~race*activity,data=activity)
+&#62;&nbsp;summary(activity1.aov)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Df&nbsp;Sum&nbsp;Sq&nbsp;Mean&nbsp;Sq&nbsp;&nbsp;F&nbsp;value&nbsp;&nbsp;&nbsp;&nbsp;Pr(&#62;F)
+race&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;4.588&nbsp;&nbsp;&nbsp;4.588&nbsp;100.3741&nbsp;&lt;&nbsp;2.2e-16&nbsp;***
+activity&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;3.251&nbsp;&nbsp;&nbsp;1.625&nbsp;&nbsp;35.5596&nbsp;&nbsp;6.98e-16&nbsp;***
+race:activity&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;0.317&nbsp;&nbsp;&nbsp;0.158&nbsp;&nbsp;&nbsp;3.4625&nbsp;&nbsp;&nbsp;0.03155&nbsp;*
+Residuals&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1865&nbsp;85.240&nbsp;&nbsp;&nbsp;0.046
+---
+Signif.&nbsp;codes:&nbsp;&nbsp;0&nbsp;'***'&nbsp;0.001&nbsp;'**'&nbsp;0.01&nbsp;'*'&nbsp;0.05&nbsp;'.'&nbsp;0.1&nbsp;'&nbsp;'&nbsp;1
+&#62;&nbsp;plot(activity1.aov)
+
+</pre>
+
+<div class="p"><!----></div>
+<img src="activity1.png">
+
+<div class="p"><!----></div>
+The Q-Q plot looks better, so this model is probably more appropriate.
+We can see both main effects as well as the interaction are significant.
+To see what's happening with the main effects, we can use <tt>aggregate</tt>:
+
+<pre>
+&#62;&nbsp;aggregate(log(activity$bmi),activity['race'],mean)
+&nbsp;&nbsp;race&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x
+1&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;3.122940
+2&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;3.222024
+&#62;&nbsp;aggregate(log(activity$bmi),activity['activity'],mean)
+&nbsp;&nbsp;activity&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;3.242682
+2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;3.189810
+3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3&nbsp;3.109518
+
+</pre>
+Race 2 has higher values of BMI than race 1, and BMI decreases as the 
+level of activity increases.
+
+<div class="p"><!----></div>
+To study the interaction, we could use aggregate, passing both <tt>race</tt>
+and <tt>activity</tt> as the second argument:
+
+<pre>
+&#62;&nbsp;aggregate(log(activity$bmi),activity[c('race','activity')],mean)
+&nbsp;&nbsp;race&nbsp;activity&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x
+1&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;3.161119
+2&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;3.298576
+3&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;3.140970
+4&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;3.230651
+5&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3&nbsp;3.084426
+6&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3&nbsp;3.143478
+
+</pre>
+
+<div class="p"><!----></div>
+The arrangement of the output from <tt>tapply</tt> may be more helpful:
+
+<pre>
+&#62;&nbsp;tapply(log(activity$bmi),activity[c('race','activity')],mean)
+&nbsp;&nbsp;&nbsp;&nbsp;activity
+race&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3
+&nbsp;&nbsp;&nbsp;1&nbsp;3.161119&nbsp;3.140970&nbsp;3.084426
+&nbsp;&nbsp;&nbsp;2&nbsp;3.298576&nbsp;3.230651&nbsp;3.143478
+
+</pre>
+It's usually difficult to judge relationships like this from a table.
+One useful tool in this case is
+an interaction plot.  An interaction plot has one point
+for each combination of the factors defined by an interaction.  The x-axis
+represents the levels of one of the factors, and the y-axis represents the 
+mean of the dependent variable, and a separate line is drawn for each 
+level of the factor not represented on the x-axis.  While it wouldn't be 
+too hard to produce such a plot with basic commands in R, the process is
+automated by the <tt>interaction.plot</tt> function.  The first argument to
+this function is the factor to appear on the x-axis; the second is the 
+factor which will define the multiple lines being drawn, and the third 
+argument is the dependent variable.   By default, <tt>interaction.plot</tt>
+uses the mean for its display, but you can provide a function of your own
+choosing through the <tt>fun=</tt> argument.  
+For the activity data, we can produce an interaction plot with the following
+code:
+
+<pre>
+&#62;&nbsp;with(activity,interaction.plot(activity,race,log(bmi)))
+
+</pre>
+
+<div class="p"><!----></div>
+Here's the plot:
+
+<div class="p"><!----></div>
+<img src="actint.png">
+
+<div class="p"><!----></div>
+It can be seen that the interaction is due to the fact that the slope of 
+the line for race 2 is steeper than the line for race 1.
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc2">
+2</a>&nbsp;&nbsp;Another Example</h2>
+This example has to do with iron retention in mice.  Two different treatments,
+each at three different levels, were fed to mice.  The treatments were 
+tagged with radioactive iron, so that the percentage of iron retained could
+be measured after a fixed period of time.
+The data is presented in a table as follows:
+
+<pre>
+----------------------------------------------------
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Fe2+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Fe3+
+----------------------------------------------------
+high&nbsp;&nbsp;&nbsp;medium&nbsp;&nbsp;&nbsp;low&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;high&nbsp;&nbsp;&nbsp;&nbsp;medium&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;low
+----------------------------------------------------
+0.71&nbsp;&nbsp;&nbsp;&nbsp;2.20&nbsp;&nbsp;&nbsp;&nbsp;2.25&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.20&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4.04&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.71
+1.66&nbsp;&nbsp;&nbsp;&nbsp;2.93&nbsp;&nbsp;&nbsp;&nbsp;3.93&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.69&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4.16&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5.43
+2.01&nbsp;&nbsp;&nbsp;&nbsp;3.08&nbsp;&nbsp;&nbsp;&nbsp;5.08&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.54&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4.42&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6.38
+2.16&nbsp;&nbsp;&nbsp;&nbsp;3.49&nbsp;&nbsp;&nbsp;&nbsp;5.82&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.75&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4.93&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6.38
+2.42&nbsp;&nbsp;&nbsp;&nbsp;4.11&nbsp;&nbsp;&nbsp;&nbsp;5.84&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.83&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5.49&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8.32
+2.42&nbsp;&nbsp;&nbsp;&nbsp;4.95&nbsp;&nbsp;&nbsp;&nbsp;6.89&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4.08&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5.77&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;9.04
+2.56&nbsp;&nbsp;&nbsp;&nbsp;5.16&nbsp;&nbsp;&nbsp;&nbsp;8.50&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4.27&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5.86&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;9.56
+2.60&nbsp;&nbsp;&nbsp;&nbsp;5.54&nbsp;&nbsp;&nbsp;&nbsp;8.56&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4.53&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6.28&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;10.01
+3.31&nbsp;&nbsp;&nbsp;&nbsp;5.68&nbsp;&nbsp;&nbsp;&nbsp;9.44&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5.32&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6.97&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;10.08
+3.64&nbsp;&nbsp;&nbsp;&nbsp;6.25&nbsp;&nbsp;&nbsp;10.52&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6.18&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7.06&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;10.62
+3.74&nbsp;&nbsp;&nbsp;&nbsp;7.25&nbsp;&nbsp;&nbsp;13.46&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6.22&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7.78&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;13.80
+3.74&nbsp;&nbsp;&nbsp;&nbsp;7.90&nbsp;&nbsp;&nbsp;13.57&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6.33&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;9.23&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;15.99
+4.39&nbsp;&nbsp;&nbsp;&nbsp;8.85&nbsp;&nbsp;&nbsp;14.76&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6.97&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;9.34&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;17.90
+4.50&nbsp;&nbsp;&nbsp;11.96&nbsp;&nbsp;&nbsp;16.41&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6.97&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;9.91&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;18.25
+5.07&nbsp;&nbsp;&nbsp;15.54&nbsp;&nbsp;&nbsp;16.96&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7.52&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;13.46&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;19.32
+5.26&nbsp;&nbsp;&nbsp;15.89&nbsp;&nbsp;&nbsp;17.56&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8.36&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;18.40&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;19.87
+8.15&nbsp;&nbsp;&nbsp;18.30&nbsp;&nbsp;&nbsp;22.82&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;11.65&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;23.89&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;21.60
+8.24&nbsp;&nbsp;&nbsp;18.59&nbsp;&nbsp;&nbsp;29.13&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;12.45&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;26.39&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;22.25
+----------------------------------------------------
+
+</pre>
+
+<div class="p"><!----></div>
+Thus, before we can perform analysis on the data, it needs
+to be rearranged.  To do this, we can use the <tt>reshape</tt>
+function.  Since there are two different sets of variables
+that represent the change in the factors of the experiment,
+we first read in the data (skipping the header), and create
+two groups of variables in our call to reshape:
+
+<pre>
+&#62;&nbsp;iron0&nbsp;=&nbsp;read.table('iron.txt',skip=5,nrows=18)
+&#62;&nbsp;names(iron0)&nbsp;=&nbsp;c('Fe2high','Fe2medium','Fe2low','Fe3high','Fe3medium','Fe3low')
+&#62;&nbsp;iron1&nbsp;=&nbsp;reshape(iron0,varying=list(1:3,4:6),direction='long')
+&#62;&nbsp;head(iron1)
+&nbsp;&nbsp;&nbsp;&nbsp;time&nbsp;Fe2high&nbsp;Fe3high&nbsp;id
+1.1&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;0.71&nbsp;&nbsp;&nbsp;&nbsp;2.20&nbsp;&nbsp;1
+2.1&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;1.66&nbsp;&nbsp;&nbsp;&nbsp;2.69&nbsp;&nbsp;2
+3.1&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;2.01&nbsp;&nbsp;&nbsp;&nbsp;3.54&nbsp;&nbsp;3
+4.1&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;2.16&nbsp;&nbsp;&nbsp;&nbsp;3.75&nbsp;&nbsp;4
+5.1&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;2.42&nbsp;&nbsp;&nbsp;&nbsp;3.83&nbsp;&nbsp;5
+6.1&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;2.42&nbsp;&nbsp;&nbsp;&nbsp;4.08&nbsp;&nbsp;6
+
+</pre>
+After examining the data, it can be seen that the low, medium, and 
+high values have been translated into values 1, 2, and 3 in the 
+variable <tt>time</tt>.  The id variable is created to help us see
+which line each observation came from, which is not relevant in this
+case, since the table was just used to present the data, and the 
+values in the table don't represent repeated measures on the same
+experimental unit.
+
+<div class="p"><!----></div>
+Next, we eliminate the <tt>id</tt> column, rename the column named
+"<tt>time</tt>" and further reshape the 
+data to represent the two treatments:
+
+<pre>
+&#62;&nbsp;iron1$id&nbsp;=&nbsp;NULL
+&#62;&nbsp;names(iron1)[1]&nbsp;=&nbsp;'level'
+&#62;&nbsp;iron&nbsp;=&nbsp;reshape(iron1,varying=list(2:3),direction='long')
+&#62;&nbsp;head(iron)
+&nbsp;&nbsp;&nbsp;&nbsp;level&nbsp;time&nbsp;Fe2high&nbsp;id
+1.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;0.71&nbsp;&nbsp;1
+2.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;1.66&nbsp;&nbsp;2
+3.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;2.01&nbsp;&nbsp;3
+4.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;2.16&nbsp;&nbsp;4
+5.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;2.42&nbsp;&nbsp;5
+6.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;2.42&nbsp;&nbsp;6
+
+</pre>
+ All that's left is to remove the <tt>id</tt>
+column and to rename <tt>time</tt> and <tt>Fe2high</tt>:
+
+<pre>
+&#62;&nbsp;iron$id&nbsp;=&nbsp;NULL
+&#62;&nbsp;names(iron)[2:3]&nbsp;=&nbsp;c('treatment','retention')
+&#62;&nbsp;head(iron)
+&nbsp;&nbsp;&nbsp;&nbsp;level&nbsp;treatment&nbsp;retention
+1.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.71
+2.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.66
+3.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.01
+4.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.16
+5.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.42
+6.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.42
+
+</pre>
+  Once the data has been reshaped, it's essential to
+make sure that the independent variables are correctly stored
+as factors:
+
+<pre>
+&#62;&nbsp;sapply(iron,class)
+&nbsp;&nbsp;&nbsp;&nbsp;level&nbsp;treatment&nbsp;retention&nbsp;
+"integer"&nbsp;"integer"&nbsp;"numeric"&nbsp;
+
+</pre>
+Since <tt>treatment</tt> and <tt>level</tt> are not factors,
+we must convert them:
+
+<pre>
+&#62;&nbsp;&nbsp;iron$treatment&nbsp;=&nbsp;factor(iron$treatment,labels=c('Fe2+','Fe3+'))
+&#62;&nbsp;iron$level&nbsp;=&nbsp;factor(iron$level,labels=c('high','medium','low'))
+&#62;&nbsp;head(iron)
+&nbsp;&nbsp;&nbsp;&nbsp;level&nbsp;treatment&nbsp;retention
+1.1&nbsp;&nbsp;high&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Fe2+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.71
+2.1&nbsp;&nbsp;high&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Fe2+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.66
+3.1&nbsp;&nbsp;high&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Fe2+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.01
+4.1&nbsp;&nbsp;high&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Fe2+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.16
+5.1&nbsp;&nbsp;high&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Fe2+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.42
+6.1&nbsp;&nbsp;high&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Fe2+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.42
+
+</pre>
+Now we can perform the ANOVA:
+
+<pre>
+&#62;&nbsp;iron.aov&nbsp;=&nbsp;aov(retention&nbsp;~&nbsp;level*treatment,data=iron)
+&#62;&nbsp;summary(iron.aov)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Df&nbsp;&nbsp;Sum&nbsp;Sq&nbsp;Mean&nbsp;Sq&nbsp;F&nbsp;value&nbsp;&nbsp;&nbsp;&nbsp;Pr(&#62;F)&nbsp;&nbsp;&nbsp;&nbsp;
+level&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;983.62&nbsp;&nbsp;491.81&nbsp;17.0732&nbsp;4.021e-07&nbsp;***
+treatment&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;62.26&nbsp;&nbsp;&nbsp;62.26&nbsp;&nbsp;2.1613&nbsp;&nbsp;&nbsp;&nbsp;0.1446&nbsp;&nbsp;&nbsp;&nbsp;
+level:treatment&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;8.29&nbsp;&nbsp;&nbsp;&nbsp;4.15&nbsp;&nbsp;0.1439&nbsp;&nbsp;&nbsp;&nbsp;0.8661&nbsp;&nbsp;&nbsp;&nbsp;
+Residuals&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;102&nbsp;2938.20&nbsp;&nbsp;&nbsp;28.81&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+</pre>
+ Before proceeding further, we should examine the 
+ANOVA plots to see if the data meets the assumptions of ANOVA:
+
+<div class="p"><!----></div>
+<img src="ironplots.png">
+
+<div class="p"><!----></div>
+Both the normal Q-Q plot and the scale-location plot indicate
+problems similar to the previous example, and a log transformation
+is once again suggested.   This is not unusual when data is 
+measured as percentages or ratios.
+
+<div class="p"><!----></div>
+
+<pre>
+&#62;&nbsp;ironl.aov&nbsp;=&nbsp;aov(log(retention)&nbsp;~&nbsp;level*treatment,data=iron)
+&#62;&nbsp;par(mfrow=c(2,2))
+&#62;&nbsp;plot(ironl.aov)
+
+</pre>
+
+<div class="p"><!----></div>
+<img src="ironlplots.png">
+
+<div class="p"><!----></div>
+The plots look much better, so we'll continue with the analysis
+of the log of retention.
+
+<div class="p"><!----></div>
+
+<pre>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Df&nbsp;Sum&nbsp;Sq&nbsp;Mean&nbsp;Sq&nbsp;F&nbsp;value&nbsp;&nbsp;&nbsp;Pr(&#62;F)&nbsp;&nbsp;&nbsp;&nbsp;
+level&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;15.588&nbsp;&nbsp;&nbsp;7.794&nbsp;22.5241&nbsp;7.91e-09&nbsp;***
+treatment&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;2.074&nbsp;&nbsp;&nbsp;2.074&nbsp;&nbsp;5.9931&nbsp;&nbsp;0.01607&nbsp;*&nbsp;&nbsp;
+level:treatment&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;0.810&nbsp;&nbsp;&nbsp;0.405&nbsp;&nbsp;1.1708&nbsp;&nbsp;0.31426&nbsp;&nbsp;&nbsp;&nbsp;
+Residuals&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;102&nbsp;35.296&nbsp;&nbsp;&nbsp;0.346&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+---
+Signif.&nbsp;codes:&nbsp;&nbsp;0&nbsp;‘***’&nbsp;0.001&nbsp;‘**’&nbsp;0.01&nbsp;‘*’&nbsp;0.05&nbsp;‘.’&nbsp;0.1&nbsp;‘&nbsp;’&nbsp;1&nbsp;
+
+</pre>
+ Since there were only two levels of treatment, the significant
+treatment effect means the two treatments were different.  We can use the 
+<tt>TukeyHSD</tt> function to see if the different levels of the treatment
+were different:
+
+<pre>
+&#62;&nbsp;TukeyHSD(ironl.aov,'level')
+&nbsp;&nbsp;Tukey&nbsp;multiple&nbsp;comparisons&nbsp;of&nbsp;means
+&nbsp;&nbsp;&nbsp;&nbsp;95%&nbsp;family-wise&nbsp;confidence&nbsp;level
+
+Fit:&nbsp;aov(formula&nbsp;=&nbsp;log(retention)&nbsp;~&nbsp;level&nbsp;*&nbsp;treatment,&nbsp;data&nbsp;=&nbsp;iron)
+
+$level
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;diff&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lwr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;upr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p&nbsp;adj
+medium-high&nbsp;0.5751084&nbsp;0.24533774&nbsp;0.9048791&nbsp;0.0002042
+low-high&nbsp;&nbsp;&nbsp;&nbsp;0.9211588&nbsp;0.59138806&nbsp;1.2509295&nbsp;0.0000000
+low-medium&nbsp;&nbsp;0.3460503&nbsp;0.01627962&nbsp;0.6758210&nbsp;0.0373939
+
+</pre>
+It appears that the high level had much lower retention values
+than the other two levels:
+
+<pre>
+&#62;&nbsp;aggregate(log(iron$retention),iron['level'],mean)
+&nbsp;&nbsp;&nbsp;level&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x
+1&nbsp;&nbsp;&nbsp;high&nbsp;1.420526
+2&nbsp;medium&nbsp;1.995635
+3&nbsp;&nbsp;&nbsp;&nbsp;low&nbsp;2.341685
+
+</pre>
+Although there was no significant interaction, an interaction plot
+can still be useful in visualizing what happens in an experiment:
+
+<pre>
+&#62;&nbsp;interaction.plot(iron$level,iron$treatment,log(iron$retention))
+
+</pre>
+
+<div class="p"><!----></div>
+<img src="ironint.png">
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc3">
+3</a>&nbsp;&nbsp;More Complex Models</h2>
+When working with the <tt>wine</tt> data frame, 
+we've separated the categorical variable (<tt>Cultivar</tt>) from the 
+continuous variable for pedagogical reasons, but the <tt>aov</tt> function
+can accomodate both in the same model.  Let's add the <tt>Cultivar</tt>
+variable to the regression model we've previously worked with:
+
+<pre>
+&#62;&nbsp;wine.new&nbsp;=&nbsp;lm(Alcohol~Cultivar+Malic.acid+Alkalinity.ash+Proanthocyanins+Color.intensity+OD.Ratio+Proline,data=wine)
+&#62;&nbsp;summary(wine.new)
+
+Call:
+lm(formula&nbsp;=&nbsp;Alcohol&nbsp;~&nbsp;Cultivar&nbsp;+&nbsp;Malic.acid&nbsp;+&nbsp;Alkalinity.ash&nbsp;+
+&nbsp;&nbsp;&nbsp;&nbsp;Proanthocyanins&nbsp;+&nbsp;Color.intensity&nbsp;+&nbsp;OD.Ratio&nbsp;+&nbsp;Proline,&nbsp;data&nbsp;=&nbsp;wine)
+
+Residuals:
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Min&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1Q&nbsp;&nbsp;&nbsp;Median&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3Q&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Max
+-1.13591&nbsp;-0.31737&nbsp;-0.02623&nbsp;&nbsp;0.33229&nbsp;&nbsp;1.65633
+
+Coefficients:
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Estimate&nbsp;Std.&nbsp;Error&nbsp;t&nbsp;value&nbsp;Pr(&#62;|t|)
+(Intercept)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;12.9158487&nbsp;&nbsp;0.4711149&nbsp;&nbsp;27.415&nbsp;&nbsp;&lt;&nbsp;2e-16&nbsp;***
+Cultivar2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-0.9957910&nbsp;&nbsp;0.1776136&nbsp;&nbsp;-5.607&nbsp;8.26e-08&nbsp;***
+Cultivar3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-0.6714047&nbsp;&nbsp;0.2396380&nbsp;&nbsp;-2.802&nbsp;&nbsp;0.00568&nbsp;**
+Malic.acid&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.0559472&nbsp;&nbsp;0.0410860&nbsp;&nbsp;&nbsp;1.362&nbsp;&nbsp;0.17510
+Alkalinity.ash&nbsp;&nbsp;-0.0133598&nbsp;&nbsp;0.0134499&nbsp;&nbsp;-0.993&nbsp;&nbsp;0.32198
+Proanthocyanins&nbsp;-0.0561493&nbsp;&nbsp;0.0817366&nbsp;&nbsp;-0.687&nbsp;&nbsp;0.49305
+Color.intensity&nbsp;&nbsp;0.1135452&nbsp;&nbsp;0.0270097&nbsp;&nbsp;&nbsp;4.204&nbsp;4.24e-05&nbsp;***
+OD.Ratio&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.0494695&nbsp;&nbsp;0.0987946&nbsp;&nbsp;&nbsp;0.501&nbsp;&nbsp;0.61721
+Proline&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.0002391&nbsp;&nbsp;0.0002282&nbsp;&nbsp;&nbsp;1.048&nbsp;&nbsp;0.29629
+---
+Signif.&nbsp;codes:&nbsp;&nbsp;0&nbsp;'***'&nbsp;0.001&nbsp;'**'&nbsp;0.01&nbsp;'*'&nbsp;0.05&nbsp;'.'&nbsp;0.1&nbsp;'&nbsp;'&nbsp;1
+
+Residual&nbsp;standard&nbsp;error:&nbsp;0.4886&nbsp;on&nbsp;169&nbsp;degrees&nbsp;of&nbsp;freedom
+Multiple&nbsp;R-Squared:&nbsp;0.6541,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Adjusted&nbsp;R-squared:&nbsp;0.6377
+F-statistic:&nbsp;39.95&nbsp;on&nbsp;8&nbsp;and&nbsp;169&nbsp;DF,&nbsp;&nbsp;p-value:&nbsp;&lt;&nbsp;2.2e-16
+
+</pre>
+
+<div class="p"><!----></div>
+One problem with the summary display for models like this is that
+it's treating our factor variable (<tt>Cultivar</tt>) as two separate
+variables.  While that is the way it is fit in the model, it's usually
+more informative to combine the effects of the two variables as a single
+effect.  The <tt>anova</tt> command will produce a more traditional
+ANOVA table:
+
+<pre>
+&#62;&nbsp;anova(wine.new)
+Analysis&nbsp;of&nbsp;Variance&nbsp;Table
+
+Response:&nbsp;Alcohol
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Df&nbsp;Sum&nbsp;Sq&nbsp;Mean&nbsp;Sq&nbsp;&nbsp;F&nbsp;value&nbsp;&nbsp;&nbsp;&nbsp;Pr(&#62;F)
+Cultivar&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;70.795&nbsp;&nbsp;35.397&nbsp;148.2546&nbsp;&lt;&nbsp;2.2e-16&nbsp;***
+Malic.acid&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;0.013&nbsp;&nbsp;&nbsp;0.013&nbsp;&nbsp;&nbsp;0.0552&nbsp;&nbsp;&nbsp;&nbsp;0.8146
+Alkalinity.ash&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;0.229&nbsp;&nbsp;&nbsp;0.229&nbsp;&nbsp;&nbsp;0.9577&nbsp;&nbsp;&nbsp;&nbsp;0.3292
+Proanthocyanins&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;0.224&nbsp;&nbsp;&nbsp;0.224&nbsp;&nbsp;&nbsp;0.9384&nbsp;&nbsp;&nbsp;&nbsp;0.3341
+Color.intensity&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;4.750&nbsp;&nbsp;&nbsp;4.750&nbsp;&nbsp;19.8942&nbsp;1.488e-05&nbsp;***
+OD.Ratio&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;0.031&nbsp;&nbsp;&nbsp;0.031&nbsp;&nbsp;&nbsp;0.1284&nbsp;&nbsp;&nbsp;&nbsp;0.7206
+Proline&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;0.262&nbsp;&nbsp;&nbsp;0.262&nbsp;&nbsp;&nbsp;1.0976&nbsp;&nbsp;&nbsp;&nbsp;0.2963
+Residuals&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;169&nbsp;40.351&nbsp;&nbsp;&nbsp;0.239
+---
+Signif.&nbsp;codes:&nbsp;&nbsp;0&nbsp;'***'&nbsp;0.001&nbsp;'**'&nbsp;0.01&nbsp;'*'&nbsp;0.05&nbsp;'.'&nbsp;0.1&nbsp;'&nbsp;'&nbsp;1
+
+</pre>
+The summary display contained other useful information, so you shouldn't
+hesitate to look at both.
+
+<div class="p"><!----></div>
+Comparing these results to our previous regression, we can see that only
+one variable (<tt>Color.intensity</tt>) is still significant, and the 
+effect of <tt>Cultivar</tt> is very significant.  For this data set, it
+means that while we can use the chemical composition to help predict the 
+<tt>Alcohol</tt> content of the wines, but that knowing the <tt>Cultivar</tt>
+will be more effective.  Let's look at a reduced model that uses only 
+<tt>Cultivar</tt> and <tt>Color.intensity</tt> to see how it compares with
+the model containing the extra variables:
+
+<pre>
+&#62;&nbsp;wine.new1&nbsp;=&nbsp;lm(Alcohol~Cultivar+Color.intensity,data=wine)&nbsp;
+&#62;&nbsp;summary(wine.new1)
+
+Call:
+lm(formula&nbsp;=&nbsp;Alcohol&nbsp;~&nbsp;Cultivar&nbsp;+&nbsp;Color.intensity,&nbsp;data&nbsp;=&nbsp;wine)
+
+Residuals:
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Min&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1Q&nbsp;&nbsp;&nbsp;Median&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3Q&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Max
+-1.12074&nbsp;-0.32721&nbsp;-0.04133&nbsp;&nbsp;0.34799&nbsp;&nbsp;1.54962
+
+Coefficients:
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Estimate&nbsp;Std.&nbsp;Error&nbsp;t&nbsp;value&nbsp;Pr(&#62;|t|)
+(Intercept)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;13.14845&nbsp;&nbsp;&nbsp;&nbsp;0.14871&nbsp;&nbsp;88.417&nbsp;&nbsp;&lt;&nbsp;2e-16&nbsp;***
+Cultivar2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1.20265&nbsp;&nbsp;&nbsp;&nbsp;0.10431&nbsp;-11.530&nbsp;&nbsp;&lt;&nbsp;2e-16&nbsp;***
+Cultivar3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-0.79248&nbsp;&nbsp;&nbsp;&nbsp;0.10495&nbsp;&nbsp;-7.551&nbsp;2.33e-12&nbsp;***
+Color.intensity&nbsp;&nbsp;0.10786&nbsp;&nbsp;&nbsp;&nbsp;0.02434&nbsp;&nbsp;&nbsp;4.432&nbsp;1.65e-05&nbsp;***
+---
+Signif.&nbsp;codes:&nbsp;&nbsp;0&nbsp;'***'&nbsp;0.001&nbsp;'**'&nbsp;0.01&nbsp;'*'&nbsp;0.05&nbsp;'.'&nbsp;0.1&nbsp;'&nbsp;'&nbsp;1
+
+Residual&nbsp;standard&nbsp;error:&nbsp;0.4866&nbsp;on&nbsp;174&nbsp;degrees&nbsp;of&nbsp;freedom
+Multiple&nbsp;R-Squared:&nbsp;0.6468,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Adjusted&nbsp;R-squared:&nbsp;0.6407
+F-statistic:&nbsp;106.2&nbsp;on&nbsp;3&nbsp;and&nbsp;174&nbsp;DF,&nbsp;&nbsp;p-value:&nbsp;&lt;&nbsp;2.2e-16
+
+</pre>
+The adjusted R-squared for this model is better than that of the previous
+one, indicating that removing those extra variables didn't seem to 
+cause any problems.  To formally test to see if there is a difference 
+between the two models, we can use the <tt>anova</tt> function.  When passed
+a single model object, <tt>anova</tt> prints an ANOVA table, but when it's passed
+two model objects, it performs a test to compare the two models:
+
+<pre>
+&#62;&nbsp;anova(wine.new,wine.new1)
+Analysis&nbsp;of&nbsp;Variance&nbsp;Table
+
+Model&nbsp;1:&nbsp;Alcohol&nbsp;~&nbsp;Cultivar&nbsp;+&nbsp;Malic.acid&nbsp;+&nbsp;Alkalinity.ash&nbsp;+&nbsp;Proanthocyanins&nbsp;+
+&nbsp;&nbsp;&nbsp;&nbsp;Color.intensity&nbsp;+&nbsp;OD.Ratio&nbsp;+&nbsp;Proline
+&nbsp;&nbsp;&nbsp;&nbsp;Model&nbsp;2:&nbsp;Alcohol&nbsp;~&nbsp;Cultivar&nbsp;+&nbsp;Color.intensity
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Res.Df&nbsp;&nbsp;&nbsp;&nbsp;RSS&nbsp;&nbsp;Df&nbsp;Sum&nbsp;of&nbsp;Sq&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;F&nbsp;Pr(&#62;F)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;169&nbsp;40.351
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;174&nbsp;41.207&nbsp;&nbsp;-5&nbsp;&nbsp;&nbsp;&nbsp;-0.856&nbsp;0.7174&nbsp;0.6112
+
+</pre>
+The test indicates that there's no significant difference between the two
+models.
+
+<div class="p"><!----></div>
+When all the independent variables in our model were categorical model (the 
+<tt>race</tt>/<tt>activity</tt> example),
+the interactions between the categorical variables was one of the most 
+interesting parts of the analysis.  What does an interaction between a 
+categorical variable and a continuous variable represent?  Such an interaction
+can tell us if the slope of the continuous variable is different for the 
+different levels of the categorical variable.  In the current model, we can
+test to see if the slopes are different by adding the term  
+<tt>Cultivar:Color.intensity</tt> to the model:
+
+<div class="p"><!----></div>
+
+<pre>
+&#62;&nbsp;anova(wine.new2)
+Analysis&nbsp;of&nbsp;Variance&nbsp;Table
+
+Response:&nbsp;Alcohol
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Df&nbsp;Sum&nbsp;Sq&nbsp;Mean&nbsp;Sq&nbsp;&nbsp;F&nbsp;value&nbsp;&nbsp;&nbsp;&nbsp;Pr(&#62;F)
+Cultivar&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;70.795&nbsp;&nbsp;35.397&nbsp;149.6001&nbsp;&lt;&nbsp;2.2e-16&nbsp;***
+Color.intensity&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;4.652&nbsp;&nbsp;&nbsp;4.652&nbsp;&nbsp;19.6613&nbsp;1.644e-05&nbsp;***
+Cultivar:Color.intensity&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;0.509&nbsp;&nbsp;&nbsp;0.255&nbsp;&nbsp;&nbsp;1.0766&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.343
+Residuals&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;172&nbsp;40.698&nbsp;&nbsp;&nbsp;0.237
+---
+Signif.&nbsp;codes:&nbsp;&nbsp;0&nbsp;'***'&nbsp;0.001&nbsp;'**'&nbsp;0.01&nbsp;'*'&nbsp;0.05&nbsp;'.'&nbsp;0.1&nbsp;'&nbsp;'&nbsp;1
+
+</pre>
+There doesn't seem to be a significant interaction.
+
+<div class="p"><!----></div>
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On 27 Apr 2011, 16:10.</small>
+</html>

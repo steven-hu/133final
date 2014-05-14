@@ -1,0 +1,154 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> Regular Expressions</title>
+ 
+<h1 align="center">Regular Expressions </h1>
+
+
+
+
+ <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;Tagging and Backreferences</h2>
+Consider again the problem of looking for email addresses.  The regular 
+expression that we wrote is exactly what we want, because we don't care
+what's surrounding the email address.  But in many cases, the only way
+we can find what we want is to specify the surroundings of what we're 
+looking for.   Suppose we wish to write a program that will find all of
+the links  (URLs that can be reached by clicking some text on the page)
+of a web page.  A line containing a link may look something like this:
+
+<pre>
+&lt;a&nbsp;href="http://www.stat.berkeley.edu"&#62;UC&nbsp;Berkeley&nbsp;Stat&nbsp;Dept&nbsp;Home&nbsp;Page&lt;/a&#62;&lt;br&nbsp;/&#62;
+
+</pre>
+  Finding the links is very easy; but our goal here is to extract 
+the links themselves.  Notice that there's no regular expression that can
+match just the link; we need to use some information about the context in
+which it's found, and when we extract the matched expression there will be 
+extra characters that we really don't want.  To handle this problem, 
+parentheses can be used to surround parts of a regular expression that we're
+really interested in, and tools exist to help us get those parts separated
+from the overall expression.  In R, the only functions that can deal with 
+these tagged expressions are <tt>sub</tt> and <tt>gsub</tt>, so to take 
+take advantage of them, you may have to first extract the regular expressions
+with the methods we've already seen, and then apply <tt>sub</tt> or 
+<tt>gsub</tt>.  To illustrate, let's compose a simple regular expression
+to find links.  
+I don't need to worry about the case of the regular expression, because the <tt>grep</tt>, 
+<tt>sub</tt>, <tt>gsub</tt> and <tt>gregexpr</tt> functions all 
+support the <tt>ignore.case=</tt> argument.
+Notice that I've surrounded the part we want (<tt>[^"'&gt;]+</tt>) in parentheses.
+This will allow me to refer to this tagged expression as <tt>\1</tt> in a 
+call to <tt>gsub</tt>.  (Additional tagged expressions will be refered to 
+as <tt>\2</tt>, <tt>\3</tt>, etc.)
+Using this
+pattern, we can first find all the chunks of text that have our links 
+embedded in them, and then use <tt>gsub</tt> to change the entire piece to
+just the part we want:
+
+<pre>
+&#62;&nbsp;link&nbsp;=&nbsp;'&lt;a&nbsp;href="http://www.stat.berkeley.edu"&#62;UC&nbsp;Berkeley&nbsp;Stat&nbsp;Dept&nbsp;Home&nbsp;Page&lt;/a&#62;&lt;br&nbsp;/&#62;'
+&#62;&nbsp;gregout&nbsp;=&nbsp;gregexpr('href&nbsp;*=&nbsp;*["\']?([^"\'&#62;]+)["\']?&nbsp;*&#62;',link,ignore.case=TRUE)
+&#62;&nbsp;thematch&nbsp;=&nbsp;mapply(getexpr,link,gregout)
+&#62;&nbsp;answer&nbsp;=&nbsp;gsub('href&nbsp;*=&nbsp;*["\']?([^"\'&#62;]+)["\']?&nbsp;*&#62;','\\1',thematch,ignore.case=TRUE)
+&#62;&nbsp;names(answer)&nbsp;=&nbsp;NULL
+&#62;&nbsp;answer
+[1]&nbsp;"http://www.stat.berkeley.edu"
+
+</pre>
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc2">
+2</a>&nbsp;&nbsp;Getting Text into R</h2>
+Up until now, we've been working with text that's already been formatted to make
+it easy for R to read, and <tt>scan</tt> or <tt>read.table</tt> (and its associated 
+wrapper  functions) have been sufficient to take care of things.  Now we want to
+treat our input as raw text; in other words, we don't want R to assume that the data
+is in any particular form.  The main function for taking care of this in R is 
+<tt>readLines</tt>.  In the simplest form, you pass <tt>readLines</tt> the name 
+of a URL or file that you want to read, and it returns a character vector with one
+element for each line of the file or url, containing the contents of each line.
+An optional argument to <tt>readLines</tt> specifies the number of lines you want
+to read; by default it's set to <tt>-1</tt>, which means to read all available
+lines.
+<tt>readLines</tt> removes the newline at the end of each line, but otherwise returns the text exactly the way it was found in the file or URL.
+
+<div class="p"><!----></div>
+<tt>readLines</tt> also accepts connections, which are objects in R that represent
+an alternative form of input, such as a pipe or a zipped file.  Take a look at 
+the help file for <tt>connections</tt> for more information on this capability.
+
+<div class="p"><!----></div>
+For moderate-sized problems that aren't too complex, using <tt>readLines</tt> in
+its default mode (reading all the lines of input into a vector of character 
+strings) will usually be the best way to solve your problem, because most of the 
+functions you'll use with such data are vectorized, and can operate on every line
+at once.  
+As a simple example,
+suppose we wanted to get 
+the names of all the files containing notes for this class.  A glance at the 
+page <a href="http://www.stat.berkeley.edu/classes/s133/schedule.html">http://www.stat.berkeley.edu/classes/s133/schedule.html</a>
+indicates that all the online notes can be found on lines like this one:
+
+<pre>
+&lt;tr&#62;&lt;td&#62;&nbsp;Jan&nbsp;23&nbsp;&lt;/td&#62;&lt;td&#62;&nbsp;&lt;a&nbsp;href="Unix.html"&#62;Introduction&nbsp;to&nbsp;UNIX&lt;/a&#62;&lt;/td&#62;&lt;/tr&#62;
+
+</pre>
+ We can easily extract the names of the note files using the 
+<tt>sub</tt> function (since there is only one link per line, we don't 
+need to use <tt>gsub</tt>, although we could).
+
+<div class="p"><!----></div>
+The first step is to create a vector of character strings that will represents
+the lines of the URL we are trying to read.  We can simply pass the URL name
+to <tt>readLines</tt>:
+
+<pre>
+&#62;&nbsp;x&nbsp;=&nbsp;readLines('http://www.stat.berkeley.edu/classes/s133/schedule.html')
+
+</pre>
+Next, we can write a regular expression that can find the links.  
+Note that the pattern that we want (i.e. the name of the file referenced 
+in the link) has been tagged with parentheses for later extraction.
+By using
+the caret (<tt>^</tt>) and dollar sign (<tt>$</tt>) we can describe our pattern
+as an entire line - when we substitute the tagged expression for the 
+pattern we'll have just what we want.  I'll also add the basename of the 
+files so that they could be, for example, entered into a browser.
+
+<pre>
+&#62;&nbsp;baseurl&nbsp;=&nbsp;'http://www.stat.berkeley.edu/classes/s133'
+&#62;&nbsp;linkpat&nbsp;=&nbsp;'^.*&lt;td&#62;&nbsp;*&lt;a&nbsp;href=["\'](.*)["\']&#62;.*$'
+&#62;&nbsp;x&nbsp;=&nbsp;readLines('http://www.stat.berkeley.edu/classes/s133/schedule.html')
+&#62;&nbsp;y&nbsp;=&nbsp;grep(linkpat,x,value=TRUE)
+&#62;&nbsp;paste(baseurl,sub(linkpat,'\\1',y),sep='/')
+&nbsp;[1]&nbsp;"http://www.stat.berkeley.edu/classes/s133/Intro.html"&nbsp;&nbsp;&nbsp;
+&nbsp;[2]&nbsp;"http://www.stat.berkeley.edu/classes/s133/OS.html"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;[3]&nbsp;"http://www.stat.berkeley.edu/classes/s133/Unix.html"&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;[4]&nbsp;"http://www.stat.berkeley.edu/classes/s133/R-1a.html"&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;[5]&nbsp;"http://www.stat.berkeley.edu/classes/s133/R-2a.html"&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;[6]&nbsp;"http://www.stat.berkeley.edu/classes/s133/R-3a.html"&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.&nbsp;.&nbsp;.&nbsp;
+
+</pre>
+
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On 23 Feb 2011, 08:49.</small>
+</html>

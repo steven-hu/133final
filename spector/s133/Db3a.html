@@ -1,0 +1,509 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> Databases</title>
+ 
+<h1 align="center">Databases </h1>
+
+
+
+ <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;Databases</h2>
+A database is a collection of data, usually with some information (sometimes called
+metadata) about how the data is organized. But many times when people refer to a 
+database, they mean a database server, which is similar to a web server, but responds
+to requests for data instead of web pages. 
+
+<div class="p"><!----></div>
+By far the most common type of database server is known a a relational database 
+management system (RDBMS), and the most common way of communicating with such a database
+is a language known as SQL, which is an acronym for Structured Query Language.  
+Some examples of database systems that use SQL to communicate with an RDBMS include
+Oracle, Sybase, Microsoft SQL Server, SQLite, MySQL and Postgres.  While there is an SQL 
+standard, each database manufacturer provides some additional features, so SQL that
+works with one database is not guaranteed to work on another.  We'll try to stick to
+aspects of SQL that should be available on most SQL based systems.
+
+<div class="p"><!----></div>
+A Database consists of one or more tables, which are generally stored as files on the 
+computer that's running the DBMS.  A table is a rectangular array, where each row
+represents an observation, and each column represents a variable.  Most databases 
+consists of several tables, each containing information about one aspect of the data.
+For example, consider a database to hold information about the parts needed to build
+a variety of different products.  One way to store the information would be to have
+a data table that had the part id, its description, the supplier's name, and the 
+cost of the part.  An immediate problem with this is scheme concerns how we could store
+information about the relation between products and parts.  Furthermore, if one supplier 
+provided many different parts, redundant information 
+about suppliers would be repeated many times in the data table.  In the 1970s when 
+database technology was first being developed, disk and memory space were limited and 
+expensive, and organizing data in this way was not very efficient, especially as the 
+size of the data base increased.  In the late 1970s, the idea of a relational database
+was developed by IBM, with the first commercial offering coming from a company which is
+now known as Oracle.  Relational database design is governed by a principle known as 
+normalization.  While  entire books are devoted to the subject, the basic idea of normalization
+is to try and remove redundancy as much as possible when creating the tables that make up 
+a data base.  Continuing the parts example, a properly normalized database to hold the 
+parts information would consist of four tables.  The first would contain a part id to uniquely
+identify the part, its description, price and an id to identify the supplier.  A second table
+would contain the supplier codes and any other information about the supplier.  A third table
+would contain product ids and descriptions, while the final table would have one record for 
+each part used in each product, stored as pairs of product id and part id.  
+The variables that link together the different databases are refered to as keys, or sometimes 
+foreign keys.  Clearly, making sure that there are keys to link information from one table to
+another is critical to the idea of a normalized data base.
+This allows large
+amounts of information to be stored in manageably sized tables which can be modified and updated
+without having to change all of the information in all of the tables.  Such tables will be 
+efficient in the amount of disk and memory resources that they need, which was critical at the 
+time such databases were developed.  Also critical to this scheme is a fast and efficient way of 
+joining together these tables so that queries like "Which suppliers are used for product xyz?"
+or "What parts from Acme Machine Works cost between $2 and $4" or "What is the total cost of 
+the parts needed to make product xyz?".  In fact, for many years the only programs that were 
+capable of combining data from multiple sources were RDBMSs.  
+
+<div class="p"><!----></div>
+We're going to look at the way the SQL language is used to extract information from RDBMSs,
+specifically the open source SQLite data base (<a href="http://sqlite.org">http://sqlite.org</a>) 
+(which doesn't require a database server), and
+the open source MySQL data base (<a href="http://www.mysql.com">http://www.mysql.com</a>) which does.
+In addition we'll see how to do typical database operations in R, 
+and how to access a database using SQL from inside of R.
+
+<div class="p"><!----></div>
+One of the first questions that arises when thinking about databases is "When should I 
+use a database?"  There are several cases where a database makes sense:
+
+<ol type="1">
+<li>The only source for the data you need may be an existing database.
+<div class="p"><!----></div>
+</li>
+
+<li>
+The data you're working with changes on a regular basis, especially if it can
+potentially be changed by many people.  Database servers (like most other servers)
+provide concurrency, which takes care of problems that might otherwise arise if 
+more than one person tries to access or modify a database at the same time.
+<div class="p"><!----></div>
+</li>
+
+<li>
+Your data is simply too big to fit into the computer's memory, but if you could 
+conveniently extract just the parts you need, you'd be able to work with the data.
+For example, you may have hundreds of variables, but only need to work with a small
+number at at time, or you have tens of thousands of observations, but only need to work
+with a few thousand at a time.
+<div class="p"><!----></div>
+</li>
+</ol>
+
+<div class="p"><!----></div>
+One of the most important uses of databases in the last ten years has been as back
+ends to dynamic web sites.  If you've ever placed an order online, joined an online
+discussion community, or gotten a username/password combination to access web 
+resources, you've most likely interacted with a database.  In addition both the 
+Firefox and Safari browsers us 
+SQLite databases to store cookies, certificates, and other information.
+
+<div class="p"><!----></div>
+There are actually three parts to a RDBMS system: data definition, data access, and
+privelege management.  We're only going to look at the data access aspect of databases;
+we'll assume that a database is already available, and that the administrator of the 
+database has provided you with access to the resources you need.   You can communicate 
+with a database in at least three different ways:
+
+<ol type="1">
+<li>You can use a command line program that will display its results in a way similar to 
+the way R works: you type in a query, and the results are displayed.
+<div class="p"><!----></div>
+</li>
+
+<li>
+You can use a graphical interface (GUI) that will display the results and give you the 
+option to export them in different forms, such as a comma-separated data file.  One 
+advantage to these clients is that they usually provide a display of the available 
+databases, along with the names of the tables in the database and the names of the columns
+within the tables.
+<div class="p"><!----></div>
+</li>
+
+<li>
+You can use a library within R to query the database and return the results of the query
+into an R data frame.  For use with MySQL library, the <tt>RMySQL</tt> library is available for
+download from CRAN; for SQLite, the <tt>RSQLite</tt> package is available.  When you install either, 
+the <tt>DBI</tt>
+library, which provides a consistent interface to different databases, will also be installed.
+<div class="p"><!----></div>
+</li>
+</ol>
+
+<div class="p"><!----></div>
+It's very important to understand that SQL is not a programming language - it's said
+to be a declarative language.  Instead of solving problems by writing a series of 
+instructions or putting together programming statements into functions, with SQL you
+write a single statement (query) that will return some or all of the records from a 
+database.  SQL was designed to be easy to use for non-programmers, allowing them to 
+present queries to the database in a language that is more similar to a spoken language
+than a programming language.  The main tool for data access is the select statement.
+Since everything needs to be done with this single statement, descriptions of its syntax
+can be quite daunting.  For example, here's an example that shows some of the important features 
+of the select statement:
+
+<pre>
+SELECT&nbsp;columns&nbsp;or&nbsp;computations
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;table
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;condition
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GROUP&nbsp;BY&nbsp;columns
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HAVING&nbsp;condition
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ORDER&nbsp;BY&nbsp;column&nbsp;[ASC&nbsp;|&nbsp;DESC]
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIMIT&nbsp;offset,count;
+
+</pre>
+(The keywords in the above statement can be typed in upper or lower case, but I'll generally
+use upper case to remind us that they are keywords.)  MySQL is case sensistive to table and
+column names, but not for commands. SQLite is not case sensitive at all.
+SQL statements always end with a semi-colon,
+but graphical clients and interfaces in other languages sometimes don't require the semi-colon.
+Fortunately, you rarely need to use all of these commands in a single query.  In fact, 
+you may be able to get by knowing just the command that returns all of the information
+from a table in a database:
+
+<pre>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;*&nbsp;from&nbsp;table;
+
+</pre>
+
+ <h2><a name="tth_sEc2">
+2</a>&nbsp;&nbsp;Working with Databases</h2>
+When you're not using a graphical interface, it's easy to get lost in a database considering
+that each database can hold multiple tables, and each table can have multiple columns.  Three
+commands that are useful in finding your way around a database are:
+
+<div class="p"><!----></div>
+
+<table border="1">
+<tr><td>MySQL</td><td>SQLite</td></tr>
+<tr><td><tt><tt></tt></tt>SHOW DATABASES;</td><td>.databases</td></tr>
+<tr><td>SHOW TABLES IN database;</td><td>.tables</td></tr>
+<tr><td>SHOW COLUMNS IN table;</td><td>pragma table_info(table)</td></tr>
+<tr><td>DESCRIBE table;</td><td>.schema table</td></tr></table>
+
+
+<div class="p"><!----></div>
+For use as an example, consider a database to keep track of a music collection, stored as
+an SQLite database in the file <tt>albums.db</tt>.  We can use the commands just shown to see how the
+database is organized.  In class, I sometimes used some of the graphical SQLite clients that are
+mentioned on the Class Resources page. Here, I'm using the UNIX command-line client 
+called <tt>sqlite3</tt>:
+
+<pre>
+springer.spector$&nbsp;sqlite3&nbsp;albums.db&nbsp;
+SQLite&nbsp;version&nbsp;3.4.2
+Enter&nbsp;".help"&nbsp;for&nbsp;instructions
+sqlite&#62;&nbsp;.mode&nbsp;column
+sqlite&#62;&nbsp;.header&nbsp;on
+sqlite&#62;&nbsp;.tables
+Album&nbsp;&nbsp;&nbsp;Artist&nbsp;&nbsp;Track&nbsp;
+	title&nbsp;TEXT&nbsp;
+);
+sqlite&#62;&nbsp;.schema&nbsp;Album
+CREATE&nbsp;TABLE&nbsp;Album&nbsp;
+(&nbsp;aid&nbsp;INTEGER,
+	alid&nbsp;INTEGER,
+	title&nbsp;TEXT&nbsp;
+);
+CREATE&nbsp;INDEX&nbsp;jj&nbsp;on&nbsp;Album(alid);
+sqlite&#62;&nbsp;.schema&nbsp;Artist
+CREATE&nbsp;TABLE&nbsp;Artist&nbsp;
+(&nbsp;aid&nbsp;INTEGER,
+	name&nbsp;TEXT&nbsp;
+);
+CREATE&nbsp;INDEX&nbsp;ii&nbsp;on&nbsp;Artist(aid);
+
+</pre>
+
+<div class="p"><!----></div>
+Studying these tables we can see that the organization is as follows:  each track 
+in the <tt>Track</tt> table 
+is identified by an artist id (<tt>aid</tt>) and an album id (<tt>alid</tt>).  To
+get the actual names of the artists, we can link to the <tt>Artist</tt> database
+through the <tt>aid</tt> key;  to get the names of the albums, we can link to the 
+<tt>Album</tt> table through the <tt>alid</tt> key.  These keys are integers, which
+don't take up very much space; the actual text of the album title or artist's name 
+is stored only once in the table devoted to that purpose.  (This is the basic 
+principle of normalization that drives database design.)  The first thing to notice 
+in schemes like this is that the individual tables won't allow us to really see 
+anything iteresting, since they just contain keys, not actual values; to get interesting
+information, we need to join together multiple tables.  For example, let's say we want
+a list of album titles and artist names.  We want to extract the <tt>Name</tt> from the 
+<tt>Artist</tt> table and combine it with <tt>Title</tt> from the <tt>Album</tt> table,
+based on a matching value of the <tt>aid</tt> variable:
+
+<pre>
+sqlite&#62;&nbsp;.width&nbsp;25&nbsp;50
+sqlite&#62;&nbsp;SELECT&nbsp;Artist.name,&nbsp;Album.title&nbsp;FROM&nbsp;Artist,&nbsp;Album&nbsp;WHERE&nbsp;Artist.aid&nbsp;=&nbsp;Album.aid;
+Gloria&nbsp;Wood&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Wood&nbsp;by&nbsp;the&nbsp;Fire&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Bobby&nbsp;Hackett&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Jazz&nbsp;Session&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Bobby&nbsp;Hackett&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1943-1947&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Bobby&nbsp;Hackett&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sextet&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Bobby&nbsp;Hackett&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Blues&nbsp;With&nbsp;A&nbsp;Kick&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Bobby&nbsp;Hackett&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Coast&nbsp;Concert&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Bobby&nbsp;Hackett&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Creole&nbsp;Cookin'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Bobby&nbsp;Hackett&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;In&nbsp;Concert&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+George&nbsp;Wettling's&nbsp;Jazz&nbsp;Ba&nbsp;&nbsp;Jazz&nbsp;Session&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Jimmy&nbsp;Forrest&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;most&nbsp;much!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Jimmy&nbsp;Forrest&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Night&nbsp;Train&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Jimmy&nbsp;Forrest&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sit&nbsp;Down&nbsp;And&nbsp;Relax&nbsp;With&nbsp;Jimmy&nbsp;Forrest&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Jimmy&nbsp;Forrest&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Soul&nbsp;Street&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Jimmy&nbsp;Forrest&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Out&nbsp;of&nbsp;the&nbsp;Forrest&nbsp;(1961)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Jimmy&nbsp;Forrest&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Forrest&nbsp;Fire&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Jimmy&nbsp;Forrest&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Black&nbsp;Forrest&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Mary&nbsp;Lou&nbsp;Williams&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1927-1940&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Mary&nbsp;Lou&nbsp;Williams&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Mary&nbsp;Lou&nbsp;Williams&nbsp;Presents&nbsp;Black&nbsp;Christ&nbsp;of&nbsp;the&nbsp;And
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.&nbsp;.&nbsp;.
+
+</pre>
+Queries like this are surprisingly fast - they are exactly what the database has been designed
+and optimized to acheive.
+
+<div class="p"><!----></div>
+There are a few conveniences that you can use in SQL to save typing and improve the appearance
+of the output.  You can use the <tt>AS</tt> keyword to provide an alternative name for a database
+for use within a query, or to rename a column so that it will display with a different heading.
+The previous query could have been written:
+
+<pre>
+sqlite&#62;&nbsp;SELECT&nbsp;ar.name&nbsp;AS&nbsp;Artist,&nbsp;al.title&nbsp;AS&nbsp;'Album&nbsp;Name'
+&nbsp;&nbsp;&nbsp;...&#62;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;Artist&nbsp;AS&nbsp;ar,&nbsp;Album&nbsp;AS&nbsp;al
+&nbsp;&nbsp;&nbsp;...&#62;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;ar.aid&nbsp;=&nbsp;al.aid&nbsp;LIMIT&nbsp;200,10;
+Artist&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Album&nbsp;Name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+-------------------------&nbsp;&nbsp;--------------------------------------------------
+Mundell&nbsp;Lowe&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TransitWest&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Mundell&nbsp;Lowe&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;Grand&nbsp;Night&nbsp;For&nbsp;Swinging&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Mundell&nbsp;Lowe&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;Mundell&nbsp;Lowe&nbsp;Quartet&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Duke&nbsp;Ellington&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Jazz&nbsp;Violin&nbsp;Session&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Duke&nbsp;Ellington&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Happy-Go-Lucky&nbsp;Local&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Duke&nbsp;Ellington&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;Great&nbsp;Paris&nbsp;Concert&nbsp;-&nbsp;Disc&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Duke&nbsp;Ellington&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;Great&nbsp;Paris&nbsp;Concert&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Duke&nbsp;Ellington&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Piano&nbsp;Reflections&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Duke&nbsp;Ellington&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Continuum&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Duke&nbsp;Ellington&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;At&nbsp;Newport&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+</pre> 
+Note the new headings that appear in the output.  
+The <tt>LIMIT</tt> keyword allows
+you to display just some of the results.  Given a single number, it prints that many
+lines starting from the beginning; given two numbers it starts at the first number and
+prints as many records as specified in the second number.  Combining two data sets in
+this way is a very common operation, known as an inner join.  An alternative way of 
+expressing the query we're looking at would be as follows:
+
+<pre>
+SELECT&nbsp;ar.name&nbsp;AS&nbsp;Artist,&nbsp;al.title&nbsp;AS&nbsp;'Album&nbsp;Name'
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;Artist&nbsp;AS&nbsp;ar&nbsp;inner&nbsp;join&nbsp;&nbsp;Album&nbsp;AS&nbsp;al
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;using(aid)&nbsp;limit&nbsp;200,10;
+
+</pre>
+When the two tables being joined share exactly one common column (key), the operation
+is sometimes known as a natural join.  Since this is the case with the <tt>Album</tt>
+and <tt>Artist</tt> tables, yet another way to express the query is
+
+<pre>
+SELECT&nbsp;ar.name&nbsp;AS&nbsp;Artist,&nbsp;al.title&nbsp;AS&nbsp;'Album&nbsp;Name'
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;Artist&nbsp;AS&nbsp;ar&nbsp;natural&nbsp;join&nbsp;&nbsp;Album&nbsp;AS&nbsp;al&nbsp;limit&nbsp;200,10;
+
+</pre>
+Note that if the key used to join two tables does not have the same name in each of the
+tables, you must use the previous method that specifies the matching condition in the 
+<tt>WHERE</tt> clause.
+
+<div class="p"><!----></div>
+SQL provides some convenient facilities for aggregating values based on counts, sums,
+averages and minimums and maximums, through the <tt>COUNT</tt>, <tt>SUM</tt>, <tt>AVG</tt>,
+<tt>MIN</tt> and <tt>MAX</tt> functions.  
+To find the number of records that match a certain condition, the expression
+<tt>COUNT(*)</tt> can be used.  For example, to find the number of observations in 
+the <tt>Track</tt> data set, we could use:
+
+<pre>
+sqlite&#62;&nbsp;SELECT&nbsp;COUNT(*)&nbsp;from&nbsp;Track;
+COUNT(*)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+-------------------------
+54396&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+</pre>
+To count how many tracks were longer than 1000, we could use
+
+<pre>
+sqlite&#62;&nbsp;SELECT&nbsp;COUNT(*)&nbsp;from&nbsp;Track&nbsp;WHERE&nbsp;length&nbsp;&#62;&nbsp;1000;
+COUNT(*)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+-------------------------
+129&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+</pre>
+To find the track with the longest 
+length in the <tt>Track</tt> table, we could try:
+
+<pre>
+sqlite&#62;&nbsp;SELECT&nbsp;MAX(length)&nbsp;from&nbsp;Track;
+MAX(length)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+-------------------------
+2049
+
+</pre>
+This gives us the length of the maximum track, but not its title.  The easiest way to 
+get around this is to use a subquery.  In SQL, a subquery is a <tt>SELECT</tt> statement 
+surrounded by parentheses.  You can use the values returned by the subquery in <tt>WHERE</tt>
+or <tt>HAVING</tt> clauses.  So to find the track with the maximum length, we could use
+
+<pre>
+sqlite&#62;&nbsp;SELECT&nbsp;title,length&nbsp;FROM&nbsp;Track&nbsp;WHERE&nbsp;length&nbsp;=&nbsp;(SELECT&nbsp;max(length)&nbsp;FROM&nbsp;Track);
+title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;length&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+-------------------------&nbsp;&nbsp;--------------------------------------------------
+Hues&nbsp;Of&nbsp;Melanin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2049&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+</pre>
+Of course, this query would be more useful if we knew the name of the album and artist that
+the track came from:
+
+<pre>
+sqlite&#62;&nbsp;.width&nbsp;20&nbsp;25&nbsp;25&nbsp;5
+sqlite&#62;&nbsp;SELECT&nbsp;tr.title,al.title,ar.name,tr.length
+&nbsp;&nbsp;&nbsp;...&#62;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;Track&nbsp;as&nbsp;tr,&nbsp;Album&nbsp;as&nbsp;al,&nbsp;Artist&nbsp;as&nbsp;ar&nbsp;
+&nbsp;&nbsp;&nbsp;...&#62;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;tr.alid&nbsp;=&nbsp;al.alid&nbsp;and&nbsp;tr.aid&nbsp;=&nbsp;al.aid&nbsp;and&nbsp;ar.aid&nbsp;=&nbsp;al.aid
+&nbsp;&nbsp;&nbsp;...&#62;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;length&nbsp;=&nbsp;(SELECT&nbsp;max(length)&nbsp;FROM&nbsp;Track);
+title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lengt
+--------------------&nbsp;&nbsp;-------------------------&nbsp;&nbsp;-------------------------&nbsp;&nbsp;-----
+Hues&nbsp;Of&nbsp;Melanin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Live&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sam&nbsp;Rivers&nbsp;Trio&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2049&nbsp;
+
+</pre>
+When you construct queries like this, it's extremely important to list <em>all</em> of 
+the <tt>WHERE</tt> conditions that need to be satisfied to avoid getting meaningless
+duplicate records.  
+
+<div class="p"><!----></div>
+As another example of a subquery, suppose we want to count how many albums we have 
+for each artist, and then tabulate how many artists there are with one album, two
+albums, three albums, and so on.  The first part is fairly easy:
+
+<div class="p"><!----></div>
+
+<pre>
+sqlite&#62;&nbsp;SELECT&nbsp;aid,count(aid)&nbsp;FROM&nbsp;Album&nbsp;GROUP&nbsp;BY&nbsp;aid&nbsp;limit&nbsp;100;
+aid&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;count(aid)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+--------------------&nbsp;&nbsp;-------------------------
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.&nbsp;.&nbsp;.
+
+</pre>
+We can use this result as a subquery to see the distribution of albums per artist:
+
+<pre>
+mysql&#62;&nbsp;SELECT&nbsp;ct,count(ct)&nbsp;FROM&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;-&#62;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(SELECT&nbsp;aid,count(aid)&nbsp;AS&nbsp;ct&nbsp;FROM&nbsp;Album&nbsp;GROUP&nbsp;BY&nbsp;aid)
+&nbsp;&nbsp;&nbsp;&nbsp;-&#62;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GROUP&nbsp;by&nbsp;ct&nbsp;ORDER&nbsp;by&nbsp;ct;
+ct&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;count(ct)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+--------------------&nbsp;&nbsp;-------------------------
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2303&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;302&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;137&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;72&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;46&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;36&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+7&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;25&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;25&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+9&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;15&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.&nbsp;.&nbsp;.
+
+</pre>
+When using subqueries in this way, some databases may require that the 
+subquery is given an alias.  In such a case, a query like the following 
+could be used:
+
+<pre>
+SELECT&nbsp;ct,count(ct)&nbsp;FROM
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(SELECT&nbsp;aid,count(aid)&nbsp;AS&nbsp;ct&nbsp;FROM&nbsp;Album&nbsp;GROUP&nbsp;BY&nbsp;aid)&nbsp;AS&nbsp;x
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GROUP&nbsp;by&nbsp;ct&nbsp;ORDER&nbsp;by&nbsp;ct;
+
+</pre>
+
+<div class="p"><!----></div>
+One of the most useful features of SQL is that it can summarize large data 
+sets, producing a smaller result set that can be more easily handled by other programs.
+For example, suppose we are interested in the total length (in seconds) of the tracks on
+each album.  Instead of processing all the tracks outside of the database, we can create
+a summarized version of the database that has the lengths already summarized.  Very few 
+programs can operate on databases as fast as SQL, so operations like this can save lots of
+processing time.  To perform operations like this we can use the <tt>GROUP BY</tt> clause:
+
+<pre>
+sqlite&#62;&nbsp;SELECT&nbsp;alid,SUM(length)&nbsp;AS&nbsp;TotalTime&nbsp;FROM&nbsp;Track&nbsp;GROUP&nbsp;BY&nbsp;alid&nbsp;limit&nbsp;50;
+alid&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TotalTime&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+--------------------&nbsp;&nbsp;-------------------------
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2551&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3710&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2402&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3339&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3588&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3207&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+7&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4268&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4409&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+9&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4120&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+10&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4249&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.&nbsp;.&nbsp;.
+
+</pre>
+Once again, the results would probably be more useful with the title of the album and the 
+artist included.  In this example, we can also sort them by the total time of the album:
+
+<pre>
+sqlite&#62;&nbsp;.header&nbsp;on
+sqlite&#62;&nbsp;.mode&nbsp;column
+sqlite&#62;&nbsp;.width&nbsp;20&nbsp;25&nbsp;25&nbsp;5
+sqlite&#62;&nbsp;SELECT&nbsp;ar.name,al.title,SUM(tr.length)&nbsp;AS&nbsp;TotalTime
+&nbsp;&nbsp;&nbsp;...&#62;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;Track&nbsp;as&nbsp;tr,&nbsp;Artist&nbsp;as&nbsp;ar,Album&nbsp;as&nbsp;al
+&nbsp;&nbsp;&nbsp;...&#62;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;ar.aid&nbsp;=&nbsp;al.aid&nbsp;AND&nbsp;al.alid&nbsp;=&nbsp;tr.alid
+&nbsp;&nbsp;&nbsp;...&#62;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GROUP&nbsp;BY&nbsp;tr.alid
+&nbsp;&nbsp;&nbsp;...&#62;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ORDER&nbsp;by&nbsp;TotalTime&nbsp;DESC&nbsp;limit&nbsp;100;
+ar.name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;al.title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TotalTime&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+--------------------&nbsp;&nbsp;-------------------------&nbsp;&nbsp;-------------------------
+Jimmy&nbsp;Giuffre/Marty&nbsp;&nbsp;&nbsp;West&nbsp;Coast&nbsp;Scene&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;13856&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Curtis&nbsp;Fuller&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Complete&nbsp;Blue&nbsp;Note&nbsp;UA&nbsp;Ses&nbsp;&nbsp;11529&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Clifford&nbsp;Brown&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;At&nbsp;The&nbsp;Cotton&nbsp;Club&nbsp;(1956)&nbsp;&nbsp;11282&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Count&nbsp;Basie&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;American&nbsp;Decca&nbsp;Recordings&nbsp;&nbsp;11261&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Onzy&nbsp;Matthews&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Mosaic&nbsp;Select:&nbsp;Onzy&nbsp;Matth&nbsp;&nbsp;9624&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Cannonball&nbsp;Adderley&nbsp;&nbsp;&nbsp;Sophisticated&nbsp;Swing&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;9486&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Thelonius&nbsp;Monk&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Live&nbsp;at&nbsp;the&nbsp;It&nbsp;Club&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;9289&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.&nbsp;.&nbsp;.&nbsp;
+
+</pre> 
+In this particular example, instead of processing the 53000 or so 
+tracks outside of 
+SQL, we've reduced what we have to work with to around 5000 records, which could make
+the overall processing much faster.   Exactly which aggregation functions will be
+available depends on the database you're using.  
+
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On 26 Mar 2011, 09:05.</small>
+</html>

@@ -1,0 +1,621 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> Graphical User Interfaces</title>
+ 
+<h1 align="center">Graphical User Interfaces </h1>
+
+
+
+ <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;Graphical User Interfaces</h2>
+While using R through the command line provides a great deal of flexibility,
+there are times when a simpler interface would be useful.  For example, you
+may develop an R program that performs a complex analysis, and you'd like 
+others to be able to run the program by, say just specifying a file to be 
+read, and choosing a couple of options through checkboxes or a drop down
+list.  There may be a set of operations that your routinely do when first 
+studying a data set, and you'd like to be presented with a list of available
+data, and just click on the one that you want. 
+
+<div class="p"><!----></div>
+There are several different options available in R to produce graphical user
+interfaces (GUIs); we are going to focus on a simple, portable one based on
+the Tcl/Tk library originally developed by John Ousterhout when he was in the 
+Computer Science department here at Berkeley.  Tcl is a scripting language
+(like perl or python), and Tk is a graphical toolkit designed to work with that
+language.  Since the Tk toolkit is portable, easy-to-use, and provides most of 
+the basic elements needed to create GUIs, interfaces to it are available in many
+languages, so if you understand the basics of Tk GUIs, you may see the same techniques
+used later on in your career by some other program.  To use the Tcl/Tk library in R,
+you must load the library with the <tt>library(tcltk)</tt> command.  This library is
+part of the base R distribution, so you don't have to download anything in order to 
+use it (although you may choose to download some optional components later on.)
+
+<div class="p"><!----></div>
+If you look at the help pages for the functions in the <tt>tcltk</tt> library, you'll
+probably be surprised to see how little information or guidance there is.  However,
+once you work with the library for a while, you'll get accustomed to the way Tk functions
+are mapped to R functions, and you'll be able to use any documentation about Tk that you
+can find on the web or elsewhere to get more information.   There are a wide variety of
+sample programs at <a href="http://www.sciviews.org/_rgui/tcltk/">http://www.sciviews.org/_rgui/tcltk/</a>, but they use a different geometry method and 
+some require external packages.  I'll try to provide examples here to help you get 
+started, but don't hesitate to look around the web for more examples and ideas.
+
+<div class="p"><!----></div>
+The process of creating a GUI can be broken down into two parts: choosing the elements
+(often refered to as widgets) that will make up the GUI, and arranging for the elements
+to be placed in the appropriate positions and displayed.  This second step is sometimes
+known as geometry management.  Tk actually offers several different geometry management
+methods; we are going to focus on one known as packing.  In the packing geometry model,
+the GUI is considered a collection of separate frames, each containing some of the 
+widgets that make up the final GUI.  The widgets are loaded into the frames in a 
+carefully chosen order, and they "spread out" to fill the frame.  When you pack a
+widget into a frame, you can specify the side to which to pack it, choosing among 
+<tt>left</tt>, <tt>right</tt>, <tt>top</tt> or <tt>bottom</tt>.  With a little practice
+and experimentation, you can usually get the widgets to line up the way you want them
+to.  
+
+<div class="p"><!----></div>
+Most of the widgets that are available through the Tk toolbox should look familiar, as
+common applications like email clients and web browser use these same elements in their
+GUIs.  Some examples of available widgets are:
+
+<ul>
+<li>text entry fields
+<div class="p"><!----></div>
+</li>
+
+<li>
+drop down menus
+<div class="p"><!----></div>
+</li>
+
+<li>
+check buttons
+<div class="p"><!----></div>
+</li>
+
+<li>
+radio buttons
+<div class="p"><!----></div>
+</li>
+
+<li> 
+file selection browsers
+<div class="p"><!----></div>
+</li>
+
+<li>
+sliding scales
+<div class="p"><!----></div>
+</li>
+</ul>
+
+<div class="p"><!----></div>
+Since the Tk toolbox is not integrated entirely into R, it's necessary to use special
+techniques to get information out of the Tcl/Tk environment and into R.  Many of the 
+widgets, for example a text entry widget, will need a Tcl variable associated with
+them to hold necessary information.   All of the variables that will be captured by 
+the GUI will be character variables.  The <tt>tclVar</tt> function can be used to create
+an empty tcl variable which can then be used in call to functions in the <tt>tcltk</tt>
+library as follows:
+
+<pre>
+&nbsp;&nbsp;&nbsp;myvar&nbsp;=&nbsp;tclVar('')
+
+</pre>
+Later, when you need to get the information that was put into the Tk variable back into
+the R environment, you can use the <tt>tclvalue</tt> function:
+
+<pre>
+&nbsp;&nbsp;&nbsp;rmyvar&nbsp;=&nbsp;tclvalue(myvar)
+
+</pre>
+
+<div class="p"><!----></div>
+Another aspect of GUI programming that is different from regular programs has to do with
+associating actions with certain GUI elements.  An obvious example is a button, which
+when pressed needs to do something.  Widgets like this will have an argument, usually
+called <tt>command=</tt> which will accept the name of a function that will be called when
+the button  (or other action) is recognized.  Such functions, often called callbacks,
+should be written using the <tt>...</tt> notation for their argument lists, and should
+not have any returned values.  It sometimes
+becomes necessary to "remember" things over the course of a GUI's execution.  For example,
+you may want to count the number of times a button is pressed, or display a different
+message based on the value of a previous response.  Since all of the actions which the
+GUI will initiate are carried out in functions, any modifications to variables that are
+made in those functions will be lost when the function returns.  While not usually a good
+practice, you can use the special assignment operator <tt>&lt;&lt;-</tt> inside a function to 
+modify global variables, which will retain their values after the function exits.
+
+<div class="p"><!----></div>
+
+<div class="p"><!----></div>
+To make some of these concepts clearer, let's consider the construction of a GUI to 
+accept input to the <tt>coin.power</tt> program that  we developed earlier.  Recall
+that the program accepts the number of simulations, number of coin tosses, probability
+of getting heads for the coin, and returns the power.  We want to make a GUI with 
+three entries, one for each of the parameters, a place to display the answer, and 
+buttons to run the simulation or close the window.  The first step in creating a GUI with
+the <tt>tcltk</tt> library in R is loading the library and calling the <tt>tktoplevel</tt>
+function, which creates an initial window into which we will pack the frames containing
+the widgets.   Since we can control the order of packing into individual frames, each 
+set of related elements can be put into a separate frame.  For this example, we'll create
+a separate frame for each entry and its associated label, as well as a frame to hold 
+those entries and another frame for the 
+two buttons; the area for the answer can be packed into the toplevel frame.  
+
+<div class="p"><!----></div>
+In the code that follows, you'll notice that usually widgets are packed directly into
+their enclosing frames, but the label widget that will hold the answer is assigned to 
+a variable before being 
+packed.  If you'll need to communicate with the widget at some point in the running of 
+the program, it's vital to store the widget in a variable.  In this example, we'll
+create a blank label, and use the <tt>tkconfigure</tt> function when we have an answer
+to change what the label displays.  Here's the code to create the GUI:
+
+<pre>
+require(tcltk)
+coin.power&nbsp;=&nbsp;function(ntoss=100,nsim=1000,prob=.5){
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lower&nbsp;=&nbsp;qbinom(.025,ntoss,.5)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;upper&nbsp;=&nbsp;qbinom(.975,ntoss,.5)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rr&nbsp;=&nbsp;rbinom(nsim,ntoss,prob)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sum(rr&nbsp;&lt;&nbsp;lower&nbsp;|&nbsp;rr&nbsp;&#62;&nbsp;upper)&nbsp;/&nbsp;nsim
+&nbsp;}
+
+destroy&nbsp;=&nbsp;function(...)tkdestroy(base)
+
+tst&nbsp;=&nbsp;function(...){
+&nbsp;&nbsp;&nbsp;nsim&nbsp;=&nbsp;as.numeric(tclvalue(nsim_))
+&nbsp;&nbsp;&nbsp;ntoss&nbsp;=&nbsp;as.numeric(tclvalue(ntoss_))
+&nbsp;&nbsp;&nbsp;prob&nbsp;&nbsp;=&nbsp;as.numeric(tclvalue(prob_))
+&nbsp;&nbsp;&nbsp;res&nbsp;=&nbsp;coin.power(ntoss=as.numeric(ntoss),nsim=as.numeric(nsim),prob=as.numeric(prob))
+&nbsp;&nbsp;&nbsp;tkconfigure(ans,text=paste(res))
+}
+
+base&nbsp;=&nbsp;tktoplevel()
+tkwm.title(base,'Coin&nbsp;Toss')
+
+#&nbsp;create&nbsp;a&nbsp;frame&nbsp;to&nbsp;hold&nbsp;the&nbsp;three&nbsp;entries
+nfrm&nbsp;=&nbsp;tkframe(base)
+
+#&nbsp;create&nbsp;tcl&nbsp;variables&nbsp;to&nbsp;associate&nbsp;with&nbsp;the&nbsp;
+#&nbsp;entry&nbsp;fields&nbsp;--&nbsp;to&nbsp;include&nbsp;starting&nbsp;values
+#&nbsp;replace&nbsp;the&nbsp;''&nbsp;with&nbsp;the&nbsp;desired&nbsp;value
+nsim_&nbsp;=&nbsp;tclVar('')
+ntoss_&nbsp;=&nbsp;tclVar('')
+prob_&nbsp;=&nbsp;tclVar('')
+
+f1&nbsp;=&nbsp;tkframe(nfrm)
+tkpack(tklabel(f1,text='Nsim',width=8),side='left')
+tkpack(tkentry(f1,width=10,textvariable=nsim_),side='left')
+
+f2&nbsp;=&nbsp;tkframe(nfrm)
+tkpack(tklabel(f2,text='Ntoss',width=8),side='left')
+tkpack(tkentry(f2,width=10,textvariable=ntoss_),side='left')
+
+f3&nbsp;=&nbsp;tkframe(nfrm)
+tkpack(tklabel(f3,text='Prob',width=8),side='left')
+tkpack(tkentry(f3,width=10,textvariable=prob_),side='left')
+
+#&nbsp;the&nbsp;widgets&nbsp;were&nbsp;packed&nbsp;in&nbsp;the&nbsp;frames,&nbsp;but&nbsp;the&nbsp;frames&nbsp;have
+#&nbsp;not&nbsp;yet&nbsp;been&nbsp;packed.&nbsp;&nbsp;Remember&nbsp;that&nbsp;nothing&nbsp;can&nbsp;actually&nbsp;be
+#&nbsp;displayed&nbsp;unless&nbsp;it's&nbsp;been&nbsp;packed.
+tkpack(f1,side='top')
+tkpack(f2,side='top')
+tkpack(f3,side='top')
+
+tkpack(nfrm)
+
+#&nbsp;now&nbsp;we&nbsp;can&nbsp;repeat&nbsp;the&nbsp;process&nbsp;for&nbsp;the&nbsp;label&nbsp;to&nbsp;hold&nbsp;the&nbsp;
+#&nbsp;answer,&nbsp;and&nbsp;the&nbsp;frame&nbsp;containing&nbsp;the&nbsp;buttons
+ans&nbsp;=&nbsp;tklabel(base,text='&nbsp;')
+tkpack(ans,side='top')
+
+bfrm&nbsp;=&nbsp;tkframe(base)
+tkpack(tkbutton(bfrm,text='Run',command=tst),side='left')
+tkpack(tkbutton(bfrm,text='Quit',command=destroy),side='right')
+
+tkpack(bfrm,side='bottom')
+
+</pre>
+When we run the program (for example by using the <tt>source</tt> command
+inside of R), we see the left hand image; after making some entries and hitting
+the <tt>Run</tt> button, we see the image on the right.
+
+<div class="p"><!----></div>
+
+<center><table border="0"><tr><td><img src="pow0.png">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<img src="pow1.png">
+</td></tr></table><!--hboxt-->
+</center>
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc2">
+2</a>&nbsp;&nbsp;Making a Calculator</h2>
+The basic idea behind writing a calculator in R is very simple:  create
+a set of buttons which will build up a text string that represents the
+calculation we wish to perform, and then use the <tt>eval</tt> and 
+<tt>parse</tt> functions in R to perform the calculation.  These two 
+functions allow us to evaluate a character string as if we typed it 
+into the R console.  For example, consider the string "29*43".  We
+could calculate the value of that expression as follows:
+
+<pre>
+&#62;&nbsp;txt&nbsp;=&nbsp;"29*43"
+&#62;&nbsp;eval(parse(text=txt))
+[1]&nbsp;1247
+
+</pre>
+ Using this as the core of the calculator, we can set up 
+rows of buttons arranged in the usual calculator fashion, each
+of which will add a character to a character string through the 
+<tt>command=</tt> option, and then call
+<tt>parse</tt> and <tt>eval</tt> to do the calculation when the 
+"<tt>=</tt>" key is pressed.  We need to use a few of the concepts
+we've already seen to make the calculator work.  First, we will need
+to create a global variable that represents the input to the calculator,
+and have each of the keys add its input using the "<tt>&lt;&lt;-</tt>"
+operator.  To change the value of the calculator's display, we'll use
+the <tt>tkconfigure</tt> function as in the previous example.  
+
+<div class="p"><!----></div>
+We could define the callback functions separately for each key, but 
+most of the keys will do exactly the same thing - add a character to 
+the string that we'll eventually calculate.  The only difference is that
+different keys will naturally add different characters.  So it would make
+sense to write a function to generate the different callbacks.  Let's 
+call the calculator's input <tt>calcinp</tt>.  We initialize <tt>calcinp</tt>
+to an empty string, and then define a function which will take a symbol and
+add it to the calculator's input:
+
+<pre>
+calcinp&nbsp;=&nbsp;''
+
+mkput&nbsp;=&nbsp;function(sym){
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;function(...){
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;calcinp&nbsp;&lt;&lt;-&nbsp;paste(calcinp,sym,sep='')
+	&nbsp;&nbsp;tkconfigure(display,text=calcinp)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}
+}
+
+</pre>
+ Notice that we're refering to an object called <tt>display</tt>,
+even though we haven't defined it yet.   R uses a technique called 
+lazy evaluation which means that an object doesn't have to exist when we
+use it in a function definition - it only needs to be available when the 
+function is actually called.  Keeping this in mind, we can define two more
+functions, one to clear the calculator's display and one to do the actual 
+calculation:
+
+<pre>
+clearit&nbsp;=&nbsp;function(...){
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tkconfigure(display,text='')
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;calcinp&nbsp;&lt;&lt;-&nbsp;''
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}
+
+docalc&nbsp;=&nbsp;function(...){
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result&nbsp;=&nbsp;try(eval(parse(text=calcinp)))
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(class(result)&nbsp;==&nbsp;'try-error')calcinp&nbsp;&lt;&lt;-&nbsp;'Error'&nbsp;else&nbsp;calcinp&nbsp;&lt;&lt;-&nbsp;result
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tkconfigure(display,text=calcinp)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;calcinp&nbsp;&lt;&lt;-&nbsp;''
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}
+
+</pre>
+  A new concept that's introduced in the <tt>docalc</tt> function is the
+<tt>try</tt> function.  This function allows us to try any operation in R, without
+worrying that an error will stop our program.  If there's an error when we pass an R statement to 
+the <tt>try</tt> function, it will return an object of class <tt>try-error</tt>. Thus we
+can decide what to when an error occurs by examining the class of the returned value. 
+
+<div class="p"><!----></div>
+Now we can build the calculator itself.  The approach is to first pack the label which
+will serve as the calculator's display, then to create a separate frame for each row of
+keys, packing them as they are created:
+
+<div class="p"><!----></div>
+
+<pre>
+base&nbsp;=&nbsp;tktoplevel()
+tkwm.title(base,'Calculator')
+
+display&nbsp;=&nbsp;tklabel(base,justify='right')
+tkpack(display,side='top')
+row1&nbsp;=&nbsp;tkframe(base)
+tkpack(tkbutton(row1,text='7',command=mkput('7'),width=3),side='left')
+tkpack(tkbutton(row1,text='8',command=mkput('8'),width=3),side='left')
+tkpack(tkbutton(row1,text='9',command=mkput('9'),width=3),side='left')
+tkpack(tkbutton(row1,text='+',command=mkput('+'),width=3),side='left')
+tkpack(row1,side='top')
+
+row2&nbsp;=&nbsp;tkframe(base)
+tkpack(tkbutton(row2,text='4',command=mkput('4'),width=3),side='left')
+tkpack(tkbutton(row2,text='5',command=mkput('5'),width=3),side='left')
+tkpack(tkbutton(row2,text='6',command=mkput('6'),width=3),side='left')
+tkpack(tkbutton(row2,text='-',command=mkput('-'),width=3),side='left')
+tkpack(row2,side='top')
+
+row3&nbsp;=&nbsp;tkframe(base)
+tkpack(tkbutton(row3,text='1',command=mkput('1'),width=3),side='left')
+tkpack(tkbutton(row3,text='2',command=mkput('2'),width=3),side='left')
+tkpack(tkbutton(row3,text='3',command=mkput('3'),width=3),side='left')
+tkpack(tkbutton(row3,text='*',command=mkput('*'),width=3),side='left')
+tkpack(row3,side='top')
+
+row4&nbsp;=&nbsp;tkframe(base)
+tkpack(tkbutton(row4,text='0',command=mkput('0'),width=3),side='left')
+tkpack(tkbutton(row4,text='(',command=mkput('('),width=3),side='left')
+tkpack(tkbutton(row4,text=')',command=mkput(')'),width=3),side='left')
+tkpack(tkbutton(row4,text='/',command=mkput('/'),width=3),side='left')
+tkpack(row4,side='top')
+
+row5&nbsp;=&nbsp;tkframe(base)
+tkpack(tkbutton(row5,text='.',command=mkput('.'),width=3),side='left')
+tkpack(tkbutton(row5,text='^',command=mkput('^'),width=3),side='left')
+tkpack(tkbutton(row5,text='C',command=clearit,width=3),side='left')
+tkpack(tkbutton(row5,text='=',command=docalc,width=3),side='left')
+tkpack(row5,side='top')
+
+</pre>
+
+<div class="p"><!----></div>
+Here's what the calculator looks like in several stages of a computation:
+
+<center>
+
+<img src="calc0.png">
+<img src="calc1.png">
+<img src="calc2.png">
+<!--hbox-->
+</center>
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc3">
+3</a>&nbsp;&nbsp;Improving the Calculator</h2>
+While the calculator is capable of doing basic operations, it's easy to 
+incorporate any function in R which takes a single argument, by creating
+a callback using this function:
+
+<pre>
+mkfun&nbsp;=&nbsp;function(fun){
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;function(...){
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;calcinp&nbsp;&lt;&lt;-&nbsp;paste(fun,'(',calcinp,')',sep='')
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tkconfigure(display,text=calcinp)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}
+}
+
+</pre>
+ So, for example, we could add the <tt>sqrt</tt>, <tt>exp</tt>, and <tt>qnorm</tt>
+functions to our calculator like this:
+
+<pre>
+row6&nbsp;=&nbsp;tkframe(base)
+tkpack(tkbutton(row6,text='sqrt',command=mkfun('sqrt'),width=3),side='left')
+tkpack(tkbutton(row6,text='exp',command=mkfun('exp'),width=3),side='left')
+tkpack(tkbutton(row6,text='qnorm',command=mkfun('qnorm'),width=3),side='left')
+tkpack(row6,side='top')
+
+</pre>
+ Here are screenshots of a qnorm calculation:
+
+<center>
+
+<img src="calca0.png">
+<img src="calca1.png">
+<img src="calca2.png">
+<!--hbox-->
+</center>
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc4">
+4</a>&nbsp;&nbsp;Appearance of Widgets</h2>
+The previous example was a very minimalistic approach, with no 
+concern with the actual appearance of the final product.  One simple
+way to improve the appearance is to add a little space around the 
+widgets when we pack them.  The <tt>tkpack</tt> function accepts two
+arguments, <tt>padx=</tt> and <tt>pady=</tt> to control the amount of
+space around the widgets when they are packed.  Each of these arguments
+takes a scalar or a vector of length 2. When a scalar is given, that much
+space (in pixels) is added on either side of the widget in the specified
+dimension.  When a list is given the first number is the amount of space 
+to the left (<tt>padx</tt>) or the top (<tt>pady</tt>), and the second 
+number is the amount of space to the right (<tt>padx</tt>) or the bottom
+(<tt>pady</tt>).  Like most aspects of GUI design, experimentation is 
+often necessary to find the best solution.  The following code produces 
+a version of the coin power GUI with additional padding:
+
+<pre>
+base&nbsp;=&nbsp;tktoplevel()
+tkwm.title(base,'Coin&nbsp;Toss')
+
+nfrm&nbsp;=&nbsp;tkframe(base)
+
+nsim_&nbsp;=&nbsp;tclVar('')
+ntoss_&nbsp;=&nbsp;tclVar('')
+prob_&nbsp;=&nbsp;tclVar('')
+
+f1&nbsp;=&nbsp;tkframe(nfrm)
+tkpack(tklabel(f1,text='Nsim',width=8),side='left',pady=c(5,10))
+tkpack(tkentry(f1,width=10,textvariable=nsim_),side='left',padx=c(0,20),pady=c(5,10))
+
+f2&nbsp;=&nbsp;tkframe(nfrm)
+tkpack(tklabel(f2,text='Ntoss',width=8),side='left',pady=c(5,10))
+tkpack(tkentry(f2,width=10,textvariable=ntoss_),side='left',padx=c(0,20),pady=c(5,10))
+
+f3&nbsp;=&nbsp;tkframe(nfrm)
+tkpack(tklabel(f3,text='Prob',width=8),side='left',pady=c(5,10))
+tkpack(tkentry(f3,width=10,textvariable=prob_),side='left',padx=c(0,20),pady=c(5,10))
+
+tkpack(f1,side='top')
+tkpack(f2,side='top')
+tkpack(f3,side='top')
+
+tkpack(nfrm)
+
+ans&nbsp;=&nbsp;tklabel(base,text='&nbsp;')
+tkpack(ans,side='top')
+
+bfrm&nbsp;=&nbsp;tkframe(base)
+tkpack(tkbutton(bfrm,text='Run',command=tst),side='left')
+tkpack(tkbutton(bfrm,text='Quit',command=destroy),side='right')
+
+tkpack(bfrm,side='bottom',pady=c(0,10))
+
+</pre>
+Here are side-by-side pictures showing the difference between the two 
+versions:
+
+<div class="p"><!----></div>
+
+<center><table border="0"><tr><td><img src="pow0.png">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<img src="pow2.png">
+</td></tr></table><!--hboxt-->
+</center>
+
+<div class="p"><!----></div>
+Another way to modify a GUI's appearance is through three-dimensional 
+effects.  These are controlled by an argument called <tt>relief=</tt>,
+which can take values of <tt>"flat"</tt>, <tt>"groove"</tt>, <tt>"raised"</tt>, 
+<tt>"ridge"</tt>, <tt>&#223;olid"</tt>, or <tt>&#223;unken"</tt>.
+The following code produces a (non-functioning) GUI showing the different 
+relief styles applied to labels and buttons:
+
+<pre>
+require(tcltk)
+types&nbsp;=&nbsp;c('flat','groove','raised','ridge','solid','sunken')
+
+base&nbsp;=&nbsp;tktoplevel()
+tkwm.title(base,'Relief&nbsp;Styles')
+
+frms&nbsp;=&nbsp;list()
+
+mkframe&nbsp;=&nbsp;function(type){
+&nbsp;&nbsp;&nbsp;&nbsp;fr&nbsp;=&nbsp;tkframe(base)
+&nbsp;&nbsp;&nbsp;&nbsp;tkpack(tklabel(fr,text=type,relief=type),side='left',padx=5)
+&nbsp;&nbsp;&nbsp;&nbsp;tkpack(tkbutton(fr,text=type,relief=type),side='left',padx=5)
+&nbsp;&nbsp;&nbsp;&nbsp;tkpack(fr,side='top',pady=10)
+&nbsp;&nbsp;&nbsp;&nbsp;fr
+}
+
+sapply(types,mkframe)
+
+</pre>
+Here's a picture of how it looks:
+
+<div class="p"><!----></div>
+<img src="rel.png">
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc5">
+5</a>&nbsp;&nbsp;Fonts and Colors</h2>
+Several arguments can be used to modify color.  The <tt>background=</tt>
+argument controls the overall color, while the <tt>foreground=</tt> argument
+controls the color of text appearing in the widget.  (Remember that things 
+like this can be changed while the GUI is running using the <tt>tkconfigure</tt>
+command.  Each of these arguments accepts colors spelled out (like 
+<tt>"lightblue"</tt>, <tt>"red"</tt>, or <tt>"green"</tt>) as well as 
+web-style hexadecimal values (like <tt>"#add8e6"</tt>, <tt>"#ff0000"</tt> or
+<tt>"#00ff00"</tt>).
+
+<div class="p"><!----></div>
+To change from the default font (bold Helvetica), you must first create
+a Tk font, using the <tt>tkfont.create</tt> function.  This function takes
+a number of arguments, but only the font <tt>family</tt> is required.
+The available font families will vary from platform to platform; the
+<tt>as.character(tkfont.families())</tt> command will display a list of the available
+fonts.  Some of the other possible arguments to <tt>tkfont.create</tt>
+include:
+
+<ol type="1">
+<li><tt>size=</tt>, the size of the font in points.
+<div class="p"><!----></div>
+</li>
+
+<li>
+<tt>weight=</tt>, either <tt>"normal"</tt> or <tt>"bold"</tt>
+<div class="p"><!----></div>
+</li>
+
+<li>
+<tt>slant=</tt>, either <tt>"roman"</tt> or <tt>&#239;talic"</tt>
+<div class="p"><!----></div>
+</li>
+
+<li>
+<tt>underline=</tt>, either <tt>TRUE</tt> or <tt>FALSE</tt>
+<div class="p"><!----></div>
+</li>
+
+<li>
+<tt>overstrike=</tt>, either <tt>TRUE</tt> or <tt>FALSE</tt>
+<div class="p"><!----></div>
+</li>
+</ol>
+As mentioned earlier, colors can be specified as either names or web-style
+hexadecimal values.  Generally, the argument to change the color of a
+widget is <tt>background=</tt>; the argument to change the color of any
+text appearing in the widget is <tt>foreground=</tt>.  If these choices don't
+do what you expect, you may need to check the widget-specific documentation.
+
+<div class="p"><!----></div>
+Here's a simple program that chooses some randomly selected colors and fonts,
+and displays them as labels.
+
+<div class="p"><!----></div>
+
+<pre>
+require(tcltk)
+
+allfonts&nbsp;=&nbsp;as.character(tkfont.families())
+somefonts&nbsp;=&nbsp;sample(allfonts,9)
+
+somecolors&nbsp;=&nbsp;c('red','blue','green','yellow','lightblue','tan',
+'darkred','lightgreen','white')
+
+txt&nbsp;=&nbsp;'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+
+base&nbsp;=&nbsp;tktoplevel()
+tkwm.title(base,'Fonts')
+mkfonts&nbsp;=&nbsp;function(font,color){
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;thefont&nbsp;=&nbsp;tkfont.create(family=font,size=14)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tkpack(tklabel(base,text=paste(font,':',txt),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;font=thefont,background=color),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;side='top')
+}
+
+mapply(mkfonts,somefonts,somecolors)
+
+</pre>
+
+<div class="p"><!----></div>
+Here's how it looks:
+
+<div class="p"><!----></div>
+<img src="font.png">
+Note that only the specific widget for which <tt>background=</tt> was set
+changes - if you want to change the background for the entire GUI, you'll
+probably have to pass the <tt>background=</tt> argument to every widget you
+use.
+
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On  8 Apr 2011, 15:13.</small>
+</html>

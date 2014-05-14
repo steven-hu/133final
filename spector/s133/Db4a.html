@@ -1,0 +1,502 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> Databases</title>
+ 
+<h1 align="center">Databases </h1>
+
+
+
+ <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;Regular Expressions in SQL</h2>
+For things like partial matching of strings, all flavors of SQL provide the 
+<tt>LIKE</tt> operator, which allows limited wildcard matching.  With the 
+<tt>LIKE</tt> operator the percent sign (<tt>%</tt>) stands for 0 or more characters,
+and the underscore (<tt>_</tt>) stands for exactly one.  Many modern databases 
+(MySQL included) provide the <tt>RLIKE</tt> operator, which uses regular expressions.
+For the remainder of these examples, we'll use the MySQL database running on 
+<tt>springer.berkeley.edu</tt>.  We'll write a regular expression to find all
+the artists who have exactly three words in their names.
+
+<div class="p"><!----></div>
+
+<pre>
+springer.spector$&nbsp;mysql&nbsp;-u&nbsp;stat133&nbsp;-p&nbsp;albums
+Enter&nbsp;password:&nbsp;
+Reading&nbsp;table&nbsp;information&nbsp;for&nbsp;completion&nbsp;of&nbsp;table&nbsp;and&nbsp;column&nbsp;names
+You&nbsp;can&nbsp;turn&nbsp;off&nbsp;this&nbsp;feature&nbsp;to&nbsp;get&nbsp;a&nbsp;quicker&nbsp;startup&nbsp;with&nbsp;-A
+
+Welcome&nbsp;to&nbsp;the&nbsp;MySQL&nbsp;monitor.&nbsp;&nbsp;Commands&nbsp;end&nbsp;with&nbsp;;&nbsp;or&nbsp;\g.
+Your&nbsp;MySQL&nbsp;connection&nbsp;id&nbsp;is&nbsp;11
+Server&nbsp;version:&nbsp;5.0.51a-3ubuntu5.4-log&nbsp;(Ubuntu)
+
+Type&nbsp;'help;'&nbsp;or&nbsp;'\h'&nbsp;for&nbsp;help.&nbsp;Type&nbsp;'\c'&nbsp;to&nbsp;clear&nbsp;the&nbsp;buffer.
+
+mysql&#62;&nbsp;SELECT&nbsp;name&nbsp;FROM&nbsp;Artist
+&nbsp;&nbsp;&nbsp;&nbsp;-&#62;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;name&nbsp;RLIKE&nbsp;'^[A-Za-z]+&nbsp;[A-Za-z]+&nbsp;[A-Za-z]+$';
++----------------------------------+
+|&nbsp;name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|
++----------------------------------+
+|&nbsp;Mary&nbsp;Lou&nbsp;Williams&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;
+|&nbsp;Dexter&nbsp;Gordon&nbsp;Quartet&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;
+|&nbsp;Modern&nbsp;Jazz&nbsp;Septet&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;
+|&nbsp;Eddie&nbsp;South&nbsp;Trio&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;
+|&nbsp;Gerry&nbsp;Mulligan&nbsp;Tentette&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;
+|&nbsp;Bill&nbsp;Harris&nbsp;rarities&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;
+|&nbsp;Jimmy&nbsp;Heath&nbsp;Sextet&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;
+|&nbsp;Horae&nbsp;Parlan&nbsp;Trio&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;
+
+</pre>
+Note that in order to access the MySQL database, a username and
+password needed to be used.
+
+<div class="p"><!----></div>
+If you look at the original definition of the <tt>SELECT</tt> statement, you'll
+notice the <tt>HAVING</tt> clause which we have not yet covered.  The basic 
+difference between <tt>HAVING</tt> and <tt>WHERE</tt> is that, due to the timing
+of operations in the database, we can't use computed variables (like <tt>SUM</tt>
+and <tt>AVG</tt>) in the <tt>WHERE</tt> clause, but you can in the <tt>HAVING</tt>
+clause.  Suppose we wanted to find the artists for which there were more than 
+five albums in the database.  A first try might be as follows:
+
+<pre>
+mysql&nbsp;&#62;&nbsp;SELECT&nbsp;aid,COUNT(aid)&nbsp;as&nbsp;count&nbsp;FROM&nbsp;Album&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&#62;&nbsp;WHERE&nbsp;count&nbsp;&#62;&nbsp;5
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&#62;&nbsp;GROUP&nbsp;BY&nbsp;aid;&nbsp;
+ERROR&nbsp;1054&nbsp;(42S22):&nbsp;Unknown&nbsp;column&nbsp;'count'&nbsp;in&nbsp;'where&nbsp;clause'
+
+</pre>
+Since the <tt>WHERE</tt> clause doesn't have access to columns you've created through
+computations, MySQL can't find the computed variable (<tt>count</tt>).  To fix
+this, add a <tt>HAVING</tt> clause after the <tt>GROUP BY</tt> clause:
+
+<pre>
+mysql&#62;&nbsp;SELECT&nbsp;aid,COUNT(aid)&nbsp;as&nbsp;count&nbsp;FROM&nbsp;Album
+&nbsp;&nbsp;&nbsp;&nbsp;-&#62;&nbsp;&nbsp;&nbsp;&nbsp;GROUP&nbsp;BY&nbsp;aid
+&nbsp;&nbsp;&nbsp;&nbsp;-&#62;&nbsp;&nbsp;&nbsp;&nbsp;HAVING&nbsp;count&nbsp;&#62;&nbsp;5;
++------+-------+
+|&nbsp;aid&nbsp;&nbsp;|&nbsp;count&nbsp;|
++------+-------+
+|&nbsp;&nbsp;&nbsp;&nbsp;0&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6&nbsp;|&nbsp;
+|&nbsp;&nbsp;&nbsp;14&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6&nbsp;|&nbsp;
+|&nbsp;&nbsp;&nbsp;20&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;9&nbsp;|&nbsp;
+|&nbsp;&nbsp;&nbsp;24&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6&nbsp;|&nbsp;
+|&nbsp;&nbsp;&nbsp;40&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;15&nbsp;|&nbsp;
+|&nbsp;&nbsp;&nbsp;74&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6&nbsp;|&nbsp;
+|&nbsp;&nbsp;&nbsp;92&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6&nbsp;|&nbsp;
+|&nbsp;&nbsp;101&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6&nbsp;|&nbsp;
+|&nbsp;&nbsp;107&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;9&nbsp;|&nbsp;
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.&nbsp;.&nbsp;.
+
+</pre>
+Of course, queries like this are infinitely more useful if the bring in the relevant
+information from other tables:
+
+<pre>
+mysql&#62;&nbsp;SELECT&nbsp;ar.name&nbsp;as&nbsp;Artist,COUNT(al.alid)&nbsp;AS&nbsp;count
+&nbsp;&nbsp;&nbsp;&nbsp;-&#62;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;Artist&nbsp;as&nbsp;ar,&nbsp;Album&nbsp;as&nbsp;al
+&nbsp;&nbsp;&nbsp;&nbsp;-&#62;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;ar.aid&nbsp;=&nbsp;al.aid
+&nbsp;&nbsp;&nbsp;&nbsp;-&#62;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GROUP&nbsp;BY&nbsp;al.aid&nbsp;HAVING&nbsp;count&nbsp;&#62;&nbsp;5;
+|&nbsp;Abdullah&nbsp;Ibrahim&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6&nbsp;|&nbsp;
+|&nbsp;Ahmad&nbsp;Jamal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;9&nbsp;|&nbsp;
+|&nbsp;Al&nbsp;Cohn&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6&nbsp;|&nbsp;
+|&nbsp;Al&nbsp;Haig&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;15&nbsp;|&nbsp;
+|&nbsp;Andre&nbsp;Previn&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6&nbsp;|&nbsp;
+|&nbsp;Anita&nbsp;O'Day&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6&nbsp;|&nbsp;
+|&nbsp;Archie&nbsp;Shepp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6&nbsp;|&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.&nbsp;.&nbsp;.
+
+</pre>
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc2">
+2</a>&nbsp;&nbsp;Accessing databases in R</h2>
+To provide consistent access to different databases, R uses an intermediate
+layer of communication known as the DBI (Data Base Interface) library.
+As we've seen before, different commands are necessary to get information 
+about different databases, so the DBI layer provides a set of routines that
+will work identically for all databases.  Some of these routines are
+described in the following table.
+
+<div class="p"><!----></div>
+
+<table border="1">
+<tr><td><tt>dbConnect</tt></td><td>connect to a database</td></tr>
+<tr><td><tt>dbDisconnect</tt></td><td>close the connection to a database</td></tr>
+<tr><td><tt>dbExistsTable</tt></td><td>returns TRUE or FALSE</td></tr>
+<tr><td><tt>dbGetQuery</tt></td><td>send a query to the database and get the results</td></tr>
+<tr><td><tt>dbListTables</tt></td><td>shows all the tables in a database</td></tr>
+<tr><td><tt>dbListFields</tt></td><td>shows the names of columns in a database</td></tr>
+<tr><td><tt>dbSendQuery</tt></td><td>send a query to the database and use <tt>fetch</tt> to get results</td></tr>
+<tr><td><tt>dbWriteTable</tt></td><td>stores a data frame in a database</td></tr></table>
+
+
+<div class="p"><!----></div>
+To let the DBI layer know what type of database you are using, you
+pass a string (like <tt>'MySQL'</tt> or <tt>'SQLite'</tt>) to the
+<tt>dbDriver</tt> function.  This will return an object which can be
+passed to <tt>dbConnect</tt> to make a connection to the database.
+<tt>dbConnect</tt> returns a connection object which is passed to 
+all the other routines so that they can communicate with the database
+you are using.
+
+<div class="p"><!----></div>
+For example, to connect to the <tt>albums</tt> SQLite database, we'd
+use the following statements:
+
+<pre>
+library(RSQLite)
+drv&nbsp;=&nbsp;dbDriver('SQLite')
+con&nbsp;=&nbsp;dbConnect(drv,db='albums.db')
+
+</pre>
+Since SQLite doesn't require a database server, you can easily create
+SQLite databases using <tt>dbWriteTable</tt>.  For very large 
+data sets, you can process the data in chunks, using the <tt>append=</tt>
+option of <tt>dbWriteTable</tt>.
+
+<div class="p"><!----></div>
+To use MySQL, you must have a valid username and password.  For the 
+MySQL database running on <tt>springer.berkeley.edu</tt>, you'd need
+to use the following statements:
+
+<pre>
+drv&nbsp;=&nbsp;dbDriver('MySQL')
+con&nbsp;=&nbsp;dbConnect(drv,dbname='albums',user='stat133',pass='T0pSecr3t')
+
+</pre>
+If you're using an SCF machine, you'd need to specify a hostname 
+(<tt>springer</tt>)
+when
+connecting;  for non-SCF machines, you would set up an SSH tunnel and
+use a hostname of <tt>'127.0.0.1'</tt>.
+
+<div class="p"><!----></div>
+Once you get the connection object from <tt>dbConnect</tt> you can use it 
+repeatedly to make as many queries as you need, and the functions you 
+use are the same, regardless of the nature of the underlying database.
+
+<div class="p"><!----></div>
+It's up to you
+to decide how much of the work you want to do through the database, and how
+much you'll do in R.   For example, suppose we want to find albums in the albums
+database whose total time (sum of the <tt>length</tt> variable in the 
+<tt>Track</tt> table) is between 2400 and 2700 seconds, displayed in descending
+order of total time. 
+
+<div class="p"><!----></div>
+One approach (after loading the library and making the connection to the database)
+would be to do all the work in the database.  Notice that this may be your only
+option if the database you're dealing with is too large to fit into R.
+
+<div class="p"><!----></div>
+
+<pre>
+&#62;&nbsp;albums&nbsp;=&nbsp;dbGetQuery(con,statement='SELECT&nbsp;al.title,ar.name,SUM(tr.length)&nbsp;AS&nbsp;tot
++&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;Album&nbsp;AS&nbsp;al,Artist&nbsp;AS&nbsp;ar,Track&nbsp;AS&nbsp;tr
++&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;tr.alid&nbsp;=&nbsp;al.alid&nbsp;AND&nbsp;tr.aid&nbsp;=&nbsp;ar.aid&nbsp;AND&nbsp;tr.aid&nbsp;=&nbsp;al.aid
++&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GROUP&nbsp;BY&nbsp;tr.alid
++&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HAVING&nbsp;tot&nbsp;BETWEEN&nbsp;2400&nbsp;AND&nbsp;2700&nbsp;ORDER&nbsp;BY&nbsp;tot&nbsp;DESC')
+&#62;&nbsp;head(albums)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name&nbsp;&nbsp;tot
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Blues&nbsp;Groove&nbsp;Tiny&nbsp;Grimes&nbsp;&nbsp;&amp;&nbsp;Coleman&nbsp;Hawkins&nbsp;2699
+2&nbsp;I&nbsp;Need&nbsp;Some&nbsp;Money&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Eddie&nbsp;Harris&nbsp;2699
+3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Young&nbsp;Chet&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Chet&nbsp;Baker&nbsp;2699
+4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Up&nbsp;&amp;&nbsp;Down&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Horace&nbsp;Parlan&nbsp;2698
+5&nbsp;&nbsp;&nbsp;Arcadia&nbsp;Shuffle&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Roy&nbsp;Eldridge&nbsp;2697
+6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Night&nbsp;Dance&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Jimmy&nbsp;Giuffre&nbsp;2697
+
+</pre>
+
+<div class="p"><!----></div>
+It's usually most convenient to spread out 
+the query over multiple lines, but the entire query could 
+be passed as one long string.  The <tt>dbGetQuery</tt> function
+gets the results of the query and puts them into a data frame, in this case
+called <tt>albums</tt>.
+
+<div class="p"><!----></div>
+Another way to find the albums with total time between 2400 and 2700 would be to
+use SQL to get the total time of all the albums, and then use the <tt>subset</tt> 
+function in R to get the ones in the desired time range:
+
+<pre>
+&#62;&nbsp;albums&nbsp;=&nbsp;dbGetQuery(con,statement='SELECT&nbsp;al.title,ar.name,SUM(tr.length)&nbsp;AS&nbsp;"Total&nbsp;Time"
++&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;Album&nbsp;AS&nbsp;al,Artist&nbsp;AS&nbsp;ar,Track&nbsp;AS&nbsp;tr
++&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;tr.alid&nbsp;=&nbsp;al.alid&nbsp;AND&nbsp;tr.aid&nbsp;=&nbsp;ar.aid&nbsp;AND&nbsp;tr.aid&nbsp;=&nbsp;al.aid
++&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GROUP&nbsp;BY&nbsp;tr.alid')
+&#62;&nbsp;myalbums&nbsp;=&nbsp;subset(albums,`Total&nbsp;Time`&nbsp;&#62;&nbsp;2400&nbsp;&amp;&nbsp;`Total&nbsp;Time`&nbsp;&lt;&nbsp;2700)
+&#62;&nbsp;myalbums&nbsp;=&nbsp;myalbums[order(myalbums$"Total&nbsp;Time",decreasing=TRUE),]
+&#62;&nbsp;head(myalbums)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name&nbsp;Total&nbsp;Time
+821&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Blues&nbsp;Groove&nbsp;Tiny&nbsp;Grimes&nbsp;&nbsp;&amp;&nbsp;Coleman&nbsp;Hawkins&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2699
+2206&nbsp;I&nbsp;Need&nbsp;Some&nbsp;Money&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Eddie&nbsp;Harris&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2699
+5632&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Young&nbsp;Chet&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Chet&nbsp;Baker&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2699
+5337&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Up&nbsp;&amp;&nbsp;Down&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Horace&nbsp;Parlan&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2698
+418&nbsp;&nbsp;&nbsp;&nbsp;Arcadia&nbsp;Shuffle&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Roy&nbsp;Eldridge&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2697
+3390&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Night&nbsp;Dance&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Jimmy&nbsp;Giuffre&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2697
+
+</pre>
+ Here I used a more descriptive name for the total time, namely <tt>Total Time</tt>.
+Note that, since there's a space in the variable name, I need to surround it with
+backquotes (<tt>`</tt>) in the <tt>subset</tt> function, but when I refer to the variable in
+the <tt>order</tt> function, I used ordinary quotes.  Backquotes will work in either case.
+
+<div class="p"><!----></div>
+At the other end of the extreme, you could read in the entire database and work with it
+entirely in R.  This may not be the wisest approach, because if the database is 
+too large, you may have problems.  Working with the data in this way, however 
+will allow us to see the R equivalent of some of the database operations we've
+been studying.  Once again, I'm assuming that the <tt>RMySQL</tt> library has
+been loaded, and a connection object has been obtained through a call to 
+<tt>dbConnect</tt>.
+
+<div class="p"><!----></div>
+
+<pre>
+&#62;&nbsp;album&nbsp;=&nbsp;dbGetQuery(con,statement="select&nbsp;*&nbsp;from&nbsp;Album")
+&#62;&nbsp;track&nbsp;=&nbsp;dbGetQuery(con,statement="select&nbsp;*&nbsp;from&nbsp;Track")
+&#62;&nbsp;artist&nbsp;=&nbsp;dbGetQuery(con,statement="select&nbsp;*&nbsp;from&nbsp;Artist")
+
+</pre>
+We now have three data frames in R corresponding to the three data tables in
+the database.   In R, the equivalent of an inner join can be carried out with
+the <tt>merge</tt> function.  You provide <tt>merge</tt> with the data frames 
+you wish to join, and a character string or vector of character strings 
+with the name(s) of the variables that you wish to join them by.
+In database terminology, these names are the keys for the join.  The <tt>merge</tt>
+function will only accept two data frames, but it can be called repeatedly in 
+case there are more than two data frames that need to be merged.
+
+<div class="p"><!----></div>
+If there are variables with the same name (other than the keys) in the two data
+frames to be merged, <tt>merge</tt> will rename them by adding either
+<tt>.x</tt> or <tt>.y</tt> to the end of the name to tell you which data 
+frame that variable came from.  An often easier approach is to rename variables
+before merging so that all the names (other than the keys) will be unique.  In
+the current example, the variable <tt>title</tt> is in both the <tt>album</tt>
+data frame and the <tt>track</tt> data frame.  Let's rename the <tt>title</tt>
+variable in the <tt>album</tt> data frame to <tt>albumname</tt>:
+
+<pre>
+&#62;&nbsp;names(album)
+[1]&nbsp;"alid"&nbsp;&nbsp;"aid"&nbsp;&nbsp;&nbsp;"title"&nbsp;"year"
+&#62;&nbsp;names(album)[3]&nbsp;=&nbsp;'albumname'
+
+</pre>
+Now we can merge the <tt>album</tt> data frame with the <tt>artist</tt> data frame
+using <tt>aid</tt> as a key, and then merge the <tt>track</tt> data frame 
+with the album data frame using <tt>alid</tt> as a key.
+
+<div class="p"><!----></div>
+
+<pre>
+&#62;&nbsp;album&nbsp;=&nbsp;merge(album,artist,by='aid')
+&#62;&nbsp;track&nbsp;=&nbsp;merge(track,album,by='alid')
+&#62;&nbsp;head(track)
+&nbsp;&nbsp;alid&nbsp;aid.x&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;title&nbsp;filesize&nbsp;bitrate&nbsp;length&nbsp;aid.y&nbsp;&nbsp;albumname
+1&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;2836&nbsp;Sonnymoon&nbsp;For&nbsp;Two&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6459&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;189&nbsp;&nbsp;&nbsp;&nbsp;279&nbsp;&nbsp;2836&nbsp;100%&nbsp;Proof
+2&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;2836&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Nutty&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6062&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;191&nbsp;&nbsp;&nbsp;&nbsp;259&nbsp;&nbsp;2836&nbsp;100%&nbsp;Proof
+3&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;2836&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;100%&nbsp;Proof&nbsp;&nbsp;&nbsp;&nbsp;19877&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;190&nbsp;&nbsp;&nbsp;&nbsp;853&nbsp;&nbsp;2836&nbsp;100%&nbsp;Proof
+4&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;2836&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Bluesology&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7101&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;189&nbsp;&nbsp;&nbsp;&nbsp;306&nbsp;&nbsp;2836&nbsp;100%&nbsp;Proof
+5&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;2836&nbsp;&nbsp;Night&nbsp;In&nbsp;Tunisia&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;9102&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;190&nbsp;&nbsp;&nbsp;&nbsp;391&nbsp;&nbsp;2836&nbsp;100%&nbsp;Proof
+6&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;2836&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Milestones&nbsp;&nbsp;&nbsp;&nbsp;10774&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;190&nbsp;&nbsp;&nbsp;&nbsp;463&nbsp;&nbsp;2836&nbsp;100%&nbsp;Proof
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name
+1&nbsp;Tubby&nbsp;Hayes&nbsp;Orchestra
+2&nbsp;Tubby&nbsp;Hayes&nbsp;Orchestra
+3&nbsp;Tubby&nbsp;Hayes&nbsp;Orchestra
+4&nbsp;Tubby&nbsp;Hayes&nbsp;Orchestra
+5&nbsp;Tubby&nbsp;Hayes&nbsp;Orchestra
+6&nbsp;Tubby&nbsp;Hayes&nbsp;Orchestra
+
+</pre>
+To calculate the total length of tracks, we only need the album and artist names
+along with the length of each track:
+
+<pre>
+&#62;&nbsp;track&nbsp;=&nbsp;track[,c('albumname','name','length')]
+
+</pre>
+
+<div class="p"><!----></div>
+The rest of the processing is pretty straightforward now that everything is in R:
+
+<pre>
+&#62;&nbsp;tot&nbsp;=&nbsp;aggregate(track$length,list(albumname=track$albumname,artist=track$name),sum)
+&#62;&nbsp;use&nbsp;=&nbsp;tot[tot$x&nbsp;&#62;&nbsp;2400&nbsp;&amp;&nbsp;tot$x&nbsp;&lt;=&nbsp;2700,]
+&#62;&nbsp;use&nbsp;=&nbsp;use[order(use$x,decreasing=TRUE),]
+&#62;&nbsp;head(use)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;albumname&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;artist&nbsp;&nbsp;&nbsp;&nbsp;x
+1105&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Young&nbsp;Chet&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Chet&nbsp;Baker&nbsp;2699
+1748&nbsp;I&nbsp;Need&nbsp;Some&nbsp;Money&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Eddie&nbsp;Harris&nbsp;2699
+5245&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Blues&nbsp;Groove&nbsp;Tiny&nbsp;Grimes&nbsp;&nbsp;&amp;&nbsp;Coleman&nbsp;Hawkins&nbsp;2699
+2520&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Up&nbsp;&amp;&nbsp;Down&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Horace&nbsp;Parlan&nbsp;2698
+2848&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Night&nbsp;Dance&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Jimmy&nbsp;Giuffre&nbsp;2697
+4559&nbsp;&nbsp;&nbsp;Arcadia&nbsp;Shuffle&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Roy&nbsp;Eldridge&nbsp;2697
+
+</pre>
+ Because of the way <tt>merge</tt> operates, ties are 
+resolved differently than in previous examples, but the results 
+are essentially the same.
+
+<div class="p"><!----></div>
+A different approach illustrates the relationship between factors and the 
+principles of normalization.  Since a factor stores each of its levels only
+once, normalized tables can often be used to form factors in R.  Once again,
+let's assume that we've loaded the <tt>RMySQL</tt> library and obtained a 
+connection object.  This time, I'll trim off the unneeded variables from
+the <tt>track</tt> data frame before processing:
+
+<pre>
+&#62;&nbsp;album&nbsp;=&nbsp;dbGetQuery(con,statement="select&nbsp;*&nbsp;from&nbsp;Album")
+&#62;&nbsp;track&nbsp;=&nbsp;dbGetQuery(con,statement="select&nbsp;*&nbsp;from&nbsp;Track")
+&#62;&nbsp;artist&nbsp;=&nbsp;dbGetQuery(con,statement="select&nbsp;*&nbsp;from&nbsp;Artist")
+&#62;&nbsp;track&nbsp;=&nbsp;track[,c('aid','alid','length')]
+&#62;&nbsp;names(track)&nbsp;=&nbsp;c('artist','album','length')
+&#62;&nbsp;track$artist&nbsp;=&nbsp;factor(track$artist,levels=artist$aid,labels=artist$name)
+&#62;&nbsp;track$album&nbsp;=&nbsp;&nbsp;factor(track$album,levels=album$alid,labels=album$title)
+
+</pre>
+The tables formed in the process of normalizing the database essentially 
+contain the levels and labels of a factor variable in R. 
+Processing the data set is the same as in the previous example:
+
+<pre>
+&#62;&nbsp;track$albart&nbsp;=&nbsp;paste(track$album,track$artist,sep='\t')
+&#62;&nbsp;tot&nbsp;=&nbsp;aggregate(track$length,track['albart'],sum)
+&#62;&nbsp;aa&nbsp;=&nbsp;strsplit(tot$albart,'\t')
+&#62;&nbsp;tot$album&nbsp;=&nbsp;sapply(aa,'[',1)
+&#62;&nbsp;tot$artist&nbsp;=&nbsp;sapply(aa,'[',2)
+&#62;&nbsp;tot$albart&nbsp;=&nbsp;NULL
+&#62;&nbsp;use&nbsp;=&nbsp;tot[tot$x&nbsp;&#62;&nbsp;2400&nbsp;&amp;&nbsp;tot$x&nbsp;&lt;=&nbsp;2700,]
+&#62;&nbsp;use&nbsp;=&nbsp;use[order(use$x,decreasing=TRUE),]
+&#62;&nbsp;head(use)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;album&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;artist
+821&nbsp;&nbsp;2699&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Blues&nbsp;Groove&nbsp;Tiny&nbsp;Grimes&nbsp;&nbsp;&amp;&nbsp;Coleman&nbsp;Hawkins
+2206&nbsp;2699&nbsp;I&nbsp;Need&nbsp;Some&nbsp;Money&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Eddie&nbsp;Harris
+5632&nbsp;2699&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Young&nbsp;Chet&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Chet&nbsp;Baker
+5337&nbsp;2698&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Up&nbsp;&amp;&nbsp;Down&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Horace&nbsp;Parlan
+418&nbsp;&nbsp;2697&nbsp;&nbsp;&nbsp;Arcadia&nbsp;Shuffle&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Roy&nbsp;Eldridge
+3390&nbsp;2697&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Night&nbsp;Dance&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Jimmy&nbsp;Giuffre
+
+</pre>
+
+<div class="p"><!----></div>
+In practice, the most useful solutions would probably fall in between the 
+extreme of doing everything on the database and doing everything in R.
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc3">
+3</a>&nbsp;&nbsp;Using SQL in R</h2>
+If you like using SQL, or you see a handy way to get something done
+using SQL, you can use the <tt>sqldf</tt> package to operate on R
+data frames using SQL.  
+When you pass a query to the <tt>sqldf</tt> function, it 
+will identify the data frames involved in the query, create a temporary
+SQLite database, perform the query, and return the results.   
+For example, consider the task of merging two data frames, based
+on the value of a variable <tt>id</tt>:
+
+<pre>
+&#62;&nbsp;data1&nbsp;=&nbsp;data.frame(id=c(1,4,2,3,5),x=c(7,12,19,15,9))
+&#62;&nbsp;data2&nbsp;=&nbsp;data.frame(id=c(2,3,4,1,5),y=c(21,32,29,35,19))
+&#62;&nbsp;sqldf('select&nbsp;*&nbsp;from&nbsp;data1&nbsp;natural&nbsp;join&nbsp;data2')
+&nbsp;&nbsp;id&nbsp;&nbsp;x&nbsp;&nbsp;y
+1&nbsp;&nbsp;1&nbsp;&nbsp;7&nbsp;35
+2&nbsp;&nbsp;4&nbsp;12&nbsp;29
+3&nbsp;&nbsp;2&nbsp;19&nbsp;21
+4&nbsp;&nbsp;3&nbsp;15&nbsp;32
+5&nbsp;&nbsp;5&nbsp;&nbsp;9&nbsp;19
+
+</pre>
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc4">
+4</a>&nbsp;&nbsp;Reading Spreadsheets with the <tt>RODBC</tt> Library</h2>
+Now that we've got the basics of SQL down, we can look at a
+third option for reading spreadsheets into R, the <tt>RODBC</tt>
+library.  Note that this functionality is only available on Windows
+and you don't need a copy of Excel on your computer in order for it
+to work.  The ODBC interface provides access to spreadsheets using
+SQL as a query language.  Here's a sample session showing how we 
+could read the spreadsheet from the previous example using 
+<tt>RODBC</tt>:
+
+<pre>
+&#62;&nbsp;library(RODBC)
+&#62;&nbsp;con&nbsp;=&nbsp;odbcConnectExcel('2_2005_top200_postdoc.xls')
+&#62;&nbsp;tbls&nbsp;=&nbsp;sqlTables(con)
+&#62;&nbsp;tbls
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLE_CAT
+1&nbsp;C:\\Documents&nbsp;and&nbsp;Settings\\spector\\Desktop\\2_2005_top200_postdoc
+2&nbsp;C:\\Documents&nbsp;and&nbsp;Settings\\spector\\Desktop\\2_2005_top200_postdoc
+3&nbsp;C:\\Documents&nbsp;and&nbsp;Settings\\spector\\Desktop\\2_2005_top200_postdoc
+4&nbsp;C:\\Documents&nbsp;and&nbsp;Settings\\spector\\Desktop\\2_2005_top200_postdoc
+5&nbsp;C:\\Documents&nbsp;and&nbsp;Settings\\spector\\Desktop\\2_2005_top200_postdoc
+&nbsp;&nbsp;TABLE_SCHEM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLE_NAME&nbsp;&nbsp;&nbsp;TABLE_TYPE&nbsp;REMARKS
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;NA&#62;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sheet1$&nbsp;SYSTEM&nbsp;TABLE&nbsp;&nbsp;&nbsp;&nbsp;&lt;NA&#62;
+2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;NA&#62;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sheet2$&nbsp;SYSTEM&nbsp;TABLE&nbsp;&nbsp;&nbsp;&nbsp;&lt;NA&#62;
+3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;NA&#62;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sheet3$&nbsp;SYSTEM&nbsp;TABLE&nbsp;&nbsp;&nbsp;&nbsp;&lt;NA&#62;
+4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;NA&#62;&nbsp;&nbsp;&nbsp;Sheet1$Print_Area&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLE&nbsp;&nbsp;&nbsp;&nbsp;&lt;NA&#62;
+5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;NA&#62;&nbsp;Sheet1$Print_Titles&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLE&nbsp;&nbsp;&nbsp;&nbsp;&lt;NA&#62;
+&#62;&nbsp;qry&nbsp;=&nbsp;paste('select&nbsp;*&nbsp;from&nbsp;','[',tbls$TABLE_NAME[1],']',sep='')
+&#62;&nbsp;postdocs&nbsp;=&nbsp;sqlQuery(con,qry,stringsAsFactors=FALSE)
+&#62;&nbsp;head(postdocs)
+&nbsp;&nbsp;F1&nbsp;The&nbsp;Top&nbsp;200&nbsp;Institutions--Postdoctoral&nbsp;Appointees_(2005)&nbsp;&nbsp;&nbsp;F3&nbsp;F4&nbsp;F5&nbsp;F6
+1&nbsp;NA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;NA&#62;&nbsp;&nbsp;&nbsp;NA&nbsp;NA&nbsp;NA&nbsp;NA
+2&nbsp;NA&nbsp;Top&nbsp;50&nbsp;Institutions\nin&nbsp;Postdoctoral&nbsp;Appointees&nbsp;\n(2005)&nbsp;&nbsp;&nbsp;NA&nbsp;NA&nbsp;NA&nbsp;NA
+3&nbsp;NA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Harvard&nbsp;University&nbsp;4384&nbsp;&nbsp;1&nbsp;&nbsp;1&nbsp;NA
+4&nbsp;NA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Johns&nbsp;Hopkins&nbsp;University&nbsp;1442&nbsp;&nbsp;2&nbsp;&nbsp;2&nbsp;NA
+5&nbsp;NA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Stanford&nbsp;University&nbsp;1259&nbsp;&nbsp;3&nbsp;&nbsp;3&nbsp;NA
+6&nbsp;NA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;University&nbsp;of&nbsp;California&nbsp;-&nbsp;Los&nbsp;Angeles&nbsp;1094&nbsp;&nbsp;4&nbsp;&nbsp;1&nbsp;NA
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;F7
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;NA&#62;
+2&nbsp;Institutional\nControl
+3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Private
+4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Private
+5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Private
+6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Public
+&#62;&nbsp;sapply(postdocs,class)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;F1&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"logical"&nbsp;
+The&nbsp;Top&nbsp;200&nbsp;Institutions--Postdoctoral&nbsp;Appointees_(2005)&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"character"&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;F3&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"numeric"&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;F4&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"numeric"&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;F5&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"numeric"&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;F6&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"logical"&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;F7&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"character"&nbsp;
+&#62;&nbsp;dim(postdocs)
+[1]&nbsp;208&nbsp;&nbsp;&nbsp;7
+
+</pre>
+
+<div class="p"><!----></div>
+The RODBC interface was able to correctly classify the numeric columns.
+
+<div class="p"><!----></div>
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On 11 Mar 2011, 15:50.</small>
+</html>

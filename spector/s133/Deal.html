@@ -1,0 +1,202 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> Deal or No Deal</title>
+ 
+<h1 align="center">Deal or No Deal </h1>
+
+
+
+ <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;Deal or No Deal</h2>
+Just for fun, I've created an R program to play the "Deal or No Deal"
+show that originated in England, and now is popular in the United States.
+The way the game works is that there are 25 (26 on the show) 
+numbered briefcases,
+each containing a piece of paper with an amount of money ranging from 
+1 cent to 1000000 dollars.  
+The player chooses one of the cases, which will
+not be opened until the end of the game.  Then, the player chooses numbered
+cases, one at a time, and gets to see their contents.  As each dollar amount
+is shown, its value is grayed out on a display showing all the possible 
+dollar amounts.  Based on the remaining possible amounts (one of which is
+in the case chosen by the player), the "banker" periodically calls with 
+an offer to buy the player's case, based on the quantities which haven't
+been displayed yet, and the player must either accept the offer, or continuing
+looking inside the remaining cases.  
+
+<div class="p"><!----></div>
+In this version of the game, the first button clicked on represents the player's
+choice.  After that, clicking a button reveals its amount, and greys out that
+amount on the left side of the display.  When the banker makes an offer, a 
+button with that amount appears at the bottom of the display.  If you click on
+the button, you accept the offer, and can now "open" the chosen case to see
+if you made a wise choice.  If you ignore the button, you can keep opening 
+cases, until the next offer.  
+
+<div class="p"><!----></div>
+Here's a screenshot:
+
+<div class="p"><!----></div>
+<img src="deal.png" alt="deal.png" />
+
+<div class="p"><!----></div>
+Here's the R code to run the game:
+
+<pre>
+require(tcltk)
+mk&nbsp;=&nbsp;function(b,text){
+&nbsp;&nbsp;&nbsp;&nbsp;but&nbsp;=&nbsp;b
+&nbsp;&nbsp;&nbsp;&nbsp;txt&nbsp;=&nbsp;text
+&nbsp;&nbsp;&nbsp;&nbsp;function(...){
+	if(is.null(choice)){
+		tkconfigure(but,state='disabled',disabledforeground='red',relief='groove',borderwidth=2)
+		choice&nbsp;&lt;&lt;-&nbsp;but
+		return()
+		}
+&nbsp;&nbsp;&nbsp;&nbsp;	tkconfigure(but,text=txt,state='disabled',disabledforeground='darkgreen')
+	k&nbsp;=&nbsp;which(amounts&nbsp;==&nbsp;as.numeric(txt))
+	amounts[k]&nbsp;&lt;&lt;-&nbsp;NA
+	tkconfigure(donelabs[[k]],fg='gray')
+	count&nbsp;&lt;&lt;-&nbsp;count&nbsp;+&nbsp;1
+	if(count&nbsp;==&nbsp;bnkr)banker()
+	}
+&nbsp;&nbsp;&nbsp;&nbsp;}
+
+banker&nbsp;=&nbsp;function(){
+#&nbsp;&nbsp;if&nbsp;you&nbsp;have&nbsp;a&nbsp;command&nbsp;line&nbsp;program&nbsp;that&nbsp;can&nbsp;make&nbsp;a&nbsp;
+#&nbsp;&nbsp;phone&nbsp;sound&nbsp;effect,&nbsp;you&nbsp;can&nbsp;invoke&nbsp;it&nbsp;here&nbsp;using&nbsp;the&nbsp;
+#&nbsp;&nbsp;system()&nbsp;command
+&nbsp;&nbsp;&nbsp;&nbsp;count&nbsp;&lt;&lt;-&nbsp;0
+&nbsp;&nbsp;&nbsp;&nbsp;mm&nbsp;=&nbsp;mean(amounts,na.rm=TRUE)
+&nbsp;&nbsp;&nbsp;&nbsp;more&nbsp;=&nbsp;runif(1,-.5,.5)
+&nbsp;&nbsp;&nbsp;&nbsp;mm&nbsp;=&nbsp;(mm&nbsp;+&nbsp;more&nbsp;*&nbsp;mm)&nbsp;%/%&nbsp;1000&nbsp;*&nbsp;1000
+&nbsp;&nbsp;&nbsp;&nbsp;cat(mm,'\n')
+&nbsp;&nbsp;&nbsp;&nbsp;but&nbsp;=&nbsp;tkbutton(bankfrm,command=bank,text=paste(mm))
+&nbsp;&nbsp;&nbsp;&nbsp;tkpack(bankfrm,but,side='left')
+&nbsp;&nbsp;&nbsp;&nbsp;tkcmd('update')
+&nbsp;&nbsp;&nbsp;&nbsp;bnkr&nbsp;&lt;&lt;-&nbsp;ifelse(bnkr&nbsp;==&nbsp;5,4,ifelse(bnkr&nbsp;==&nbsp;4,3,1))
+}
+
+
+bank&nbsp;=&nbsp;function(){
+&nbsp;&nbsp;&nbsp;&nbsp;tkconfigure(choice,state='active',activeforeground='red')
+&nbsp;&nbsp;&nbsp;&nbsp;tkpack(tklabel(bankfrm,text='Accepted!'))
+&nbsp;&nbsp;&nbsp;&nbsp;count&nbsp;&lt;&lt;-&nbsp;-100
+}
+
+amounts&nbsp;=&nbsp;c(.01,1,2,5,10,20,50,100,200,500,750,1000,2000,4000,5000,7500,10000,20000,50000,75000,100000,250000,500000,750000,1000000)
+
+rand&nbsp;=&nbsp;sample(1:25)
+case&nbsp;=&nbsp;amounts[rand]
+
+bnkr&nbsp;=&nbsp;5
+count&nbsp;=&nbsp;0
+
+base&nbsp;=&nbsp;tktoplevel()
+tkwm.title(base,'Deal')
+mainfrm&nbsp;=&nbsp;tkframe(base)
+
+donefrm&nbsp;=&nbsp;tkframe(mainfrm,relief='groove',borderwidth=2,padx=4)
+
+rowfrms&nbsp;=&nbsp;list()
+donelabs&nbsp;=&nbsp;list()
+choice&nbsp;=&nbsp;NULL
+k&nbsp;=&nbsp;1
+for(i&nbsp;in&nbsp;1:5){
+&nbsp;&nbsp;&nbsp;rowfrms[[i]]&nbsp;=&nbsp;tkframe(donefrm)
+&nbsp;&nbsp;&nbsp;for(j&nbsp;in&nbsp;1:5){
+	donelabs[[k]]&nbsp;=&nbsp;tklabel(rowfrms[[i]],text=amounts[k],width=10,padx=3,pady=3)
+	tkpack(rowfrms[[i]],donelabs[[k]],side='left')
+	k&nbsp;=&nbsp;k&nbsp;+&nbsp;1
+	}
+&nbsp;&nbsp;&nbsp;tkpack(rowfrms[[i]],side='top')
+&nbsp;&nbsp;&nbsp;}
+
+tkpack(donefrm,&nbsp;side='left')
+
+caseframe&nbsp;=&nbsp;tkframe(mainfrm)
+crowfrms&nbsp;=&nbsp;list()
+casebuts&nbsp;=&nbsp;list()
+k&nbsp;=&nbsp;1
+for(i&nbsp;in&nbsp;1:5){
+&nbsp;&nbsp;&nbsp;&nbsp;crowfrms[[i]]&nbsp;=&nbsp;tkframe(caseframe)
+&nbsp;&nbsp;&nbsp;&nbsp;for(j&nbsp;in&nbsp;1:5){
+	casebuts[[k]]&nbsp;=&nbsp;tkbutton(crowfrms[[i]],text=paste(k),width=10,padx=3,pady=3)
+	tkconfigure(casebuts[[k]],command=mk(casebuts[[k]],case[k]))
+	tkpack(crowfrms[[i]],casebuts[[k]],side='left')
+	k&nbsp;=&nbsp;k&nbsp;+&nbsp;1
+	}
+&nbsp;&nbsp;&nbsp;&nbsp;tkpack(crowfrms[[i]],side='top')
+&nbsp;&nbsp;&nbsp;}
+
+tkpack(caseframe,side='left')
+
+tkpack(mainfrm)
+
+bankfrm&nbsp;=&nbsp;tkframe(base)
+tkpack(bankfrm,side='bottom')
+
+</pre>
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc2">
+2</a>&nbsp;&nbsp;What can you learn from the program?</h2>
+This program illustrates the use of the <tt>tkconfigure</tt> program, as
+the text and color of the buttons and the display keeping track of the 
+amounts are changing at each stage of the game.  It's also a nice illustration
+of how to "remember" values as interaction with the GUI progresses.  Notice
+how the variables <tt>count</tt>, <tt>bnkr</tt>, and <tt>choice</tt> are 
+updated or modified in the callback functions using the <tt>&lt;&lt;-</tt> assignment
+operator.  This insures that the values will persist after the function call
+ends.
+
+<div class="p"><!----></div>
+Perhaps the most useful feature of this program has to do with the callback
+functions for the buttons.  Each button is associated with a number and a 
+dollar amount, and when the buttons are pressed, the action that takes place
+depends on which number and dollar amount the button represents.  However
+callback functions are called without arguments.  So how can the buttons 
+"know" what dollar amount they represent?
+
+<div class="p"><!----></div>
+The answer is a feature in R which is found in many languages, known as a 
+closure.  
+Notice the line which assigns the callback to the buttons that represent the 
+cases:
+
+<pre>
+tkconfigure(casebuts[[k]],command=mk(casebuts[[k]],case[k]))
+
+</pre>
+ The function to be used as a callback is returned by the <tt>mk</tt>
+function.  If you examine the function, you'll note that the first step is 
+to copy the arguments passed to it (in this case the variable representing the
+button and the amount of money in the "case") into local variables.  The way
+a closure works is that when a function is created in an evironment that 
+contains local variables, any reference to these local variables is resolved 
+with the value the variable had when the function was created.  That means that
+each time the <tt>mk</tt> function is called, it returns a function where the
+values of the button and the amount of money are set to the ones passed to the
+function at the time it was created.  Thus, when the button is pressed, the 
+callback function "knows" which button it was, and what amount it represented.
+
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On 19 Apr 2006, 13:42.</small>
+</html>

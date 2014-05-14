@@ -1,0 +1,320 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> Plotting</title>
+ 
+<h1 align="center">Plotting </h1>
+
+
+
+ <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;More on Plotting</h2>
+We've seen the usage of some basic graphics functions in previous
+lectures, but there are still a few points that should be covered before
+we study more advanced graphics commands.   One issue has to do with
+multiple lines on a plot.  In addition to the high-level <tt>plot</tt> command,
+R provides the <tt>points</tt> and <tt>lines</tt> functions, which can
+add new data to a plot.   Consider the nationwide Community Health Data,
+available at the website <a href="http://communityhealth.hhs.gov">http://communityhealth.hhs.gov</a>.  The data is available in a zip file, which contains a number
+of CSV files containing information recorded for each county in the USA.
+One such file, containing information about various risk factors and access to
+health care in the counties can be found on the class website:<a href="http://www.stat.berkeley.edu/classes/s133/data/RISKFACTORSANDACCESSTOCARE.csv">http://www.stat.berkeley.edu/classes/s133/data/RISKFACTORSANDACCESSTOCARE.csv</a>.  First, we'll read in the data, and look at the first few records:
+
+<pre>
+&#62;&nbsp;risk&nbsp;=&nbsp;read.csv('http://www.stat.berkeley.edu/classes/s133/data/RISKFACTORSANDACCESSTOCARE.csv')
+&#62;&nbsp;head(risk)
+&nbsp;&nbsp;State_FIPS_Code&nbsp;County_FIPS_Code&nbsp;CHSI_County_Name&nbsp;CHSI_State_Name
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Autauga&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Alabama
+2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Baldwin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Alabama
+3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Barbour&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Alabama
+4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Bibb&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Alabama
+5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;9&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Blount&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Alabama
+6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;11&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Bullock&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Alabama
+&nbsp;&nbsp;CHSI_State_Abbr&nbsp;Strata_ID_Number&nbsp;No_Exercise&nbsp;CI_Min_No_Exercise
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;29&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;27.8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;20.7
+2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;27.2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;23.2
+3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;51&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1
+4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;42&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1
+5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;28&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;33.5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;26.3
+6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;75&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1
+&nbsp;&nbsp;CI_Max_No_Exercise&nbsp;Few_Fruit_Veg&nbsp;CI_Min_Fruit_Veg&nbsp;CI_Max_Fruit_Veg&nbsp;Obesity
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;34.9&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;78.6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;69.4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;87.8&nbsp;&nbsp;&nbsp;&nbsp;24.5
+2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;31.2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;76.2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;71.2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;81.3&nbsp;&nbsp;&nbsp;&nbsp;23.6
+3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1&nbsp;&nbsp;&nbsp;&nbsp;25.6
+4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;86.6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;77.8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;95.4&nbsp;-1111.1
+5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;40.6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;74.6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;66.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;83.0&nbsp;&nbsp;&nbsp;&nbsp;24.2
+6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1&nbsp;-1111.1
+&nbsp;&nbsp;CI_Min_Obesity&nbsp;CI_Max_Obesity&nbsp;High_Blood_Pres&nbsp;CI_Min_High_Blood_Pres
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;17.3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;31.7&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;29.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;19.2
+2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;19.5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;27.6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;30.5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;24.5
+3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;16.2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;35.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1
+4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1
+5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;17.2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;31.2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1
+6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1
+&nbsp;&nbsp;CI_Max_High_Blood_Pres&nbsp;&nbsp;Smoker&nbsp;CI_Min_Smoker&nbsp;CI_Max_Smoker&nbsp;Diabetes
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;39.0&nbsp;&nbsp;&nbsp;&nbsp;26.6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;19.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;34.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;14.2
+2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;36.6&nbsp;&nbsp;&nbsp;&nbsp;24.6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;20.3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;28.8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7.2
+3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1&nbsp;&nbsp;&nbsp;&nbsp;17.7&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;10.2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;25.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6.6
+4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1&nbsp;-1111.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;13.1
+5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1&nbsp;&nbsp;&nbsp;&nbsp;23.6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;16.7&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;30.4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8.4
+6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1&nbsp;-1111.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1&nbsp;&nbsp;-1111.1
+&nbsp;&nbsp;CI_Min_Diabetes&nbsp;CI_Max_Diabetes&nbsp;Uninsured&nbsp;Elderly_Medicare&nbsp;Disabled_Medicare
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;9.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;19.3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5690&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4762&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1209
+2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5.2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;9.3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;19798&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;22635&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3839
+3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;11.3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5126&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3288&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1092
+4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4.7&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;21.5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3315&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2390&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;974
+5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4.4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;12.4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8131&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5019&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1300
+6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1111.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2295&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1433&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;504
+&nbsp;&nbsp;Prim_Care_Phys_Rate&nbsp;Dentist_Rate&nbsp;Community_Health_Center_Ind&nbsp;HPSA_Ind
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;45.3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;22.6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2
+2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;67.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;30.8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2
+3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;45.8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;24.6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2
+4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;41.8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;18.6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1
+5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;16.2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;10.8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1
+6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;54.3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;18.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1
+
+</pre>
+ It's clear that the value <tt>-1111.1</tt> is being used for 
+missing values, and we'll need to fix that before we work with the data:
+
+<pre>
+&#62;&nbsp;risk[risk&nbsp;==&nbsp;-1111.1]&nbsp;=&nbsp;NA
+
+</pre>
+ Suppose we want to investigate the relationship between Diabetes and
+Smoking in each of the counties in California.  We could create a data set
+with only California using the <tt>subset</tt> command, and then plot the 
+two variables of interest:
+
+<pre>
+&#62;&nbsp;risk.ca&nbsp;=&nbsp;subset(risk,&nbsp;CHSI_State_Name&nbsp;==&nbsp;'California')
+&#62;&nbsp;plot(risk.ca$Smoker,risk.ca$Diabetes)
+
+</pre>
+ Here's what the plot looks like:
+
+<div class="p"><!----></div>
+<img src="cadiasmoke.png">
+
+<div class="p"><!----></div>
+Now let's say that we wanted to examine the relationship between smoking and
+diabetes for some other state, say Alabama.  We can extract the Alabama
+data using subset, and then use the <tt>points</tt> command to add that 
+data to the existing plot.  (Unlike <tt>plot</tt>, <tt>points</tt> doesn't
+produce a new plot, it adds to the currently active plot.)
+
+<pre>
+&#62;&nbsp;risk.al&nbsp;=&nbsp;subset(risk,&nbsp;CHSI_State_Name&nbsp;==&nbsp;'Alabama')
+&#62;&nbsp;points(risk.al$Smoker,risk.al$Diabetes,col='red')
+
+</pre>
+The plot now looks like this:
+
+<div class="p"><!----></div>
+<img src="ca+aldiasmoke.png">
+
+<div class="p"><!----></div>
+Clearly there's a problem: some of the Alabama points are off the scale.
+This demonstrates that when you wish to plot multiple sets of points on the 
+same graph that you have to make sure that the axes are big enough to accomodate
+all of the data.  One very easy way to do this is to call the <tt>plot</tt> 
+function with the minimums and maximums of all the data using <tt>type='n'</tt> as one of the arguments.  This tells R to set up the axes, but not to 
+actually plot anything.  So a better way to plot the two sets of points would
+be as follows:
+
+<pre>
+&#62;&nbsp;plot(range(c(risk.ca$Smoker,risk.al$Smoker),na.rm=TRUE),
++&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;range(c(risk.ca$Diabetes,risk.al$Diabetes),na.rm=TRUE),
++&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;type='n',xlab='Smoking&nbsp;Rate',ylab='Diabetes&nbsp;Rate')
+&#62;&nbsp;points(risk.ca$Smoker,risk.ca$Diabetes)
+&#62;&nbsp;points(risk.al$Smoker,risk.al$Diabetes,col='red')
+&#62;&nbsp;legend('topright',c('California','Alabama'),col=c('black','red'),pch=1)
+&#62;&nbsp;title('Diabetes&nbsp;Rate&nbsp;vs.&nbsp;Smoking&nbsp;by&nbsp;County')
+
+</pre>
+ The completed plot looks like this:
+
+<div class="p"><!----></div>
+<img src="ca+alfinal.png">
+
+<div class="p"><!----></div>
+To add a line to a plot, the <tt>lines</tt> function can be used in 
+place of the <tt>points</tt> function.   The built-in data set 
+<tt>Puromycin</tt> provides data on concentration and reaction rate of 
+Puromycin on two types of cells, treated and untreated.   
+You can learn more
+about R's builtin data sets by using the <tt>data()</tt> function, 
+and then using the usual help facility within R.
+Since this is a small data set (only 23 rows), we can examine it 
+directly:
+
+<pre>
+&#62;&nbsp;Puromycin
+&nbsp;&nbsp;&nbsp;conc&nbsp;rate&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;state
+1&nbsp;&nbsp;0.02&nbsp;&nbsp;&nbsp;76&nbsp;&nbsp;&nbsp;treated
+2&nbsp;&nbsp;0.02&nbsp;&nbsp;&nbsp;47&nbsp;&nbsp;&nbsp;treated
+3&nbsp;&nbsp;0.06&nbsp;&nbsp;&nbsp;97&nbsp;&nbsp;&nbsp;treated
+4&nbsp;&nbsp;0.06&nbsp;&nbsp;107&nbsp;&nbsp;&nbsp;treated
+5&nbsp;&nbsp;0.11&nbsp;&nbsp;123&nbsp;&nbsp;&nbsp;treated
+6&nbsp;&nbsp;0.11&nbsp;&nbsp;139&nbsp;&nbsp;&nbsp;treated
+7&nbsp;&nbsp;0.22&nbsp;&nbsp;159&nbsp;&nbsp;&nbsp;treated
+8&nbsp;&nbsp;0.22&nbsp;&nbsp;152&nbsp;&nbsp;&nbsp;treated
+9&nbsp;&nbsp;0.56&nbsp;&nbsp;191&nbsp;&nbsp;&nbsp;treated
+10&nbsp;0.56&nbsp;&nbsp;201&nbsp;&nbsp;&nbsp;treated
+11&nbsp;1.10&nbsp;&nbsp;207&nbsp;&nbsp;&nbsp;treated
+12&nbsp;1.10&nbsp;&nbsp;200&nbsp;&nbsp;&nbsp;treated
+13&nbsp;0.02&nbsp;&nbsp;&nbsp;67&nbsp;untreated
+14&nbsp;0.02&nbsp;&nbsp;&nbsp;51&nbsp;untreated
+15&nbsp;0.06&nbsp;&nbsp;&nbsp;84&nbsp;untreated
+16&nbsp;0.06&nbsp;&nbsp;&nbsp;86&nbsp;untreated
+17&nbsp;0.11&nbsp;&nbsp;&nbsp;98&nbsp;untreated
+18&nbsp;0.11&nbsp;&nbsp;115&nbsp;untreated
+19&nbsp;0.22&nbsp;&nbsp;131&nbsp;untreated
+20&nbsp;0.22&nbsp;&nbsp;124&nbsp;untreated
+21&nbsp;0.56&nbsp;&nbsp;144&nbsp;untreated
+22&nbsp;0.56&nbsp;&nbsp;158&nbsp;untreated
+23&nbsp;1.10&nbsp;&nbsp;160&nbsp;untreated
+
+</pre>
+ Since there are two observations at each concentration, we
+can use the <tt>aggregate</tt> function to calculate the mean before
+plotting the data:
+
+<pre>
+&#62;&nbsp;Puro&nbsp;=&nbsp;aggregate(list(rate=Puromycin$rate),list(conc=Puromycin$conc,state=Puromycin$state),mean)
+
+</pre>
+ By putting the <tt>rate</tt> variable in a named list, I insure that
+the column with the mean will be called "<tt>rate</tt>".  Alternatively, I
+could rename the column later:
+
+<pre>
+&#62;&nbsp;Puro&nbsp;=&nbsp;aggregate(Puromycin$rate,list(conc=Puromycin$conc,state=Puromycin$state),mean)
+&#62;&nbsp;names(Puro)[3]&nbsp;=&nbsp;'rate'
+
+</pre>
+Now we can create two data frames, one for the treated cells, and one for
+the untreated ones:
+
+<pre>
+&#62;&nbsp;Puro.treated&nbsp;=&nbsp;subset(Puro,state=='treated')
+&#62;&nbsp;Puro.untreated&nbsp;=&nbsp;subset(Puro,state=='untreated')
+
+</pre>
+ Examination of the data shows that the rate for the treated
+cells are higher than the untreated cells.  Thus, instead of creating an 
+empty plot as in the previous example,  I'll just plot the line for the 
+treated cells first:
+
+<pre>
+&#62;&nbsp;plot(Puro.treated$conc,Puro.treated$rate,xlab='Conc',ylab='Rate',main='Rate&nbsp;vs.&nbsp;Concentration&nbsp;for&nbsp;Puromycin',type='l')
+&#62;&nbsp;lines(Puro.untreated$conc,Puro.untreated$rate,col='blue')
+&#62;&nbsp;legend('bottomright',c('Treated','Untreated'),col=c('black','blue'),lty=1)
+
+</pre>
+ The plot appears below:
+
+<div class="p"><!----></div>
+<img src="puro.png">
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc2">
+2</a>&nbsp;&nbsp;Multiple Plots on a Page</h2>
+The <tt>mfrow</tt> or <tt>mfcol</tt> arguments to the <tt>par</tt> function
+allow you to divide the plotting page into a grid, to accomodate multiple
+plots on a single page.  The layout of the plot is determined by  a vector
+of length 2, specifying the number of rows and columns in the grid.  The 
+difference between <tt>mfrow</tt> and <tt>mfcol</tt> concerns the order in
+which the plots are drawn.  When using <tt>mfrow</tt>, plots are drawn 
+across the rows, while <tt>mfcol</tt> draws the plot down the columns.
+
+<div class="p"><!----></div>
+As an example, consider the builtin <tt>airquality</tt> data set, which
+contains various air quality measures for a five month period in New York.
+We can get an idea of what the data is like by using the <tt>summary</tt>
+function:
+
+<pre>
+&#62;&nbsp;summary(airquality)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ozone&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Solar.R&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Wind&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Temp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;Min.&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;1.00&nbsp;&nbsp;&nbsp;Min.&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;7.0&nbsp;&nbsp;&nbsp;Min.&nbsp;&nbsp;&nbsp;:&nbsp;1.700&nbsp;&nbsp;&nbsp;Min.&nbsp;&nbsp;&nbsp;:56.00&nbsp;&nbsp;
+&nbsp;1st&nbsp;Qu.:&nbsp;18.00&nbsp;&nbsp;&nbsp;1st&nbsp;Qu.:115.8&nbsp;&nbsp;&nbsp;1st&nbsp;Qu.:&nbsp;7.400&nbsp;&nbsp;&nbsp;1st&nbsp;Qu.:72.00&nbsp;&nbsp;
+&nbsp;Median&nbsp;:&nbsp;31.50&nbsp;&nbsp;&nbsp;Median&nbsp;:205.0&nbsp;&nbsp;&nbsp;Median&nbsp;:&nbsp;9.700&nbsp;&nbsp;&nbsp;Median&nbsp;:79.00&nbsp;&nbsp;
+&nbsp;Mean&nbsp;&nbsp;&nbsp;:&nbsp;42.13&nbsp;&nbsp;&nbsp;Mean&nbsp;&nbsp;&nbsp;:185.9&nbsp;&nbsp;&nbsp;Mean&nbsp;&nbsp;&nbsp;:&nbsp;9.958&nbsp;&nbsp;&nbsp;Mean&nbsp;&nbsp;&nbsp;:77.88&nbsp;&nbsp;
+&nbsp;3rd&nbsp;Qu.:&nbsp;63.25&nbsp;&nbsp;&nbsp;3rd&nbsp;Qu.:258.8&nbsp;&nbsp;&nbsp;3rd&nbsp;Qu.:11.500&nbsp;&nbsp;&nbsp;3rd&nbsp;Qu.:85.00&nbsp;&nbsp;
+&nbsp;Max.&nbsp;&nbsp;&nbsp;:168.00&nbsp;&nbsp;&nbsp;Max.&nbsp;&nbsp;&nbsp;:334.0&nbsp;&nbsp;&nbsp;Max.&nbsp;&nbsp;&nbsp;:20.700&nbsp;&nbsp;&nbsp;Max.&nbsp;&nbsp;&nbsp;:97.00&nbsp;&nbsp;
+&nbsp;NA's&nbsp;&nbsp;&nbsp;:&nbsp;37.00&nbsp;&nbsp;&nbsp;NA's&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;7.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Month&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Day&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;Min.&nbsp;&nbsp;&nbsp;:5.000&nbsp;&nbsp;&nbsp;Min.&nbsp;&nbsp;&nbsp;:&nbsp;1.00&nbsp;&nbsp;
+&nbsp;1st&nbsp;Qu.:6.000&nbsp;&nbsp;&nbsp;1st&nbsp;Qu.:&nbsp;8.00&nbsp;&nbsp;
+&nbsp;Median&nbsp;:7.000&nbsp;&nbsp;&nbsp;Median&nbsp;:16.00&nbsp;&nbsp;
+&nbsp;Mean&nbsp;&nbsp;&nbsp;:6.993&nbsp;&nbsp;&nbsp;Mean&nbsp;&nbsp;&nbsp;:15.80&nbsp;&nbsp;
+&nbsp;3rd&nbsp;Qu.:8.000&nbsp;&nbsp;&nbsp;3rd&nbsp;Qu.:23.00&nbsp;&nbsp;
+&nbsp;Max.&nbsp;&nbsp;&nbsp;:9.000&nbsp;&nbsp;&nbsp;Max.&nbsp;&nbsp;&nbsp;:31.00&nbsp;&nbsp;
+
+</pre>
+  Suppose we want to plot histograms of each of the first 
+four variables, side by side with a plot of the variable over time.
+The first step is to convert the <tt>Month</tt> and <tt>Date</tt> variables
+into R <tt>Date</tt> variables:
+
+<pre>
+&#62;&nbsp;airquality$date&nbsp;=&nbsp;as.Date(ISOdate(1973,airquality$Month,airquality$Day))
+
+</pre>
+ Rather than typing in the plotting commans repeatedly, we 
+can write a function to make the plots for each variable:
+
+<pre>
+twoplot&nbsp;=&nbsp;function(var){
+&nbsp;&nbsp;plot(density(airquality[,var],na.rm=TRUE),main=paste('Density&nbsp;of',var))
+&nbsp;&nbsp;plot(airquality$date,airquality[,var],type='l',main=paste(var,'vs.&nbsp;time'),ylab=var)
+}
+
+</pre>
+ Since we'll be plotting the first four variables, we'll want
+a 4x2 grid, and we'll want to plot by rows.  Thus, we issue the following
+command:
+
+<pre>
+&#62;&nbsp;par(mfrow=c(4,2))
+
+</pre>
+ We can use sapply to call our <tt>twoplot</tt> function for
+each of the variables:
+
+<pre>
+&#62;&nbsp;sapply(names(airquality)[1:4],twoplot)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ozone&nbsp;Solar.R&nbsp;Wind&nbsp;Temp
+[1,]&nbsp;&nbsp;1216&nbsp;&nbsp;&nbsp;&nbsp;1216&nbsp;1216&nbsp;1216
+[2,]&nbsp;&nbsp;1247&nbsp;&nbsp;&nbsp;&nbsp;1247&nbsp;1247&nbsp;1247
+[3,]&nbsp;&nbsp;1277&nbsp;&nbsp;&nbsp;&nbsp;1277&nbsp;1277&nbsp;1277
+[4,]&nbsp;&nbsp;1308&nbsp;&nbsp;&nbsp;&nbsp;1308&nbsp;1308&nbsp;1308
+[5,]&nbsp;&nbsp;1339&nbsp;&nbsp;&nbsp;&nbsp;1339&nbsp;1339&nbsp;1339
+[6,]&nbsp;&nbsp;1369&nbsp;&nbsp;&nbsp;&nbsp;1369&nbsp;1369&nbsp;1369
+
+</pre>
+ Here's the plot:
+
+<div class="p"><!----></div>
+<img src="airq.png">
+
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On 28 Feb 2011, 10:52.</small>
+</html>

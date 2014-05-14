@@ -1,0 +1,543 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> Dates, Summaries and Functions</title>
+ 
+<h1 align="center">Dates, Summaries and Functions </h1>
+
+
+
+ <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;Using Dates in R</h2>
+Dates on computers have been the source of much anxiety, especially at the 
+turn of the century, when people felt that many computers wouldn't understand
+the new millenium.  These fears were based on the fact that certain programs
+would store the value of the year in just 2 digits, causing great confusion
+when the century "turned over".  In R, dates are stored as they have traditionally
+been stored on Unix computers - as the number of days from a reference date,
+in this case January 1, 1970, with earlier days being represented by negative
+numbers.  When dates are stored this way, they can be manipulated like any other
+numeric variable (as far as it makes sense).  In particular, you can compare or
+sort dates, take the difference between two dates, or add an increment of days,
+weeks, months or years to a date.   The class of such dates is <tt>Date</tt> and
+their mode is numeric. Dates are created with <tt>as.Date</tt>, and formatted for
+printing with <tt>format</tt> (which will recognize dates and do the right 
+thing.)  
+
+<div class="p"><!----></div>
+Because dates can be written in so many different formats, R uses a 
+standard way of providing flexibility when reading or displaying dates.  A 
+set of format codes, some of which are shown in the table below, is used to 
+describe what
+the input or output form of the date looks like.  The default format for 
+<tt>as.Date</tt> is a four digit year, followed by a month, then a day, separated
+by either dashes or slashes.  So conversions like this happen automatically:
+
+<pre>
+&#62;&nbsp;as.Date('1915-6-16')
+[1]&nbsp;"1915-06-16"
+&#62;&nbsp;as.Date('1890/2/17')
+[1]&nbsp;"1890-02-17"
+
+</pre>
+
+<div class="p"><!----></div>
+The formatting codes are as follows:
+
+<div class="p"><!----></div>
+
+<div class="p"><!----></div>
+<a name="tth_tAb1">
+</a> 
+<table border="1">
+<tr><td>Code</td><td>Value</td></tr>
+<tr><td><tt>%d</tt></td><td>Day of the month (decimal number)</td></tr>
+<tr><td><tt>%m</tt></td><td>Month (decimal number)</td></tr>
+<tr><td><tt>%b</tt></td><td>Month (abbreviated)</td></tr>
+<tr><td><tt>%B</tt></td><td>Month (full name)</td></tr>
+<tr><td><tt>%y</tt></td><td>Year (2 digit)</td></tr>
+<tr><td><tt>%Y</tt></td><td>Year (4 digit)</td></tr></table>
+
+
+<div class="p"><!----></div>
+ (For a complete list of the format codes, see the R help page for
+the <tt>strptime</tt> function.)
+
+<div class="p"><!----></div>
+As an example of reading dates, the URL <a href="http://www.stat.berkeley.edu/classes/s133/data/movies.txt">http://www.stat.berkeley.edu/classes/s133/data/movies.txt</a> 
+contains the names, release dates, and box office earnings for around 700 of the 
+most popular movies of all time.  The first few lines of the input file look like
+this:
+
+<pre>
+rank|name|box|date
+1|Avatar|$759.563|December&nbsp;18,&nbsp;2009
+2|Titanic|$600.788|December&nbsp;19,&nbsp;1997
+3|The&nbsp;Dark&nbsp;Knight|$533.184|July&nbsp;18,&nbsp;2008
+
+</pre>
+ As can be seen, the fields are separated by vertical bars, so 
+we can use <tt>read.delim</tt> with the appropriate <tt>sep=</tt> argument.
+
+<pre>
+&#62;&nbsp;movies&nbsp;=&nbsp;read.delim('http://www.stat.berkeley.edu/classes/s133/data/movies.txt',
++&nbsp;sep='|',stringsAsFactors=FALSE)
+&#62;&nbsp;head(movies)
+&nbsp;&nbsp;rank&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;box&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;date
+1&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Avatar&nbsp;$759.563&nbsp;December&nbsp;18,&nbsp;2009
+2&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Titanic&nbsp;$600.788&nbsp;December&nbsp;19,&nbsp;1997
+3&nbsp;&nbsp;&nbsp;&nbsp;3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;Dark&nbsp;Knight&nbsp;$533.184&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;July&nbsp;18,&nbsp;2008
+4&nbsp;&nbsp;&nbsp;&nbsp;4&nbsp;Star&nbsp;Wars:&nbsp;Episode&nbsp;IV&nbsp;-&nbsp;A&nbsp;New&nbsp;Hope&nbsp;$460.998&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;May&nbsp;25,&nbsp;1977
+5&nbsp;&nbsp;&nbsp;&nbsp;5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Shrek&nbsp;2&nbsp;$437.212&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;May&nbsp;19,&nbsp;2004
+6&nbsp;&nbsp;&nbsp;&nbsp;6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E.T.&nbsp;the&nbsp;Extra-Terrestrial&nbsp;$434.975&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;June&nbsp;11,&nbsp;1982
+
+</pre>
+The first step in using a data frame is making sure that we know what we're 
+dealing with.  A good first step is to use the <tt>sapply</tt> function to look
+at the mode of each of the variables:
+
+<pre>
+&#62;&nbsp;sapply(movies,mode)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rank&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;box&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;date
+&nbsp;&nbsp;"numeric"&nbsp;"character"&nbsp;"character"&nbsp;"character"
+
+</pre>
+ Unfortunately, the box office receipts (<tt>box</tt>) are character, not
+numeric.  That's because R doesn't recognize a dollar sign (<tt>$</tt>) as being part
+of a number.  (R has the same problem with commas.) We can remove the dollar sign with the <tt>sub</tt> function, and 
+then use <tt>as.numeric</tt> to make the result into a number:
+
+<pre>
+&#62;&nbsp;movies$box&nbsp;=&nbsp;as.numeric(sub('\\$','',movies$box))
+
+</pre>
+To convert the character <tt>date</tt> values to R <tt>Date</tt> objects, we can
+use <tt>as.Date</tt> with the appropriate format: 
+in this case it's the month name followed
+by the day of the month, a comma and the four digit year.  Consulting the table 
+of format codes, this translates to <tt>'%B %d, %Y'</tt>:
+
+<pre>
+&#62;&nbsp;movies$date&nbsp;=&nbsp;as.Date(movies$date,'%B&nbsp;%d,&nbsp;%Y')
+&#62;&nbsp;head(movies$date)
+[1]&nbsp;"2009-12-18"&nbsp;"1997-12-19"&nbsp;"2008-07-18"&nbsp;"1977-05-25"&nbsp;"2004-05-19"
+[6]&nbsp;"1982-06-11"
+
+</pre>
+The format that R now uses to print the dates is the standard <tt>Date</tt> format,
+letting us know that we've done the conversion correctly.  (If we wanted to recover
+the original format, we could use the <tt>format</tt> function with a format similar
+to the one we used to read the data.)
+
+<div class="p"><!----></div>
+Now we can perform calculations using the date.  For example, to see the difference
+in time between the release of Titanic and Avatar (2 very popular movies directed
+by James Cameron), we could use:
+
+<pre>
+&#62;&nbsp;movies$date[movies$name&nbsp;==&nbsp;'Avatar']&nbsp;-&nbsp;movies$date[movies$name&nbsp;==&nbsp;'Titanic']
+Time&nbsp;difference&nbsp;of&nbsp;4382&nbsp;days
+
+</pre>
+ Even though the result prints out as a character string, it's actually
+just a number which can be used any way a number could be used.
+
+<div class="p"><!----></div>
+Now suppose we want to see the time difference in years.  To convert days to 
+years, we can divide by 365.25. (The .25 tries to account for leap years.):
+
+<pre>
+&#62;&nbsp;diff&nbsp;=&nbsp;movies$date[movies$name&nbsp;==&nbsp;'Avatar']&nbsp;-&nbsp;movies$date[movies$name&nbsp;==&nbsp;'Titanic']
+&#62;&nbsp;diff&nbsp;/&nbsp;365.25
+Time&nbsp;difference&nbsp;of&nbsp;11.99726&nbsp;days
+
+</pre>
+ We could either adjust the <tt>units</tt> attribute of this value or 
+use <tt>as.numeric</tt> to convert it to an ordinary number.  (In R, an attribute
+is additional information stored along with a variable.)
+
+<pre>
+&#62;&nbsp;diff&nbsp;=&nbsp;diff&nbsp;/&nbsp;365.25
+&#62;&nbsp;attr(diff,'units')&nbsp;=&nbsp;'years'
+&#62;&nbsp;diff
+Time&nbsp;difference&nbsp;of&nbsp;11.99726&nbsp;years
+&#62;&nbsp;as.numeric(diff)
+[1]&nbsp;11.99726
+
+</pre>
+ Either way, it will be treated as an ordinary number when used in a calculation.
+
+<div class="p"><!----></div>
+The <tt>Sys.Date</tt> function can be used to return the current date, so R can calculate
+the time until any date you choose.  For example, the midterm for this class is March 2, 2011:
+
+<pre>
+&#62;&nbsp;as.Date('2011-03-02')&nbsp;-&nbsp;Sys.Date()
+Time&nbsp;difference&nbsp;of&nbsp;28&nbsp;days
+
+</pre>
+
+<div class="p"><!----></div>
+Another way to create dates is with the <tt>ISOdate</tt> function.  This function
+accepts three numbers representing the year, month and day of the date that is 
+desired.  So to reproduce the midterm date we could use
+
+<pre>
+&#62;&nbsp;midterm&nbsp;=&nbsp;ISOdate(2011,3,2)
+&#62;&nbsp;midterm
+[1]&nbsp;"2011-03-02&nbsp;12:00:00&nbsp;GMT"
+
+</pre>
+ Notice that, along with the date, a time is printed.  That's because
+<tt>ISOdate</tt> returns an object of class <tt>POSIXt</tt>, not <tt>Date</tt>.
+To make a date like this work properly with objects of class <tt>Date</tt>, you
+can use the <tt>as.Date</tt> function.
+
+<div class="p"><!----></div>
+Once we've created an R <tt>Date</tt> value, we can use the functions <tt>months</tt>,
+<tt>weekdays</tt> or <tt>quarters</tt> to extract those parts of the date.  For example,
+to see which day of the week these very popular movies were released, we could use
+the <tt>table</tt> function combined with <tt>weekdays</tt>:
+
+<pre>&nbsp;
+&#62;&nbsp;table(weekdays(movies$date))
+&nbsp;&nbsp;&nbsp;Friday&nbsp;&nbsp;&nbsp;&nbsp;Monday&nbsp;&nbsp;Saturday&nbsp;&nbsp;&nbsp;&nbsp;Sunday&nbsp;&nbsp;Thursday&nbsp;&nbsp;&nbsp;Tuesday&nbsp;Wednesday&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;753&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;10&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;11&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;39&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;22&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;164&nbsp;
+
+</pre>
+Notice that the ordering of the days is not what we'd normally expect.  This
+problem can be solved by creating a factor that has the levels in the
+correct order:
+
+<pre>
+&#62;&nbsp;movies$weekday&nbsp;=&nbsp;factor(weekdays(movies$date),
++&nbsp;&nbsp;&nbsp;&nbsp;levels&nbsp;=&nbsp;c('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'))
+
+</pre>
+Now we can use <tt>weekday</tt> to get a nicer table:
+
+<pre>
+&#62;&nbsp;table(movies$weekday)
+&nbsp;&nbsp;&nbsp;Monday&nbsp;&nbsp;&nbsp;Tuesday&nbsp;Wednesday&nbsp;&nbsp;Thursday&nbsp;&nbsp;&nbsp;&nbsp;Friday&nbsp;&nbsp;Saturday&nbsp;&nbsp;&nbsp;&nbsp;Sunday&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;10&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;22&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;164&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;39&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;753&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;11&nbsp;
+
+</pre>
+Similarly, if we wanted to graphically display a chart showing which month of
+the year the popular movies were released in, we could first create an
+ordered factor, then use the <tt>barplot</tt> function:
+
+<pre>
+&#62;&nbsp;movies$month&nbsp;=&nbsp;factor(months(movies$date),levels=c('January','February','March','April','May','June','July','August','September','October','November','December'))
+&#62;&nbsp;barplot(table(movies$month),main='Release&nbsp;Month&nbsp;for&nbsp;Top&nbsp;1000&nbsp;Movies')
+
+</pre>
+
+<div class="p"><!----></div>
+<img src="months.png">
+
+<div class="p"><!----></div>
+To do a similar thing with years, we'd have to create a new variable that represented
+the year using the <tt>format</tt> function.  For a four digit year the format 
+code is <tt>%Y</tt>, so we could make a table of the hit movies by year like this:
+
+<pre>
+&#62;&nbsp;table(format(movies$date,'%Y'))
+1938&nbsp;1939&nbsp;1940&nbsp;1942&nbsp;1946&nbsp;1950&nbsp;1953&nbsp;1955&nbsp;1956&nbsp;1959&nbsp;1961&nbsp;1963&nbsp;1964&nbsp;1965&nbsp;1967&nbsp;1968&nbsp;
+&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;3&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;
+1969&nbsp;1970&nbsp;1971&nbsp;1972&nbsp;1973&nbsp;1974&nbsp;1975&nbsp;1976&nbsp;1977&nbsp;1978&nbsp;1979&nbsp;1980&nbsp;1981&nbsp;1982&nbsp;1983&nbsp;1984&nbsp;
+&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;4&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;3&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;8&nbsp;&nbsp;&nbsp;&nbsp;3&nbsp;&nbsp;&nbsp;&nbsp;4&nbsp;&nbsp;&nbsp;&nbsp;4&nbsp;&nbsp;&nbsp;&nbsp;5&nbsp;&nbsp;&nbsp;12&nbsp;&nbsp;&nbsp;&nbsp;9&nbsp;&nbsp;&nbsp;&nbsp;7&nbsp;&nbsp;&nbsp;10&nbsp;&nbsp;&nbsp;12&nbsp;&nbsp;&nbsp;12&nbsp;
+1985&nbsp;1986&nbsp;1987&nbsp;1988&nbsp;1989&nbsp;1990&nbsp;1991&nbsp;1992&nbsp;1993&nbsp;1994&nbsp;1995&nbsp;1996&nbsp;1997&nbsp;1998&nbsp;1999&nbsp;2000&nbsp;
+&nbsp;&nbsp;10&nbsp;&nbsp;&nbsp;12&nbsp;&nbsp;&nbsp;13&nbsp;&nbsp;&nbsp;13&nbsp;&nbsp;&nbsp;23&nbsp;&nbsp;&nbsp;19&nbsp;&nbsp;&nbsp;21&nbsp;&nbsp;&nbsp;26&nbsp;&nbsp;&nbsp;19&nbsp;&nbsp;&nbsp;20&nbsp;&nbsp;&nbsp;32&nbsp;&nbsp;&nbsp;26&nbsp;&nbsp;&nbsp;29&nbsp;&nbsp;&nbsp;37&nbsp;&nbsp;&nbsp;41&nbsp;&nbsp;&nbsp;44&nbsp;
+2001&nbsp;2002&nbsp;2003&nbsp;2004&nbsp;2005&nbsp;2006&nbsp;2007&nbsp;2008&nbsp;2009&nbsp;2010&nbsp;
+&nbsp;&nbsp;43&nbsp;&nbsp;&nbsp;47&nbsp;&nbsp;&nbsp;53&nbsp;&nbsp;&nbsp;55&nbsp;&nbsp;&nbsp;48&nbsp;&nbsp;&nbsp;54&nbsp;&nbsp;&nbsp;43&nbsp;&nbsp;&nbsp;53&nbsp;&nbsp;&nbsp;57&nbsp;&nbsp;&nbsp;47&nbsp;
+
+</pre>
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc2">
+2</a>&nbsp;&nbsp;Data Summaries</h2>
+We've looked at a few graphical techniques for exploring data, and now we're going
+to turn to a numerical one.  Consider the question "Which day of the week has the 
+highest average box office for hit movies released on that day?".  As a first step
+in answering that question, it would be helpful to look at the mean box office
+receipts for each of the days.  If you look for a function to do that specific 
+task, you probably wouldn't find one, because R takes the more general approach of 
+providing a function that will allow you to calculate anything you want from vectors
+of values broken down by groups.  In fact, there are a variety of ways to do this.
+The one we're going to look at is called <tt>aggregate</tt>.   You pass <tt>aggregate</tt>
+a vector or data frame containing the variables you want to summarize, a list of 
+the groups to summarize by, and the function you'd like to use for your summaries.
+That way, a single function can perform many tasks, and, as we'll see when we
+learn to write functions, it even allows R to do things that the developers of 
+R never imagined.  For now, we'll stick to some built in functions, like 
+<tt>mean</tt>.  To find the means for the box office receipts for each day of the 
+week, we could use a call to aggregate like this:
+
+<pre>
+&#62;&nbsp;aggregate(movies$box,movies['weekday'],mean)
+&nbsp;&nbsp;&nbsp;&nbsp;weekday&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x
+1&nbsp;&nbsp;&nbsp;&nbsp;Monday&nbsp;148.04620
+2&nbsp;&nbsp;&nbsp;Tuesday&nbsp;110.42391
+3&nbsp;Wednesday&nbsp;139.50965
+4&nbsp;&nbsp;Thursday&nbsp;117.89700
+5&nbsp;&nbsp;&nbsp;&nbsp;Friday&nbsp;112.24642
+6&nbsp;&nbsp;Saturday&nbsp;&nbsp;91.18714
+7&nbsp;&nbsp;&nbsp;&nbsp;Sunday&nbsp;140.45618
+
+</pre>
+
+<div class="p"><!----></div>
+The same thing could be done to calculate other statistics, like <tt>median</tt>,
+<tt>min</tt>, <tt>max</tt>, or any statistic that returns a single scalar value
+for each group.  Another nice feature of <tt>aggregate</tt> is that it if the 
+first argument is a data frame, it will calculate the statistic  for each column
+of the data frame.  If we passed <tt>aggregate</tt> both the <tt>rank</tt> and
+<tt>box</tt>, we'd get two columns of summaries:
+
+<pre>
+&#62;&nbsp;aggregate(movies[,c('rank','box')],movies['weekday'],mean)
+&nbsp;&nbsp;&nbsp;&nbsp;weekday&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rank&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;box
+1&nbsp;&nbsp;&nbsp;&nbsp;Monday&nbsp;354.5000&nbsp;148.04620
+2&nbsp;&nbsp;&nbsp;Tuesday&nbsp;498.9545&nbsp;110.42391
+3&nbsp;Wednesday&nbsp;423.2561&nbsp;139.50965
+4&nbsp;&nbsp;Thursday&nbsp;493.7692&nbsp;117.89700
+5&nbsp;&nbsp;&nbsp;&nbsp;Friday&nbsp;521.7384&nbsp;112.24642
+6&nbsp;&nbsp;Saturday&nbsp;577.5714&nbsp;&nbsp;91.18714
+7&nbsp;&nbsp;&nbsp;&nbsp;Sunday&nbsp;338.1818&nbsp;140.45618
+
+</pre>
+
+<div class="p"><!----></div>
+To add a column of counts to the table, we can create a data frame from
+the <tt>table</tt> function, and merge it with the aggregated results:
+
+<div class="p"><!----></div>
+
+<pre>
+&#62;&nbsp;dat&nbsp;=&nbsp;&nbsp;aggregate(movies[,c('rank','box')],movies['weekday'],mean)
+&#62;&nbsp;cts&nbsp;=&nbsp;as.data.frame(table(movies$weekday))
+&#62;&nbsp;head(cts)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Var1&nbsp;Freq
+1&nbsp;&nbsp;&nbsp;&nbsp;Monday&nbsp;&nbsp;&nbsp;10
+2&nbsp;&nbsp;&nbsp;Tuesday&nbsp;&nbsp;&nbsp;22
+3&nbsp;Wednesday&nbsp;&nbsp;164
+4&nbsp;&nbsp;Thursday&nbsp;&nbsp;&nbsp;39
+5&nbsp;&nbsp;&nbsp;&nbsp;Friday&nbsp;&nbsp;753
+6&nbsp;&nbsp;Saturday&nbsp;&nbsp;&nbsp;&nbsp;7
+
+</pre>
+
+<div class="p"><!----></div>
+To make the merge simpler, we rename the first column of <tt>cts</tt> to 
+<tt>weekday</tt>.
+
+<pre>
+&#62;&nbsp;names(cts)[1]&nbsp;=&nbsp;'weekday'
+&#62;&nbsp;res&nbsp;=&nbsp;merge(cts,dat)
+&#62;&nbsp;head(res)
+&nbsp;&nbsp;&nbsp;weekday&nbsp;Freq&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rank&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;box
+1&nbsp;&nbsp;&nbsp;Friday&nbsp;&nbsp;753&nbsp;521.7384&nbsp;112.24642
+2&nbsp;&nbsp;&nbsp;Monday&nbsp;&nbsp;&nbsp;10&nbsp;354.5000&nbsp;148.04620
+3&nbsp;Saturday&nbsp;&nbsp;&nbsp;&nbsp;7&nbsp;577.5714&nbsp;&nbsp;91.18714
+4&nbsp;&nbsp;&nbsp;Sunday&nbsp;&nbsp;&nbsp;11&nbsp;338.1818&nbsp;140.45618
+5&nbsp;Thursday&nbsp;&nbsp;&nbsp;39&nbsp;493.7692&nbsp;117.89700
+6&nbsp;&nbsp;Tuesday&nbsp;&nbsp;&nbsp;22&nbsp;498.9545&nbsp;110.42391
+
+</pre>
+Notice that the default behaviour of <tt>merge</tt> is to sort the columns
+before merging, so that we've lost the order that the <tt>levels=</tt> argument
+prescribed.  The <tt>sort=FALSE</tt> argument to <tt>merge</tt> can be used
+to prevent that:
+
+<pre>
+&#62;&nbsp;res&nbsp;=&nbsp;merge(cts,dat,sort=FALSE)
+&#62;&nbsp;head(res)
+&nbsp;&nbsp;&nbsp;&nbsp;weekday&nbsp;Freq&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rank&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;box
+1&nbsp;&nbsp;&nbsp;&nbsp;Monday&nbsp;&nbsp;&nbsp;10&nbsp;354.5000&nbsp;148.04620
+2&nbsp;&nbsp;&nbsp;Tuesday&nbsp;&nbsp;&nbsp;22&nbsp;498.9545&nbsp;110.42391
+3&nbsp;Wednesday&nbsp;&nbsp;164&nbsp;423.2561&nbsp;139.50965
+4&nbsp;&nbsp;Thursday&nbsp;&nbsp;&nbsp;39&nbsp;493.7692&nbsp;117.89700
+5&nbsp;&nbsp;&nbsp;&nbsp;Friday&nbsp;&nbsp;753&nbsp;521.7384&nbsp;112.24642
+6&nbsp;&nbsp;Saturday&nbsp;&nbsp;&nbsp;&nbsp;7&nbsp;577.5714&nbsp;&nbsp;91.18714
+
+</pre>
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc3">
+3</a>&nbsp;&nbsp;Functions</h2>
+As you've already noticed, functions play an important role in R.  A very 
+attractive feature of R is that you can write your own functions which 
+work exactly the same as the ones that are part of the official R release.
+In fact, if you create a function with the same name as one that's already
+part of R, it will override the built-in function, and possibly cause 
+problems.  For that reason, it's a good idea to make sure that there's not
+already another function with the name you want to use.  If you type the
+name you're thinking of, and R responds with a message like 
+"<tt>object "xyz"</tt> not found" you're probably safe.
+
+<div class="p"><!----></div>
+There are several reasons why creating your own functions is a good idea.
+
+<ol type="1">
+<li>If you find yourself writing the same code over and over again as you work on
+different problems, you can write a function that incorporates whatever it is
+you're doing and call the function, instead of rewriting the code over and over.
+<div class="p"><!----></div>
+</li>
+
+<li>
+All of the functions you create are saved in your workspace along with your data.
+So if you put the bulk of your work into functions that you create, R will 
+automatically save them for you (if you tell R to save your workspace when your
+quit.)
+<div class="p"><!----></div>
+</li>
+
+<li>
+It's very easy to write "wrappers" around existing functions to make a custom
+version that sets the arguments to another function to be just what you want.
+R provides a special mechanism to "pass along" any extra arguments the other
+function might need.
+<div class="p"><!----></div>
+</li>
+
+<li>
+You can pass your own functions to built-in R functions like <tt>aggregate</tt>,
+<tt>by</tt>, <tt>apply</tt>, <tt>sapply</tt>, <tt>lapply</tt>, <tt>mapply</tt>,
+<tt>sweep</tt> and other functions to efficiently and easy perform customized
+tasks.
+<div class="p"><!----></div>
+</li>
+</ol>
+
+<div class="p"><!----></div>
+Before getting down to the details of writing your own functions, it's a good idea
+to understand how functions in R work.  Every function in R has a set of arguments that
+it accepts.  You can see the arguments that built-in functions take in a number of ways:
+viewing the help page, typing the name of the function in the interpreter, or using the
+<tt>args</tt> function.  When you call a function, you can simply pass it arguments,
+in which case they must line up exactly with the way the function is designed, or 
+you can specifically pass particular arguments in whatever order you like by providing
+the with names using the <tt>name=value</tt> syntax.   You also can combine the two,
+passing unnamed arguments (which have to match the function's definition exactly), 
+followed by named arguments in whatever order you like.
+For example, consider the function <tt>read.table</tt>.  We can view its argument list
+with the command:
+
+<pre>
+&#62;&nbsp;args(read.table)
+function&nbsp;(file,&nbsp;header&nbsp;=&nbsp;FALSE,&nbsp;sep&nbsp;=&nbsp;"",&nbsp;quote&nbsp;=&nbsp;"\"'",&nbsp;dec&nbsp;=&nbsp;".",
+&nbsp;&nbsp;&nbsp;&nbsp;row.names,&nbsp;col.names,&nbsp;as.is&nbsp;=&nbsp;!stringsAsFactors,&nbsp;na.strings&nbsp;=&nbsp;"NA",
+&nbsp;&nbsp;&nbsp;&nbsp;colClasses&nbsp;=&nbsp;NA,&nbsp;nrows&nbsp;=&nbsp;-1,&nbsp;skip&nbsp;=&nbsp;0,&nbsp;check.names&nbsp;=&nbsp;TRUE,
+&nbsp;&nbsp;&nbsp;&nbsp;fill&nbsp;=&nbsp;!blank.lines.skip,&nbsp;strip.white&nbsp;=&nbsp;FALSE,&nbsp;blank.lines.skip&nbsp;=&nbsp;TRUE,
+&nbsp;&nbsp;&nbsp;&nbsp;comment.char&nbsp;=&nbsp;"#",&nbsp;allowEscapes&nbsp;=&nbsp;FALSE,&nbsp;flush&nbsp;=&nbsp;FALSE,
+&nbsp;&nbsp;&nbsp;&nbsp;stringsAsFactors&nbsp;=&nbsp;default.stringsAsFactors(),&nbsp;encoding&nbsp;=&nbsp;"unknown")
+NULL
+
+</pre>
+ This argument list tells us that, if we pass unnamed arguments to 
+<tt>read.table</tt>, it will interpret the first as <tt>file</tt>, the next as 
+<tt>header</tt>, then <tt>sep</tt>, and so on.  Thus if we wanted to read the 
+file <tt>my.data</tt>, with <tt>header</tt> set to <tt>TRUE</tt> and <tt>sep</tt>
+set to <tt>','</tt>, any of the following calls would be equivalent:
+
+<pre>
+read.table('my.data',TRUE,',')
+read.table(sep=',',TRUE,file='my.data')
+read.table(file='my.data',sep=',',header=TRUE)
+read.table('my.data',sep=',',header=TRUE)
+
+</pre>
+ Notice that all of the arguments in the argument list for <tt>read.table</tt>
+have values after the name of the argument, except for the <tt>file</tt> argument.  This
+means that <tt>file</tt> is the only required argument to <tt>read.table</tt>; any of the 
+other arguments are optional, and if we don't specify them the default values that appear
+in the argument list will be used.
+Most R functions are written so the the 
+first few arguments will be the ones that will usually be used so that their
+values can be entered without providing names, with the other arguments being optional.
+Optional arguments can be passed to a function by position, but are much more commonly 
+passed using the <tt>name=value</tt> syntax, as in the last example of calling 
+<tt>read.table</tt>.
+
+<div class="p"><!----></div>
+Now let's take a look at the function <tt>read.csv</tt>.  You may recall that this 
+function simply calls <tt>read.table</tt> with a set of parameters that makes sense
+for reading comma separated files.  Here's <tt>read.csv</tt>'s function definition,
+produced by simply typing the function's name at the R prompt:
+
+<pre>
+function&nbsp;(file,&nbsp;header&nbsp;=&nbsp;TRUE,&nbsp;sep&nbsp;=&nbsp;",",&nbsp;quote&nbsp;=&nbsp;"\"",&nbsp;dec&nbsp;=&nbsp;".",
+&nbsp;&nbsp;&nbsp;&nbsp;fill&nbsp;=&nbsp;TRUE,&nbsp;comment.char&nbsp;=&nbsp;"",&nbsp;...)
+read.table(file&nbsp;=&nbsp;file,&nbsp;header&nbsp;=&nbsp;header,&nbsp;sep&nbsp;=&nbsp;sep,&nbsp;quote&nbsp;=&nbsp;quote,
+&nbsp;&nbsp;&nbsp;&nbsp;dec&nbsp;=&nbsp;dec,&nbsp;fill&nbsp;=&nbsp;fill,&nbsp;comment.char&nbsp;=&nbsp;comment.char,&nbsp;...)
+&lt;environment:&nbsp;namespace:utils&#62;
+
+</pre>
+Pay special attention to the three periods (<tt>...</tt>) in the argument list.  Notice 
+that they also appear in the call to <tt>read.table</tt> inside the function's body.
+The three dots mean all the arguments that were passed to the function that didn't
+match any of the previous arguments in the argument list.  So if you pass
+anything other than <tt>file</tt>, <tt>header</tt>, <tt>sep</tt>, <tt>quote</tt>,
+<tt>dec</tt>, or <tt>fill</tt> to <tt>read.csv</tt>, it will be part of the three dots;
+by putting the three dots at the end of the argument list in the call to 
+<tt>read.table</tt>, all those unmatched arguments are simply passed along to
+<tt>read.table</tt>.  So if you make a call to <tt>read.csv</tt> like this:
+
+<pre>
+read.csv(filename,stringsAsFactors=FALSE)
+
+</pre>
+ the <tt>stringsAsFactors=FALSE</tt> will get passed to <tt>read.table</tt>, even though
+it wasn't explicitly named in the argument list.  Without the three dots, R will not
+accept any arguments that aren't explicitly named in the argument list of the function
+definition.  If you want to intercept the extra arguments yourself, you can include
+the three dots at the end of the argument list when you define your function, and 
+create a list of those arguments inside the function body by refering to <tt>list(...)</tt>.
+
+<div class="p"><!----></div>
+Suppose you want to create a function that will call <tt>read.csv</tt> with a filename,
+but which will automatically set the <tt>stringsAsFactors=FALSE</tt> parameter.  For maximum 
+flexibility, we'd want to be able to pass other arguments (like <tt>na.strings=</tt>, 
+or <tt>quote=</tt>) to <tt>read.csv</tt>, so we'll include the three dots at the end of
+the argument list.  We could name the function <tt>read.csv</tt> and overwrite the built-in
+version, but that's not a good idea, if for no other reason than the confusion it would
+cause if someone else tried to understand your programs!  Suppose we call the function
+<tt>myread.csv</tt>.  We could write a function definition as follows:
+
+<pre>
+&#62;&nbsp;myread.csv&nbsp;=&nbsp;function(file,stringsAsFactors=FALSE,...){
++&nbsp;&nbsp;&nbsp;&nbsp;read.csv(file,stringsAsFactors=stringsAsFactors,...)
++&nbsp;}
+
+</pre>
+Now, we could simply use
+
+<pre>
+thedata&nbsp;=&nbsp;myread.csv(filename)
+
+</pre>
+ to read a comma-separated file with <tt>stringsAsFactors=FALSE</tt>.  You could still pass
+any of <tt>read.table</tt>'s arguments to the function (including <tt>stringsAsFactors=TRUE</tt> if
+you wanted), and, if you ask R to save your workspace when you quit, the function will be
+available to you next time you start R in the same directory.
+
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On  2 Feb 2011, 16:39.</small>
+</html>

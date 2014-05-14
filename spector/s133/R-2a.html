@@ -1,0 +1,456 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> Vectors and Matrices</title>
+ 
+<h1 align="center">Vectors and Matrices </h1>
+
+
+
+ <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;Modes and Classes</h2>
+It was mentioned earlier that all the elements of a vector must 
+be of the same mode.  To see the mode of an object, you can use
+the <tt>mode</tt> function.   What happens if we try to combine
+objects of different modes using the <tt>c</tt> function?
+The answer is that R will find a common mode that can accomodate
+all the objects, resulting in the mode of some of the objects changing.
+For example, let's  try combining some numbers and some character strings:
+
+<pre>
+&#62;&nbsp;both&nbsp;=&nbsp;c('dog',3,'cat','mouse',7,12,9,'chicken')
+&#62;&nbsp;both
+[1]&nbsp;"dog"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"3"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"cat"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"mouse"&nbsp;&nbsp;&nbsp;"7"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"12"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"9"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+[8]&nbsp;"chicken"
+&#62;&nbsp;mode(both)
+[1]&nbsp;"character"
+
+</pre>
+ You can see that the numbers have been changed to characters because
+they are now displayed surrounded by quotes.  They also will no longer
+behave like numbers:
+
+<pre>
+&#62;&nbsp;both[2]&nbsp;+&nbsp;both[5]
+Error&nbsp;in&nbsp;both[2]&nbsp;+&nbsp;both[5]&nbsp;:&nbsp;non-numeric&nbsp;argument&nbsp;to&nbsp;binary&nbsp;operator
+
+</pre>
+ The error message means that the two values can no longer be
+added.  If you really need to treat character strings like numbers, you
+can use the <tt>as.numeric</tt> function:
+
+<pre>
+&#62;&nbsp;as.numeric(both[2])&nbsp;+&nbsp;as.numeric(both[5])
+[1]&nbsp;10
+
+</pre>
+ Of course, the best thing is to avoid combining objects of different
+modes with the <tt>c</tt> function.  We'll see later that R provides an object
+known as a list that can store different types of objects without having to
+change their modes.
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc2">
+2</a>&nbsp;&nbsp;Reading Vectors</h2>
+Once you start working with larger amounts of data,
+it becomes very tedious to enter data into the <tt>c</tt> function,
+especially considering the need to put quotes around character values and
+commas between values.
+To read data from a file or from the terminal without the need for
+quotes and commas, you can use the <tt>scan</tt> function.  To read from
+a file (or a URL), pass it a quoted string with the name of the file or
+URL you wish to read; to read from the terminal, call scan() with no
+arguments, and enter a completely blank line when you're done entering
+your data.  Additionally, on Windows or Mac OS X, you can substitute a call to the
+<tt>file.choose()</tt> function for the quoted string with the file name,
+and you'll be presented with the familiar file chooser used by most
+programs on those platforms.
+
+<div class="p"><!----></div>
+Suppose there's a file called <tt>numbers</tt> in your working directory.  (You
+can get your working directory by calling the <tt>getwd()</tt> function, 
+or set it using the <tt>setwd</tt> function or <tt>File -&#62; Change dir</tt> selection in the R console.)
+Let's say the contents of this file looks like this:
+
+<pre>
+12&nbsp;7
+9&nbsp;8&nbsp;14&nbsp;10
+17&nbsp;
+
+</pre>
+ The <tt>scan</tt> function can be used to read these numbers as follows:
+
+<pre>
+&#62;&nbsp;nums&nbsp;=&nbsp;scan('numbers')
+Read&nbsp;7&nbsp;items
+&#62;&nbsp;nums
+[1]&nbsp;12&nbsp;&nbsp;7&nbsp;&nbsp;9&nbsp;&nbsp;8&nbsp;14&nbsp;10&nbsp;17
+
+</pre>
+ The optional <tt>what=</tt> argument to <tt>scan</tt> can be used to
+read vectors of character or logical values, but remember a vector can only 
+hold objects all of which are of the same mode.
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc3">
+3</a>&nbsp;&nbsp;Missing Values</h2>
+No matter how carefully we collect our data, there will always be 
+situations where we don't know the value of a particular variable.  For
+example, we might conduct a survey where we ask people 10 questions, 
+and occasionally we forget to ask one, or people don't know the proper
+answer.  We don't want values like this to enter into calculations, but
+we can't just eliminate them because then observations that have 
+missing values won't "fit in" with the rest of the data.  
+
+<div class="p"><!----></div>
+In R, missing values are represented by the string <tt>NA</tt>.  For example,
+suppose we have a vector of 10 values, but the fourth one is missing.  I can
+enter a missing value by passing <tt>NA</tt> to the <tt>c</tt> function just
+as if it was a number (no quotes needed):
+
+<pre>
+x&nbsp;=&nbsp;c(1,4,7,NA,12,19,15,21,20)
+
+</pre>
+ R will also recognize the unquoted string <tt>NA</tt> as a missing 
+value when data is read from a file or URL.
+
+<div class="p"><!----></div>
+Missing values are different from other values in R in two ways: 
+
+<ol type="1">
+<li>Any computation involving a missing value will return a missing value.
+<div class="p"><!----></div>
+</li>
+
+<li>
+Unlike other quantities in R, we can't directly test to see if something is
+equal to a missing value with the equality operator (<tt>==</tt>).  We must use
+the builtin <tt>is.na</tt> function, which will return <tt>TRUE</tt> if a value
+is missing and <tt>FALSE</tt> otherwise.
+<div class="p"><!----></div>
+</li>
+</ol>
+
+<div class="p"><!----></div>
+Here are some simple R statements that illustrate these points:
+
+<pre>
+&#62;&nbsp;x&nbsp;=&nbsp;c(1,4,7,NA,12,19,15,21,20)
+&#62;&nbsp;mean(x)
+[1]&nbsp;NA
+&#62;&nbsp;x&nbsp;==&nbsp;NA
+[1]&nbsp;NA&nbsp;NA&nbsp;NA&nbsp;NA&nbsp;NA&nbsp;NA&nbsp;NA&nbsp;NA&nbsp;NA
+
+</pre>
+ Fortunately, these problems are fairly easy to solve.  In the first
+case, many functions (like <tt>mean</tt>, <tt>min</tt>, <tt>max</tt>, <tt>sd</tt>,
+<tt>quantile</tt>, etc.) accept an <tt>na.rm=TRUE</tt> argument, that tells the
+function to remove any missing values before performing the computation:
+
+<pre>
+&#62;&nbsp;mean(x,na.rm=TRUE)
+[1]&nbsp;12.375
+
+</pre>
+ In the second case, we just need to remember to always use <tt>is.na</tt>
+whenever we are testing to see if a value is a missing value.
+
+<pre>
+&#62;&nbsp;is.na(x)
+[1]&nbsp;FALSE&nbsp;FALSE&nbsp;FALSE&nbsp;&nbsp;TRUE&nbsp;FALSE&nbsp;FALSE&nbsp;FALSE&nbsp;FALSE&nbsp;FALSE
+
+</pre>
+By combining a call to <tt>is.na</tt> to the logical "not" operator (<tt>!</tt>)
+we can filter out missing values in cases where no <tt>na.rm=</tt> argument is
+available:
+
+<pre>
+&#62;&nbsp;x[!is.na(x)]
+[1]&nbsp;&nbsp;1&nbsp;&nbsp;4&nbsp;&nbsp;7&nbsp;12&nbsp;19&nbsp;15&nbsp;21&nbsp;20
+
+</pre>
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc4">
+4</a>&nbsp;&nbsp;Matrices</h2>
+A very common way of storing data is in a matrix, which is basically a 
+two-way generalization of a vector.  Instead of a single index, we can 
+use two indexes, one representing a row and the second representing a
+column.  The <tt>matrix</tt> function takes a vector and makes it into
+a matrix in a column-wise fashion.  For example, 
+
+<pre>
+&#62;&nbsp;mymat&nbsp;=&nbsp;matrix(1:12,4,3)
+&#62;&nbsp;mymat
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[,1]&nbsp;[,2]&nbsp;[,3]
+[1,]&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;5&nbsp;&nbsp;&nbsp;&nbsp;9
+[2,]&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;6&nbsp;&nbsp;&nbsp;10
+[3,]&nbsp;&nbsp;&nbsp;&nbsp;3&nbsp;&nbsp;&nbsp;&nbsp;7&nbsp;&nbsp;&nbsp;11
+[4,]&nbsp;&nbsp;&nbsp;&nbsp;4&nbsp;&nbsp;&nbsp;&nbsp;8&nbsp;&nbsp;&nbsp;12
+
+</pre>
+ The last two arguments to <tt>matrix</tt> tell it the number 
+of rows and columns the matrix should have.  If you used a named argument,
+you can specify just one dimension, and R will figure out the other:
+
+<pre>
+&#62;&nbsp;mymat&nbsp;=&nbsp;matrix(1:12,ncol=3)
+&#62;&nbsp;mymat
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[,1]&nbsp;[,2]&nbsp;[,3]
+[1,]&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;5&nbsp;&nbsp;&nbsp;&nbsp;9
+[2,]&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;6&nbsp;&nbsp;&nbsp;10
+[3,]&nbsp;&nbsp;&nbsp;&nbsp;3&nbsp;&nbsp;&nbsp;&nbsp;7&nbsp;&nbsp;&nbsp;11
+[4,]&nbsp;&nbsp;&nbsp;&nbsp;4&nbsp;&nbsp;&nbsp;&nbsp;8&nbsp;&nbsp;&nbsp;12
+
+</pre>
+ To create a matrix by rows instead of by columns, the 
+<tt>byrow=TRUE</tt> argument can be used:
+
+<pre>
+&#62;&nbsp;mymat&nbsp;=&nbsp;matrix(1:12,ncol=3,byrow=TRUE)
+&#62;&nbsp;mymat
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[,1]&nbsp;[,2]&nbsp;[,3]
+[1,]&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;3
+[2,]&nbsp;&nbsp;&nbsp;&nbsp;4&nbsp;&nbsp;&nbsp;&nbsp;5&nbsp;&nbsp;&nbsp;&nbsp;6
+[3,]&nbsp;&nbsp;&nbsp;&nbsp;7&nbsp;&nbsp;&nbsp;&nbsp;8&nbsp;&nbsp;&nbsp;&nbsp;9
+[4,]&nbsp;&nbsp;&nbsp;10&nbsp;&nbsp;&nbsp;11&nbsp;&nbsp;&nbsp;12
+
+</pre>
+
+<div class="p"><!----></div>
+When data is being read from a file, you can simply imbed a call to scan
+into a call to matrix.  Suppose we have a file called <tt>matrix.dat</tt>
+with the following contents:
+
+<pre>
+7&nbsp;12&nbsp;19&nbsp;4
+18&nbsp;7&nbsp;12&nbsp;3
+9&nbsp;5&nbsp;8&nbsp;42
+
+</pre>
+ We could create a 3&times;4 matrix, read in by rows, with the
+following command:
+
+<pre>
+matrix(scan('matrix.dat'),nrow=3,byrow=TRUE)
+
+</pre>
+
+<div class="p"><!----></div>
+To access a single element of a matrix, we need to specify both the row
+and the column we're interested in.  Consider the following matrix, 
+containing the numbers from 1 to 10:
+
+<pre>
+&#62;&nbsp;m&nbsp;=&nbsp;matrix(1:10,5,2)
+&#62;&nbsp;m
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[,1]&nbsp;[,2]
+[1,]&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;6
+[2,]&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;7
+[3,]&nbsp;&nbsp;&nbsp;&nbsp;3&nbsp;&nbsp;&nbsp;&nbsp;8
+[4,]&nbsp;&nbsp;&nbsp;&nbsp;4&nbsp;&nbsp;&nbsp;&nbsp;9
+[5,]&nbsp;&nbsp;&nbsp;&nbsp;5&nbsp;&nbsp;&nbsp;10
+
+</pre>
+Now suppose we want the element in row 4 and column 1:
+
+<pre>
+&#62;&nbsp;m[4,1]
+[1]&nbsp;4
+
+</pre>
+If we leave out either one of the subscripts, we'll get the entire row
+or column of the matrix, depending on which subscript we leave out:
+
+<pre>
+&#62;&nbsp;m[4,]
+[1]&nbsp;4&nbsp;9
+&#62;&nbsp;m[,1]
+[1]&nbsp;1&nbsp;2&nbsp;3&nbsp;4&nbsp;5
+
+</pre>
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc5">
+5</a>&nbsp;&nbsp;Data Frames</h2>
+One shortcoming of vectors and matrices is that they can only hold one 
+mode of data; they don't allow us to mix, say, numbers and character strings.
+If we try to do so, it will change the mode of the other elements in the 
+vector to conform.  For example:
+
+<pre>
+&#62;&nbsp;c(12,9,"dog",7,5)
+[1]&nbsp;"12"&nbsp;&nbsp;"9"&nbsp;&nbsp;&nbsp;"dog"&nbsp;"7"&nbsp;&nbsp;&nbsp;"5"
+
+</pre>
+ Notice that the numbers got changed to character values so that
+the vector could accomodate all the elements we passed to the <tt>c</tt>
+function.  In R, a special object known as a data frame resolves this problem.
+A data frame is like a matrix in that it represents a rectangular array of 
+data, but each column in a data frame can be of a different mode, allowing
+numbers, character strings and logical values to coincide in a single object
+in their original forms.  Since most interesting data problems involve a 
+mixture of character variables and numeric variables, data frames are 
+usually the best way to store information in R.  (It should be mentioned that
+if you're dealing with data of a single mode, a matrix may be more efficient
+than a data frame.)  Data frames correspond to the traditional
+"observations and variables" model that most statistical software uses,
+and they are also similar to database tables.  Each row of a data frame 
+represents an observation; the elements in a given row represent information
+about that observation.  Each column, taken as a whole, has all the information
+about a particular variable for the data set.   
+
+<div class="p"><!----></div>
+For small datasets, you can enter each of the columns (variables) of your 
+data frame using the <tt>data.frame</tt> function.  For example, let's
+extend our temperature example by creating a data frame that has the 
+day of the month, the minimum temperature and the maximum temperature:
+
+<pre>
+&#62;&nbsp;temps&nbsp;=&nbsp;data.frame(day=1:10,
++&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;min&nbsp;=&nbsp;c(50.7,52.8,48.6,53.0,49.9,47.9,54.1,47.6,43.6,45.5),
++&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;max&nbsp;=&nbsp;c(59.5,55.7,57.3,71.5,69.8,68.8,67.5,66.0,66.1,61.7))
+&#62;&nbsp;head(temps)
+&nbsp;&nbsp;day&nbsp;&nbsp;min&nbsp;&nbsp;max
+1&nbsp;&nbsp;&nbsp;1&nbsp;50.7&nbsp;59.5
+2&nbsp;&nbsp;&nbsp;2&nbsp;52.8&nbsp;55.7
+3&nbsp;&nbsp;&nbsp;3&nbsp;48.6&nbsp;57.3
+4&nbsp;&nbsp;&nbsp;4&nbsp;53.0&nbsp;71.5
+5&nbsp;&nbsp;&nbsp;5&nbsp;49.9&nbsp;69.8
+6&nbsp;&nbsp;&nbsp;6&nbsp;47.9&nbsp;68.8
+
+</pre>
+ Note that the names we used when we created the data frame are 
+displayed with the data.   (You can add names after the fact with the 
+<tt>names</tt> function.) 
+Also, instead of typing the name <tt>temps</tt>
+to see the data frame, we  used a call the the <tt>head</tt> function 
+instead.  This will show me just the first six observations (by default) of 
+the data 
+frame, and is very handy to check to make sure a large data.frame really
+looks the way you think.  (There's a function called <tt>tail</tt> that
+shows the last lines in an object as well.)
+
+<div class="p"><!----></div>
+If we try to look at the class or mode of a data frame, it's not that
+informative:
+
+<pre>
+&#62;&nbsp;class(temps)
+[1]&nbsp;"data.frame"
+&#62;&nbsp;mode(temps)
+[1]&nbsp;"list"
+
+</pre>
+ We'll see the same results for every data frame we use.  To
+look at the modes of the individual columns of a data frame, we can use
+the <tt>sapply</tt> function.  This function simplifies operations that would
+require loops in other languages, and automatically returns the appropriate
+results for the operation it performs.  To use <tt>sapply</tt> on a data frame,
+pass the data frame as the first argument to <tt>sapply</tt>, and the function
+you wish to use as the second argument.  So to find the modes of the
+individual columns of the <tt>temps</tt> data frame, we could use
+
+<pre>
+&#62;&nbsp;sapply(temps,mode)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;date&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;min&nbsp;&nbsp;&nbsp;maximum&nbsp;
+"numeric"&nbsp;"numeric"&nbsp;"numeric"&nbsp;
+
+</pre>
+ Notice that <tt>sapply</tt> even labeled the result with the name of
+each column.
+
+<div class="p"><!----></div>
+Suppose we want to concentrate on the maximum daily temperature (which 
+we've called 
+<tt>max</tt> in our data frame) among the days recorded.  There are several
+ways we can refer to the columns of a data frame:
+
+<ol type="1">
+<li>Probably the easiest way to refer to this column is to use a  special notation that eliminates the need to put
+quotes around the variable names (unless they contain blanks or other 
+special characters).  Separate the data frame name from the variable name
+with a dollar sign (<tt>$</tt>):
+
+<pre>
+&#62;&nbsp;temps$max
+&nbsp;[1]&nbsp;59.5&nbsp;55.7&nbsp;57.3&nbsp;71.5&nbsp;69.8&nbsp;68.8&nbsp;67.5&nbsp;66.0&nbsp;66.1&nbsp;61.7&nbsp;
+
+</pre>
+<div class="p"><!----></div>
+</li>
+
+<li>
+We can treat the data frame like it was a matrix.  Since  the maximum
+temperature is in the third column, we could say 
+
+<pre>
+&#62;&nbsp;temps[,3]
+&nbsp;[1]&nbsp;59.5&nbsp;55.7&nbsp;57.3&nbsp;71.5&nbsp;69.8&nbsp;68.8&nbsp;67.5&nbsp;66.0&nbsp;66.1&nbsp;61.7&nbsp;
+
+</pre>
+<div class="p"><!----></div>
+</li>
+
+<li>
+Since we named the columns of <tt>temps</tt> we can use a character subscript:
+
+<pre>
+&#62;&nbsp;temps[,"max"]
+&nbsp;[1]&nbsp;59.5&nbsp;55.7&nbsp;57.3&nbsp;71.5&nbsp;69.8&nbsp;68.8&nbsp;67.5&nbsp;66.0&nbsp;66.1&nbsp;61.7
+
+</pre>
+<div class="p"><!----></div>
+</li>
+
+<li>
+When you use a single subscript with a data frame, it refers to a data frame
+consisting of just that column.  R also provides a special subscripting 
+method (double brackets) to extract the actual data (in this case a vector)
+from the data frame:
+
+<pre>
+&#62;&nbsp;temps['max']
+&nbsp;&nbsp;&nbsp;&nbsp;max
+1&nbsp;&nbsp;59.5
+2&nbsp;&nbsp;55.7
+3&nbsp;&nbsp;57.3
+4&nbsp;&nbsp;71.5
+5&nbsp;&nbsp;69.8
+6&nbsp;&nbsp;68.8
+7&nbsp;&nbsp;67.5
+8&nbsp;&nbsp;66.0
+9&nbsp;&nbsp;66.1
+10&nbsp;61.7
+&#62;&nbsp;temps[['max']]
+[1]&nbsp;59.5&nbsp;55.7&nbsp;57.3&nbsp;71.5&nbsp;69.8&nbsp;68.8&nbsp;67.5&nbsp;66.0&nbsp;66.1&nbsp;61.7
+
+</pre>
+ Notice that this second form is identical to <tt>temps$max</tt>.
+We could also use the equivalent numerical subscript (in this case 3)
+with single or double brackets.
+
+<div class="p"><!----></div>
+
+<div class="p"><!----></div>
+</li>
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On 26 Jan 2011, 09:02.</small>
+</html>

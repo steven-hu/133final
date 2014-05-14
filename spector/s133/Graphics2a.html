@@ -1,0 +1,359 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> Mapping and Lattice Plots</title>
+ 
+<h1 align="center">Mapping and Lattice Plots </h1>
+
+
+
+As an example of using the county maps, we can use another one of the 
+Community Health data sets, this one concerned with demographics.  
+It's located at <a href="http://www.stat.berkeley.edu/classes/s133/data/DEMOGRAPHICS.csv">http://www.stat.berkeley.edu/classes/s133/data/DEMOGRAPHICS.csv</a>.
+The first step is to read the data into R.  We'll concentrate on the 
+variable <tt>Hispanic</tt>, which gives the percentage of Hispanics in 
+each county.
+
+<pre>
+&#62;&nbsp;demo&nbsp;=&nbsp;read.csv('http://www.stat.berkeley.edu/classes/s133/data/DEMOGRAPHICS.csv')
+&#62;&nbsp;summary(demo$Hispanic)
+&nbsp;&nbsp;&nbsp;Min.&nbsp;1st&nbsp;Qu.&nbsp;&nbsp;Median&nbsp;&nbsp;&nbsp;&nbsp;Mean&nbsp;3rd&nbsp;Qu.&nbsp;&nbsp;&nbsp;&nbsp;Max.&nbsp;
+&nbsp;&nbsp;0.000&nbsp;&nbsp;&nbsp;1.100&nbsp;&nbsp;&nbsp;2.300&nbsp;&nbsp;&nbsp;7.018&nbsp;&nbsp;&nbsp;6.300&nbsp;&nbsp;97.500&nbsp;
+
+</pre>
+ Next we need to see how the county names are stored in the county
+map database:
+
+<pre>
+&#62;&nbsp;nms&nbsp;=&nbsp;map('county',names=TRUE,plot=FALSE)
+&#62;&nbsp;head(nms)
+[1]&nbsp;"alabama,autauga"&nbsp;"alabama,baldwin"&nbsp;"alabama,barbour"&nbsp;"alabama,bibb"&nbsp;&nbsp;&nbsp;
+[5]&nbsp;"alabama,blount"&nbsp;&nbsp;"alabama,bullock"
+
+</pre>
+ We need to combine the state and county information in our data
+set so that it matches up with the format used in the database.  We could
+either call <tt>tolower</tt> now, or leave it to our <tt>mapgroups</tt>
+function:
+
+<pre>
+&#62;&nbsp;head(subset(demo,select=c(CHSI_State_Name,CHSI_County_Name)))
+&nbsp;&nbsp;CHSI_State_Name&nbsp;CHSI_County_Name
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Alabama&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Autauga
+2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Alabama&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Baldwin
+3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Alabama&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Barbour
+4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Alabama&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Bibb
+5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Alabama&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Blount
+6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Alabama&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Bullock
+&#62;&nbsp;thecounties&nbsp;=&nbsp;paste(demo$CHSI_State_Name,demo$CHSI_County_Name,sep=',')
+
+</pre>
+Based on the summary information above, we can cut the <tt>Hispanic</tt>
+variable at 1,2,5, and 10.  Then we can create a pallete of blues using
+the <tt>brewer.pal</tt> function from the <tt>RColorBrewer</tt> package.
+
+<pre>
+&#62;&nbsp;hgroups&nbsp;=&nbsp;cut(demo$Hispanic,c(0,1,2,5,10,100))
+&#62;&nbsp;table(hgroups)
+hgroups
+&nbsp;&nbsp;&nbsp;(0,1]&nbsp;&nbsp;&nbsp;&nbsp;(1,2]&nbsp;&nbsp;&nbsp;&nbsp;(2,5]&nbsp;&nbsp;&nbsp;(5,10]&nbsp;(10,100]&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;678&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;770&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;778&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;356&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;558&nbsp;
+&#62;&nbsp;library(RColorBrewer)
+&#62;&nbsp;mycolors&nbsp;=&nbsp;brewer.pal(5,'Blues')
+&#62;&nbsp;thecolors&nbsp;=&nbsp;mycolors[mapgroups('county',thecounties,hgroups)]
+&#62;&nbsp;map('county',col=thecolors,fill=TRUE)
+&#62;&nbsp;legend('bottomleft',levels(hgroups),fill=mycolors,cex=.8)
+&#62;&nbsp;title('Percent&nbsp;Hispanic&nbsp;by&nbsp;County')
+
+</pre>
+The <tt>cex=.8</tt> argument reduces the text size to 80% of 
+the default size, to prevent the legend from running into the map.
+The map looks like this:
+
+<div class="p"><!----></div>
+<img src="phisp.png">
+
+<div class="p"><!----></div>
+In previous examples, we created equal sized groups using the 
+<tt>quantile</tt> function.  Let's see if it will make a difference
+for this example:
+
+<pre>
+&#62;&nbsp;hgroups1&nbsp;=&nbsp;cut(demo$Hispanic,quantile(demo$Hispanic,(0:5)/5))
+&#62;&nbsp;table(hgroups1)
+hgroups1
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(0,1]&nbsp;&nbsp;&nbsp;&nbsp;(1,1.7]&nbsp;&nbsp;(1.7,3.2]&nbsp;&nbsp;(3.2,8.7]&nbsp;(8.7,97.5]&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;678&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;597&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;627&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;618&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;620&nbsp;
+
+</pre>
+ The rest of the steps are the same as before:
+
+<pre>
+&#62;&nbsp;mycolors&nbsp;=&nbsp;brewer.pal(5,'Blues')
+&#62;&nbsp;thecolors&nbsp;=&nbsp;mycolors[mapgroups('county',thecounties,hgroups1)]
+&#62;&nbsp;map('county',col=thecolors,fill=TRUE)
+&#62;&nbsp;legend('bottomleft',levels(hgroups1),fill=mycolors,cex=.8)
+&#62;&nbsp;title('Percent&nbsp;Hispanic&nbsp;by&nbsp;County')
+
+</pre>
+ The plot, which is very similar to the previous plot,
+appears below:
+
+<div class="p"><!----></div>
+<img src="phisp1.png">
+
+<div class="p"><!----></div>
+As a final example of working with maps, let's revisit the world data set 
+that we've used in other examples.  Suppose we want to create a map showing
+literacy rates around the world.  First we need to decide on a grouping.
+The <tt>summary</tt> function is useful in helping us
+decide:
+
+<pre>
+&#62;&nbsp;world&nbsp;=&nbsp;read.csv('http://www.stat.berkeley.edu/classes/s133/data/world2.txt',na.strings='.',comment='#')
+&#62;&nbsp;summary(world$literacy)
+&nbsp;&nbsp;&nbsp;Min.&nbsp;1st&nbsp;Qu.&nbsp;&nbsp;Median&nbsp;&nbsp;&nbsp;&nbsp;Mean&nbsp;3rd&nbsp;Qu.&nbsp;&nbsp;&nbsp;&nbsp;Max.
+&nbsp;&nbsp;12.80&nbsp;&nbsp;&nbsp;69.10&nbsp;&nbsp;&nbsp;88.40&nbsp;&nbsp;&nbsp;80.95&nbsp;&nbsp;&nbsp;98.50&nbsp;&nbsp;&nbsp;99.90
+
+</pre>
+Let's create four levels: less than 50use cut to create these levels and label them at the same time:
+
+<pre>
+litgroups&nbsp;=&nbsp;cut(world$literacy,breaks=c(0,50,70,95,100),include.lowest=TRUE,labels=c('&lt;50%','50-70%','70-95%','&#62;95%'))
+
+</pre>
+We can use the <tt>mapgroups</tt> function to come up with the correct colors,
+noticing that the region names in the <tt>world</tt> database are not in 
+lower case:
+
+<pre>
+&#62;&nbsp;mycolors&nbsp;=&nbsp;topo.colors(4)
+&#62;&nbsp;litcolors&nbsp;=&nbsp;mycolors[mapgroups('world',world$country,litgroups,tolower=FALSE)]
+&#62;&nbsp;map('world',col=litcolors,fill=TRUE)
+&#62;&nbsp;title('World&nbsp;Literacy&nbsp;Rates')
+&#62;&nbsp;legend('left',legend=levels(litgroups),fill=mycolors,cex=.9)
+
+</pre>
+The map appears below
+<img src="worldlit.png">
+
+<div class="p"><!----></div>
+An alternative which is useful when you only want to use part of a database
+is to eliminate missing values from the vector of colors and the corresponding
+regions from the full list of regions, and pass those vectors directly to
+<tt>map</tt>.  Applying this idea to the previous example, we could have 
+gotten the same plot with statements like this:
+
+<pre>
+&#62;&nbsp;omit&nbsp;=&nbsp;is.na(litcolors)
+&#62;&nbsp;useregions&nbsp;=&nbsp;map('world',names=TRUE,plot=FALSE)[!omit]
+&#62;&nbsp;map('world',regions=useregions,col=litcolors[!omit],fill=TRUE)
+
+</pre>
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;The Lattice Plotting Library</h2>
+The graphics we've been using up until now are sometimes known as 
+"traditional" graphics in the R community, because they are the basic
+graphics components that have been part of the S language since its 
+inception.  To review, this refers to the high-level functions like
+<tt>plot</tt>, <tt>hist</tt>, <tt>barplot</tt>, <tt>plot</tt>,
+<tt>pairs</tt>, and <tt>boxplot</tt>, the low-level functions like
+<tt>points</tt>, <tt>lines</tt>, and <tt>legend</tt>, and the graphics
+parameter system accessed through the <tt>par</tt> function.  There's
+another entire set of graphics tools available through the <tt>lattice</tt>
+library.  
+Originally developed as the trellis library, the implementation in R is
+known as <tt>lattice</tt>, although the name "trellis" persists in some
+functions and documentation.
+All of the functions in the <tt>lattice</tt> library use the 
+formula interface that we've seen in classification and modeling functions
+instead of the usual list of x and y values.  Along with other useful 
+features unique to each function, all of the <tt>lattice</tt> functions 
+accept a <tt>data=</tt> argument, making it convenient to work with dataframes;
+by specifying the data frame name via this argument, you can refer to the 
+variables in the data frame without the data frame name.  They also accept
+a <tt>subset=</tt> argument, similar to the second argument to the 
+<tt>subset</tt> function, to allow selection of only certain cases when you
+are creating a plot.  Finally, the <tt>lattice</tt> plotting functions 
+can produce what are known as conditioning plots.   In a conditioning plot,
+several graphs, all with common scaling, are presented in a single display.
+Each of the individual plots is constructed using observations that have a
+particular value of a variable (known as the conditioning variable), allowing
+complex relationships to be viewed more easily.  To illustrate the idea,
+let's revisit the income versus literacy graph that we looked at when we 
+first started studying graphics.  The <tt>lattice</tt> equivalent of the 
+traditional <tt>plot</tt> command is <tt>xyplot</tt>.  This function accepts
+a plotting formula, and has some nice convenience functions not available in
+the regular <tt>plot</tt> command.  For example, the <tt>groups=</tt> 
+argument allows specifying a grouping variable; observations with different
+levels of this variable will be plotted with different colors.  The 
+argument<tt>auto.key=TRUE</tt> automatically shows which colors represent
+which groups.  So we could create our graph with the single statement:
+
+<pre>
+&#62;&nbsp;library(lattice)
+&#62;&nbsp;world&nbsp;=&nbsp;read.csv('http://www.stat.berkeley.edu/classes/s133/data/world2.txt',comment='#',na.strings='.')
+&#62;&nbsp;xyplot(income&nbsp;~&nbsp;literacy,data=world,groups=cont,auto.key=TRUE,main='Income&nbsp;vs.&nbsp;Literacy'))
+
+</pre>
+The plot is shown below.
+
+<div class="p"><!----></div>
+<img src="tlitinc.png">
+
+<div class="p"><!----></div>
+One simple change we could make is to display the legend (created by
+<tt>auto.key=TRUE</tt>) in 3 columns.  This can be acheived by changing
+the value of <tt>auto.key</tt> to <tt>auto.key=list(columns=3)</tt>.
+Many of the parameters to lattice functions can be changed by passing
+a list of named parameters.  Here's the updated call to lattice, and
+the result:
+
+<div class="p"><!----></div>
+
+<pre>
+&#62;&nbsp;xyplot(income&nbsp;~&nbsp;literacy,data=world,groups=cont,auto.key=list(columns=3))
+
+</pre>
+
+<div class="p"><!----></div>
+<img src="tlitinc1.png">
+
+<div class="p"><!----></div>
+If you wish to finetune the appearance of lattice plots, you can modify most 
+aspects of lattice plots 
+through the command <tt>trellis.par.set</tt>, and you can display the 
+current values of options with the command <tt>trellis.par.get</tt>. 
+To explore possible modifications of the trellis (lattice) environment,
+take a look at the output from
+
+<pre>
+&#62;&nbsp;names(trellis.par.get())
+
+</pre>
+Any of the listed parameters can be changed through the 
+<tt>trellis.par.set()</tt> command.
+
+<div class="p"><!----></div>
+To illustrate the idea of a conditioning plot, let's create a scatter plot
+like the previous one, but, instead of using color to distinguish among the
+continents, we'll use the continent as a conditioning variable, resulting in
+a separate scatter plot for each continent.  To use a conditioning variable
+in any of the <tt>lattice</tt> commands, follow the formula with a vertical
+bar (<tt>|</tt>) and the name of the conditioning variable.  To get 
+<tt>xyplot</tt> to display the value of the conditioning variable, it helps
+if it's a factor:
+
+<pre>
+&#62;&nbsp;world$cont&nbsp;=&nbsp;factor(world$cont)
+&#62;&nbsp;xyplot(income&nbsp;~&nbsp;literacy&nbsp;|&nbsp;cont,data=world)
+
+</pre>
+The plot is shown below:
+
+<div class="p"><!----></div>
+<img src="clitinc.png">
+
+ <h2><a name="tth_sEc2">
+2</a>&nbsp;&nbsp;Customizing the Panel Function</h2>
+One of the basic concepts of lattice plots is the idea of a panel.  Each
+separate graph that is displayed in a multi-plot lattice graph is known as
+a panel, and for each of the basic types of lattice plots, there's a function
+called <tt>panel.plottype</tt>, where <tt>plottype</tt> is the type of plot
+in question.  For example, the function that actually produces the individual
+plots for <tt>xyplot</tt> is called <tt>panel.xyplot</tt>.  To do something
+special inside the panels, you can pass your own panel function to the 
+lattice plotting routines using the <tt>panel=</tt> argument.  Generally,
+the first thing such a function would do is to call the default panel plotting
+routine; then additional operations can be performed with functions
+like <tt>panel.points</tt>, <tt>panel.lines</tt>, <tt>panel.text</tt>.  (See
+the help page for <tt>panel.functions</tt> to see some other possibilities.)
+For example, in the income versus literacy plot, we might want to show the 
+best regression line that goes through the points for each continent, using
+the <tt>panel.lmline</tt> function.  Here's how we could construct and call
+a custom panel function:
+
+<pre>
+&#62;&nbsp;mypanel&nbsp;=&nbsp;function(x,y,...){
++&nbsp;&nbsp;&nbsp;panel.xyplot(x,y,...)
++&nbsp;&nbsp;&nbsp;panel.lmline(x,y)
++&nbsp;}
+xyplot(income&nbsp;~&nbsp;literacy&nbsp;|&nbsp;cont,data=world,panel=mypanel)
+
+</pre>
+The plot is shown below.
+
+<div class="p"><!----></div>
+<img src="pinclit.png">
+
+<div class="p"><!----></div>
+As another example, consider again the Community Health Data risk and 
+access to care data set.  We want to see if there is a relationship between
+the number of physicians in a state, and the rate of Diabetes in that state.
+We'll read it in as before, aggregate it, and merge it with the
+state regions.
+
+<pre>
+&#62;&nbsp;risk&nbsp;=&nbsp;read.csv('http://www.stat.berkeley.edu/classes/s133/data/RISKFACTORSANDACCESSTOCARE.csv')
+&#62;&nbsp;risk[risk==-1111.1]&nbsp;=&nbsp;NA
+&#62;&nbsp;avgs&nbsp;=&nbsp;aggregate(risk[,c('Diabetes','Prim_Care_Phys_Rate')],risk['CHSI_State_Name'
+],mean,na.rm=TRUE)
+&#62;&nbsp;avgs&nbsp;=&nbsp;merge(avgs,data.frame(state.name,region=state.region),by.x='CHSI_State_Name',by.y=1)
+
+</pre>
+ Notice that I used the variable number instead of the name in the call 
+to <tt>merge</tt>.  Let's first use color to represent the different regions. 
+
+<pre>
+&#62;&nbsp;xyplot(Diabetes~Prim_Care_Phys_Rate,groups=region,data=avgs,auto.key=TRUE,main='Diabetes&nbsp;vs.&nbsp;Physician&nbsp;Rate&nbsp;by&nbsp;Region')
+
+</pre>
+ Here's the plot:
+
+<div class="p"><!----></div>
+<img src="xydiab.png">
+
+<div class="p"><!----></div>
+Alternatively, we could place each region in a separate panel, and display
+the best fit regression line:
+
+<pre>
+&#62;&nbsp;mypanel&nbsp;=&nbsp;function(x,y,...){
++&nbsp;&nbsp;&nbsp;panel.xyplot(x,y,...)
++&nbsp;&nbsp;&nbsp;panel.lmline(x,y)
++&nbsp;}
+&#62;&nbsp;xyplot(Diabetes~Prim_Care_Phys_Rate|region,data=avgs,main='Diabetes&nbsp;vs.&nbsp;Physician&nbsp;Rate&nbsp;by&nbsp;Region',panel=mypanel)
+
+</pre>
+ The plot appears below:
+
+<div class="p"><!----></div>
+<img src="xydiab1.png">
+
+<div class="p"><!----></div>
+By default, the lattice functions display their panels from bottom to top 
+and left to right, similar to the way points are drawn on a scatterplot.
+If you'd like the plots to be displaying going from top to bottom, use the 
+<tt>as.table=TRUE</tt> argument to any of the lattice plotting functions.
+
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On  1 Mar 2011, 20:27.</small>
+</html>

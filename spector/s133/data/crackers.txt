@@ -1,0 +1,93 @@
+Company,Product,"Crackers",Grams,"Calories","Fat Calories","Fat Grams","Saturated Fat Grams",Sodium,"Carbohydrates",Fiber
+Adrienne,"Country Water Cracker Crck Pepper",4,14,60,10,1,0,140,10,0
+Adrienne,"Country Water Cracker Klassic",4,14,60,10,1,0,140,10,0
+Adrienne,"Country Water Cracker Sun Dried Tomato",4,14,60,10,1,0,130,10,0
+Dare,Bretton,3,13,60,25,3,1.5,140,8,0
+Dare,Vinta,2,13,70,30,3,1.5,130,8,0
+Dare,Vivant,3,13,60,25,2.5,1.5,230,9,0
+"Dare ",Cabaret,3,14,70,32,3.5,2,160,9,0
+Keebler,"Club  Red. Sodium",4,14,70,27,3,1,80,9,0
+Keebler,"Club Crackers Orig",4,14,70,27,3,1,160,9,0
+Keebler,"Club Red. Fat",5,16,70,18,2,0,200,12,0
+Keebler,"Grahams Original w Calcium",8,29,130,32,3.5,0.5,150,22,0
+Keebler,"Honey Grahams Reduced Fat w Calcium",9,31,120,14,1.5,0,130,25,1
+Keebler,"Honey Grahams w Calcium",8,31,140,36,4,1,140,23,0
+Keebler,Munch'ems,41,30,140,45,5,1,22,21,1
+Keebler,"Sesame Street Tickles Baked Snack Crackers, Cheddar flavor",48,30,140,54,6,1.5,300,19,
+Keebler,"Snax Stix, Original Flavor",21,29,130,45,5,1,320,17,0
+Keebler,"Toasteds Butter Crisp Flavor",5,16,80,32,3.5,1,150,10,0
+Keebler,"Toasteds Onion Flavor",5,16,80,27,3,0.5,150,10,0
+Keebler,"Toasteds Reduced Fat Wheat Flavor ",5,14,60,18,2,0,160,10,0
+Keebler,"Toasteds Sesame Flavor",5,16,80,36,4,0.5,135,10,0
+Keebler,"Toasteds Wheat Flavor",5,16,80,27,3,0.5,150,10,0
+Keebler,"Town House Original",5,16,80,40,4.5,1,150,9,0
+Keebler,"Town House Reduced Fat",6,15,70,18,2,0.5,180,11,0
+Keebler,"Town House Reduced Sodium",5,16,80,40,4.5,1,75,10,0
+Keebler,"Wheatables 7 Grain Flavor",12,30,140,54,6,1.5,250,20,1
+Keebler,"Wheatables Honey Wheat Flavor",17,30,140,50,6,1,190,20,1
+Keebler,"Wheatables Original Wheat Flavor",12,30,140,54,6,1.5,210,19,1
+Keebler,"Wheatbles Reduced Fat Original Wheat ",19,31,140,36,4,1,220,22,2
+Keebler,"Zesta  Saltine Unsalted Tops",5,15,70,18,2,0.5,90,10,0
+Keebler,"Zesta Saltine Crackers Fat Free",5,14,50,0,0,0,150,11,0
+Keebler,"Zesta Saltine Crackers Low Salt",5,15,70,18,2,0.5,95,11,0
+Keebler,"Zesta Saltine Crackers Original",5,15,60,18,2,0.5,190,10,0
+Keebler,"Zesta Soup & Oyster Crackers",45,15,70,27,3,1,220,9,0
+"Keebler ","Harvest Bakery Cornbread",2,16,80,25,3,0.5,105,11,0
+"Keebler ","Harvest Bakery Multigrain",2,16,80,25,3,0.5,180,11,0
+"Keebler ","Harvest Bakery Rye",2,16,80,30,3.5,0.5,160,10,0
+Kraft,"Cheese Nips",31,30,130,30,3.5,1,310,21,0
+Kroger,"Classic Socialites Snack Crackers",12,29,150,72,8,1.5,120,17,1
+Nabisco,"Barnum's Animal crackers",10,30,140,36,4,0.5,150,23,1
+Nabisco,"Better Cheddars",22,30,150,70,8,2,290,17,1
+Nabisco,"Better Cheddars Low Sodium",22,,150,63,7,1.5,75,18,
+Nabisco,"Better Cheddars Reduced Fat",24,,140,54,6,1.5,350,19,
+Nabisco,"Big Wheat Thins",10,,140,54,6,1,260,20,1
+Nabisco,"Flavor Crisps Vegetable Thins",14,31,160,80,9,1.5,310,19,1
+Nabisco,"Flavor Crisps w Swiss Cheese",15,29,140,63,7,1.5,350,18,1
+Nabisco,"Flavor Crisps-Bacon",15,31,160,72,8,1.5,460,19,
+Nabisco,"Harvest Crisp 5-Grain",13,,130,32,3.5,0.5,27,23,1
+Nabisco,"Honey Maid Grahams",8,31,140,25,3,0.5,190,24,1
+Nabisco,"Honey Maid Grahams/Chocolate",8,31,130,25,3,0.5,190,24,1
+Nabisco,"Honey Maid Low Fat",8,31,120,15,1.5,0,190,26,0
+Nabisco,"Honey Maid Low Fat/Cinnamon",8,,110,14,1.5,0,170,23,
+Nabisco,"MiniRitz Bite Size Orig Flav",34,30,150,72,8,1.5,260,19,0
+Nabisco,"Premium Saltines",5,,60,14,1.5,0,180,10,0
+Nabisco,"Premium Saltines Fat Free",5,,60,0,0,0,200,12,
+Nabisco,"Premium Saltines Low Sodium",5,,60,14,1.5,0,35,10,
+Nabisco,"Premium Saltines Unsalted Tops",5,14,60,14,1.5,0,105,10,
+Nabisco,"Pretzel, Air Crisp",24,28,110,9,1,0,530,22,0
+Nabisco,"Ritz Reduced Fat Orig Flav",5,15,70,15,2,0,150,11,0
+Nabisco,"Ritz Snack Original Flav",5,16,80,36,4,1,135,10,
+Nabisco,"Ritz, Air Crisps",24,28,140,45,5,1,240,22,0
+Nabisco,"Snackwells Cracked Pepper Crackers",5,,60,14,1.5,0,115,10,0
+Nabisco,"Snackwells Wheat Crackers",5,15,70,15,1.5,0,150,11,1
+Nabisco,"Snackwells Zesty Cheese Snack Crackers/Chedder ",38,,130,27,3,0.5,320,23,
+Nabisco,"Sociables Flavor Crisps",7,15,80,36,4,0.5,150,9,0
+Nabisco,"Triscuit Cheddar",6,29,130,45,5,1,290,20,3
+Nabisco,"Triscuit Low Sodium",7,31,140,45,5,1,75,22,4
+Nabisco,"Triscuit Original",7,31,140,45,5,1,230,21,4
+Nabisco,"Triscuit Reduced Fat",7,29,120,25,3,0.5,160,21,3
+Nabisco,"Triscuit Thin Crisps",14,30,130,40,4.5,1,160,21,3
+Nabisco,Waverly,5,,70,27,3,0.5,135,10,0
+Nabisco,"Wheat Thins Low Sodium",16,31,150,54,6,1,80,21,1
+Nabisco,"Wheat Thins Original",16,31,140,54,6,1,260,19,1
+Nabisco,"Wheat Thins Reduced Fat",16,29,130,36,4,1,260,21,1
+Nabisco,Wheatsworth,5,16,80,35,3.5,0.5,170,10,0
+"Old London","Melba Rounds/Garlic",5,15,60,10,1,0,90,11,2
+"Old London","Melba Rounds/Sesame",5,15,60,25,3,0.5,110,9,1
+"Old London","Melba Rounds/White",5,15,60,10,1,0,140,12,2
+"Pepperidge Farm","Butter Thins",4,15,70,25,3,1,95,10,0
+"Pepperidge Farm",Goldfish/Cheddar,55,30,150,60,6,1.5,250,19,0
+"Pepperidge Farm","Goldfish/Cheddar Low Sodium",60,30,150,60,6,1.5,170,18,0
+"Pepperidge Farm",Goldfish/Original,55,28,140,50,6,1.5,210,18,0
+"Pepperidge Farm",Goldfish/Parmesan,60,30,140,60,6,1.5,300,19,0
+"Pepperidge Farm",Goldfish/Pretzel,43,30,120,25,2.5,0.5,430,22,0
+"Red Oval Farms","Stoned Wheat Thins",2,14,60,14,1.5,0,140,10,0
+Sunshine,"Cheez-It, Original",27,30,160,72,8,2,240,16,0
+Sunshine,"Cheez-It, Reduced Fat",29,30,140,40,4.5,1,280,20,0
+Sunshine,"Cheez-It, White Cheddar",26,30,150,63,7,1.5,280,18,0
+Sunshine,"Hi Ho",4,14,70,36,4,1,130,8,0
+Sunshine,"Hi Ho Reduced fat",5,15,70,22,2.5,0.5,140,10,0
+Sunshine,"Krispy Saltine, Fat Free",5,14,50,0,0,0,150,11,0
+Sunshine,"Krispy Saltine, Original",5,14,60,10,1.5,0,190,11,1
+Sunshine,"Krispy Saltine, Unsalted Tops",5,14,60,14,1.5,0,120,10,0

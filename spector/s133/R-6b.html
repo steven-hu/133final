@@ -1,0 +1,343 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> Functions for Working with Characters</title>
+ 
+<h1 align="center">Functions for Working with Characters </h1>
+
+
+
+     <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;Sizes of Objects</h2>
+Before we start looking  at character manipulation, this is a good time to
+review the different functions that give us the size of an object.  
+
+<ol type="1">
+<li><tt>length</tt> - returns the length of a vector, or the total number 
+of elements in a matrix (number of rows times number of columns).  For
+a data frame, returns the number of columns.
+<div class="p"><!----></div>
+</li>
+
+<li>
+<tt>dim</tt> - for matrices and data frames, returns a vector of length
+2 containing the number of rows and the number of columns.  For a vector,
+returns NULL.  The convenience functions <tt>nrow</tt> and <tt>ncol</tt>
+return the individual values that would be returned by <tt>dim</tt>.
+<div class="p"><!----></div>
+</li>
+
+<li>
+<tt>nchar</tt> - for a character string, returns the number of characters
+in the string.  Returns a vector of values when applied to a vector of
+character strings.  For a numeric value, <tt>nchar</tt> returns the number
+of characters in the printed representation of the number.
+<div class="p"><!----></div>
+</li>
+</ol>
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc2">
+2</a>&nbsp;&nbsp;Character Manipulation</h2>
+While it's quite natural to think of data as being numbers, manipulating 
+character strings is also an important skill when working with data.  We've
+already seen a few simple examples, such as choosing the right format for a 
+character variable that represents a date, or using <tt>table</tt> to tabulate
+the occurences of different character values for a variable.  Now we're going
+to look at some functions in R that let us break apart, rearrange and put 
+together character data.  
+
+<div class="p"><!----></div>
+One of the most important uses of character manipulation is "massaging" data
+into shape.  Many times the data that is available to us, for example on a web
+page or as output from another program, isn't  
+in a form that a program like R can easily 
+interpret.  In cases like that, we'll need to remove the parts that R can't 
+understand, and organize the remaining parts so that R can read them 
+efficiently.  
+
+<div class="p"><!----></div>
+Let's take a look at some of the functions that R offers for working with 
+character variables:
+
+<ul>
+<li> <tt>paste</tt>
+The <tt>paste</tt> function converts its arguments to character before operating
+on them, so you can pass both numbers and strings to the function.  It 
+concatenates the arguments passed to it, to create new strings that are 
+combinations of other strings.   <tt>paste</tt> accepts an unlimited number of
+unnamed arguments, which will be pasted together, and one or both of the 
+arguments <tt>sep=</tt> and <tt>collapse=</tt>.  Depending on whether the 
+arguments are scalars or vectors, and which of <tt>sep=</tt> and <tt>collapse=</tt>
+are used, a variety of different tasks can be performed.
+
+<ol type="1">
+<li>  If you pass a single argument to <tt>paste</tt>, it will return a 
+character representation:
+
+<pre>
+&#62;&nbsp;paste('cat')
+[1]&nbsp;"cat"
+&#62;&nbsp;paste(14)
+[1]&nbsp;"14"
+
+</pre>
+<div class="p"><!----></div>
+</li>
+
+<li> If you pass more than one scalar argument to <tt>paste</tt>, it will put them
+together in a single string, using the <tt>sep=</tt> argument to separate the
+pieces:
+
+<pre>
+&#62;&nbsp;paste('stat',133,'assignment')
+[1]&nbsp;"stat&nbsp;133&nbsp;assignment"
+
+</pre>
+<div class="p"><!----></div>
+</li>
+
+<li>  If you pass a vector of character values to <tt>paste</tt>, and the 
+<tt>collapse=</tt> argument is not <tt>NULL</tt>, it pastes together the elements
+of the vector, using the <tt>collapse=</tt> argument as a separator:
+
+<pre>
+&#62;&nbsp;paste(c('stat',133,'assignment'),collapse='&nbsp;')
+[1]&nbsp;"stat&nbsp;133&nbsp;assignment"
+
+</pre>
+<div class="p"><!----></div>
+</li>
+
+<li> If you pass more than one argument to <tt>paste</tt>, and any of those
+arguments is a vector, <tt>paste</tt> will return a vector as long as its'
+longest argument, produced by pasting together corresponding pieces of the 
+arguments.  (Remember the recycling rule which will be used if the vector
+arguments are of different lengths.)   Here are a few examples:
+
+<pre>
+&#62;&nbsp;paste('x',1:10,sep='')
+&nbsp;[1]&nbsp;"x1"&nbsp;&nbsp;"x2"&nbsp;&nbsp;"x3"&nbsp;&nbsp;"x4"&nbsp;&nbsp;"x5"&nbsp;&nbsp;"x6"&nbsp;&nbsp;"x7"&nbsp;&nbsp;"x8"&nbsp;&nbsp;"x9"&nbsp;&nbsp;"x10"
+&#62;&nbsp;paste(c('x','y'),1:10,sep='')
+&nbsp;[1]&nbsp;"x1"&nbsp;&nbsp;"y2"&nbsp;&nbsp;"x3"&nbsp;&nbsp;"y4"&nbsp;&nbsp;"x5"&nbsp;&nbsp;"y6"&nbsp;&nbsp;"x7"&nbsp;&nbsp;"y8"&nbsp;&nbsp;"x9"&nbsp;&nbsp;"y10"
+
+</pre>
+<div class="p"><!----></div>
+</li>
+</ol>
+<div class="p"><!----></div>
+</li>
+
+<li> <tt>grep</tt>
+The <tt>grep</tt> function searches for patterns in text.  The first argument
+to <tt>grep</tt> is a text string or regular expression that you're looking
+for, and the second argument is usually a vector of character values.   
+<tt>grep</tt> returns the indices of those elements of the vector of character
+strings that contain the text string.  Right now we'll limit ourselves to 
+simple patterns, but later we'll explore the full strength of commands like
+this with regular expressions.
+
+<div class="p"><!----></div>
+<tt>grep</tt> can be used in a number of ways.  Suppose we want to see the 
+countries of the world that have the world 'United' in their names.  
+
+<pre>
+&#62;&nbsp;grep('United',world1$country)&nbsp;
+[1]&nbsp;144&nbsp;145
+
+</pre>
+ <tt>grep</tt> returns the indices of the observations that have 
+'United' in their names.  If we wanted to see the values of <tt>country</tt>
+that had 'United' in their names, we can use the <tt>value=TRUE</tt> argument:
+
+<pre>
+&#62;&nbsp;grep('United',world1$country,value=TRUE)
+[1]&nbsp;"United&nbsp;Arab&nbsp;Emirates"&nbsp;"United&nbsp;Kingdom"
+
+</pre>
+
+<div class="p"><!----></div>
+Notice that, since the first form of <tt>grep</tt> returns a vector of indices,
+we can use it as a subscript to get all the information about the countries 
+that have 'United' in their names:
+
+<pre>
+&#62;&nbsp;world1[grep('United',world1$country),]
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;country&nbsp;&nbsp;&nbsp;gdp&nbsp;income&nbsp;literacy&nbsp;&nbsp;&nbsp;&nbsp;military&nbsp;cont
+144&nbsp;United&nbsp;Arab&nbsp;Emirates&nbsp;23200&nbsp;&nbsp;23818&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;77.3&nbsp;&nbsp;1600000000&nbsp;&nbsp;&nbsp;AS
+145&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;United&nbsp;Kingdom&nbsp;27700&nbsp;&nbsp;28938&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;99.9&nbsp;42836500000&nbsp;&nbsp;&nbsp;EU
+
+</pre>
+
+<div class="p"><!----></div>
+<tt>grep</tt> has a few optional arguments, some of which we'll look at later.  One 
+convenient argument is <tt>ignore.case=TRUE</tt>, which, as the name implies will
+look for the pattern we specified without regard to case.
+<div class="p"><!----></div>
+</li>
+
+<li> <tt>strsplit</tt>
+<tt>strsplit</tt> takes a character vector, and breaks each element up into
+pieces, based on the value of the <tt>split=</tt> argument.   This argument can
+be an ordinary text string, or a regular expression.   Since the different 
+elements of the vector may have different numbers of "pieces", the results 
+from <tt>strsplit</tt> are always returned in a list.  Here's a simple example:
+
+<pre>
+&#62;&nbsp;mystrings&nbsp;=&nbsp;c('the&nbsp;cat&nbsp;in&nbsp;the&nbsp;hat','green&nbsp;eggs&nbsp;and&nbsp;ham','fox&nbsp;in&nbsp;socks')
+&#62;&nbsp;parts&nbsp;=&nbsp;strsplit(mystrings,'&nbsp;')
+&#62;&nbsp;parts&nbsp;
+[[1]]
+[1]&nbsp;"the"&nbsp;"cat"&nbsp;"in"&nbsp;&nbsp;"the"&nbsp;"hat"
+
+[[2]]
+[1]&nbsp;"green"&nbsp;"eggs"&nbsp;&nbsp;"and"&nbsp;&nbsp;&nbsp;"ham"
+
+[[3]]
+[1]&nbsp;"fox"&nbsp;&nbsp;&nbsp;"in"&nbsp;&nbsp;&nbsp;&nbsp;"socks"
+
+</pre>
+ While we haven't dealt much with lists before, one function that can 
+be very useful is <tt>sapply</tt>; you can use <tt>sapply</tt> to operate on 
+each element of a list, and it will, if possible, return the result as a vector.
+So to find the number of words in each of the character strings in <tt>mystrings</tt>,
+we could use:
+
+<pre>
+&#62;&nbsp;sapply(parts,length)
+[1]&nbsp;5&nbsp;4&nbsp;3
+
+</pre>
+<div class="p"><!----></div>
+</li>
+
+<li>
+<tt>substring</tt>
+The <tt>substring</tt> function allows you to extract portions of a character
+string.  Its first argument is a character string, or vector of character strings,
+and its second argument is the index (starting with 1) of the beginning of the 
+desired substring.  With no third argument, <tt>substring</tt> returns the string
+starting at the specified index and continuing to the end of the string;  if a
+third argument is given, it represents the last index of the original string
+that will be included in the returned substring.  Like many functions in R, its
+true value is that it is fully vectorized: you can extract substrings of a vector
+of character values in a single call.  Here's an example of a simple use of 
+<tt>substring</tt>
+
+<pre>
+&#62;&nbsp;strings&nbsp;=&nbsp;c('elephant','aardvark','chicken','dog','duck','frog')
+&#62;&nbsp;substring(strings,1,5)
+[1]&nbsp;"eleph"&nbsp;"aardv"&nbsp;"chick"&nbsp;"dog"&nbsp;&nbsp;&nbsp;"duck"&nbsp;&nbsp;"frog"
+
+</pre>
+ Notice that, when a string is too short to fully meet a substringing
+request, no error or warning is raised, and <tt>substring</tt> returns as much
+os the string as is there.  
+
+<div class="p"><!----></div>
+Consider the following example, extracted from a web page.  Each element of 
+the character vector <tt>data</tt> consists of a name followed by 
+five numbers.  Extracting an individual field, say the field with the state
+names is straight forward:
+
+<pre>
+&#62;&nbsp;data&nbsp;=&nbsp;c("Lyndhurst&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ohio&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;199.02&nbsp;&nbsp;15,074&nbsp;&nbsp;30&nbsp;&nbsp;5&nbsp;&nbsp;&nbsp;25",
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Southport&nbsp;Town&nbsp;New&nbsp;York&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;217.69&nbsp;&nbsp;11,025&nbsp;&nbsp;24&nbsp;&nbsp;4&nbsp;&nbsp;&nbsp;20",
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Bedford&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Massachusetts&nbsp;221.20&nbsp;&nbsp;12,658&nbsp;&nbsp;28&nbsp;&nbsp;0&nbsp;&nbsp;&nbsp;28")
+&#62;&nbsp;states&nbsp;=&nbsp;substring(data,16,28)
+&#62;&nbsp;states
+[1]&nbsp;"Ohio&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;"New&nbsp;York&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;"Massachusetts"
+
+</pre>
+ It is possible to extract all the fields at once, at the cost of 
+a considerably more complex call to <tt>substring</tt>:
+
+<pre>
+&#62;&nbsp;starts&nbsp;=&nbsp;c(1,16,30,38,46,50,54)
+&#62;&nbsp;ends&nbsp;&nbsp;&nbsp;=&nbsp;c(14,28,35,43,47,50,55)
+&#62;&nbsp;ldata&nbsp;=&nbsp;length(data)
+&#62;&nbsp;lstarts&nbsp;=&nbsp;length(starts)
+&#62;&nbsp;x&nbsp;=&nbsp;substring(data,rep(starts,rep(ldata,lstarts)),rep(ends,rep(ldata,lstarts)))
+&#62;&nbsp;matrix(x,ncol=lstarts)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[,1]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[,2]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[,3]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[,4]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[,5]&nbsp;[,6]&nbsp;[,7]
+[1,]&nbsp;"Lyndhurst&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;"Ohio&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;"199.02"&nbsp;"15,074"&nbsp;"30"&nbsp;"5"&nbsp;&nbsp;"25"
+[2,]&nbsp;"Southport&nbsp;Town"&nbsp;"New&nbsp;York&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;"217.69"&nbsp;"11,025"&nbsp;"24"&nbsp;"4"&nbsp;&nbsp;"20"
+[3,]&nbsp;"Bedford&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;"Massachusetts"&nbsp;"221.20"&nbsp;"12,658"&nbsp;"28"&nbsp;"0"&nbsp;&nbsp;"28"
+
+</pre>
+
+<div class="p"><!----></div>
+Like many functions in R, <tt>substring</tt> can appear on the left hand side
+of an assignment statement, making it easy to change parts of a character string
+based on the positions they're in.  To change the third through fifth digits of
+a set of character strings representing numbers to 99, we could use:
+
+<pre>
+&#62;&nbsp;nums&nbsp;=&nbsp;c('12553','73911','842099','203','10')
+&#62;&nbsp;substring(nums,3,5)&nbsp;=&nbsp;'99'
+&#62;&nbsp;nums
+[1]&nbsp;"12993"&nbsp;&nbsp;"73991"&nbsp;&nbsp;"849999"&nbsp;"209"&nbsp;&nbsp;&nbsp;&nbsp;"10"
+
+</pre>
+<div class="p"><!----></div>
+</li>
+
+<li> <tt>tolower</tt>, <tt>toupper</tt> 
+These functions convert their arguments to all upper-case characters or 
+all lower-case characters, respectively
+<div class="p"><!----></div>
+</li>
+
+<li>
+<tt>sub</tt>, <tt>gsub</tt>
+These functions change a regular expression or text pattern to a different
+set of characters.  They differ in that <tt>sub</tt> only changes the first
+occurence of the specified pattern, while <tt>gsub</tt> changes all of the 
+occurences.   Since numeric values in R cannot contain dollar signs or commas,
+one important use of <tt>gsub</tt> is to create numeric variables from text
+variables that represent numbers but contain commas or dollars.  For example,
+in gathering the data for the world dataset that we've been using,  I extracted
+the information about military spending from 
+<a href="http://en.wikipedia.org/wiki/List\_of\_countries\_by\_military\_expenditures">http://en.wikipedia.org/wiki/List_of_countries_by_military_expenditures</a>.  Here's an
+excerpt of some of the values from that page:
+
+<pre>
+&#62;&nbsp;values&nbsp;=&nbsp;c('370,700,000,000','205,326,700,000','67,490,000,000')
+&#62;&nbsp;as.numeric(values)
+[1]&nbsp;NA&nbsp;NA&nbsp;NA
+Warning&nbsp;message:
+NAs&nbsp;introduced&nbsp;by&nbsp;coercion
+
+</pre>
+ The presence of the commas is preventing R from being able to convert
+the values into actual numbers.  <tt>gsub</tt> easily solves the problem:
+
+<pre>
+&#62;&nbsp;as.numeric(gsub(',','',values))
+[1]&nbsp;370700000000&nbsp;205326700000&nbsp;&nbsp;67490000000
+
+</pre>
+<div class="p"><!----></div>
+</li>
+</ul>
+
+<div class="p"><!----></div>
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On  7 Feb 2011, 15:33.</small>
+</html>

@@ -1,0 +1,386 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> Mapping and Lattice Plots</title>
+ 
+<h1 align="center">Mapping and Lattice Plots </h1>
+
+
+
+As can be seen, the default for multiple plots leaves quite a bit of 
+space between the plots.  The graphics parameter that controls this is
+called <tt>mar</tt>.  The value  that determines the spacing is a vector
+of length 4, with the number of lines of space on the bottom, left, top,
+and right of the plots.  We can find the current value of graphics 
+parameters by passing the name of the parameter to <tt>par</tt>:
+
+<pre>
+&#62;&nbsp;par('mar')
+[1]&nbsp;5.1&nbsp;4.1&nbsp;4.1&nbsp;2.1
+
+</pre>
+ Let's remove one line from each of the top and bottom, and
+replot the series of graphs:
+
+<pre>
+&#62;&nbsp;par(mar=c(4.1,4.1,3.1,2.1),mfrow=c(4,2))
+&#62;&nbsp;sapply(names(airquality)[1:4],twoplot)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ozone&nbsp;Solar.R&nbsp;Wind&nbsp;Temp
+[1,]&nbsp;&nbsp;1216&nbsp;&nbsp;&nbsp;&nbsp;1216&nbsp;1216&nbsp;1216
+[2,]&nbsp;&nbsp;1247&nbsp;&nbsp;&nbsp;&nbsp;1247&nbsp;1247&nbsp;1247
+[3,]&nbsp;&nbsp;1277&nbsp;&nbsp;&nbsp;&nbsp;1277&nbsp;1277&nbsp;1277
+[4,]&nbsp;&nbsp;1308&nbsp;&nbsp;&nbsp;&nbsp;1308&nbsp;1308&nbsp;1308
+[5,]&nbsp;&nbsp;1339&nbsp;&nbsp;&nbsp;&nbsp;1339&nbsp;1339&nbsp;1339
+[6,]&nbsp;&nbsp;1369&nbsp;&nbsp;&nbsp;&nbsp;1369&nbsp;1369&nbsp;1369
+
+</pre>
+ The plot is shown below:
+
+<div class="p"><!----></div>
+<img src="airq1.png"> 
+
+<div class="p"><!----></div>
+After plotting multiple plots, you can restore R's normal behaviour
+of plotting each plot on a separate page by resetting <tt>mfrow</tt>
+as follows:
+
+<pre>
+&#62;&nbsp;par(mfrow=c(1,1))
+
+</pre>
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;More on Barplots</h2>
+We briefly looked at barplots when we examined the day of the week on which
+popular movies opened.   You may recall that we passed the result of a call
+from the <tt>table</tt> function to <tt>barplot</tt>.  This idea can be
+extended to create side-by-side or stacked barplots.  As an alternative to
+using <tt>table</tt>, we can produce a matrix with the values we wish
+to plot.  By providing <tt>dimnames</tt> for this matrix, <tt>barplot</tt>
+will be able to appropriately label the plot.
+
+<div class="p"><!----></div>
+Once again consider the 
+<tt>risk</tt> data set we used earlier.  To simplify the plot, the different
+states in the data set can be grouped into regions, using the built-in
+<tt>state.name</tt> and <tt>state.region</tt> objects:
+
+<pre>
+&#62;&nbsp;risk&nbsp;=&nbsp;merge(risk,data.frame(state=state.name,region=state.region),by.x='CHSI_State_Name',by.y='state')
+
+</pre>
+Suppose we're interested in comparing the average smoking, diabetes, and 
+obesity rates for the different regions.  First, we use the <tt>aggregate</tt>
+function to find the averages of the variables, broken down by regions:
+
+<pre>
+&#62;&nbsp;&nbsp;mns&nbsp;=&nbsp;aggregate(risk[,c('Smoker','Diabetes','Obesity')],risk['region'],mean,na.rm=TRUE)
+&#62;&nbsp;mns
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;region&nbsp;&nbsp;&nbsp;Smoker&nbsp;Diabetes&nbsp;&nbsp;Obesity
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Northeast&nbsp;22.62537&nbsp;7.161972&nbsp;22.13430
+2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;South&nbsp;25.15847&nbsp;8.754302&nbsp;25.71493
+3&nbsp;North&nbsp;Central&nbsp;22.28592&nbsp;7.318565&nbsp;24.16283
+4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;West&nbsp;19.50740&nbsp;6.349167&nbsp;21.01306
+
+</pre>
+If we try to pass this data frame to <tt>barplot</tt>, we'll get an 
+error, since <tt>barplot</tt> needs a matrix.  
+In addition, the column that identifies the different groups (in this
+case <tt>region</tt>), needs to be part of the row names, not a variable
+in the data frame itself.  These two steps create the row names,
+and eliminate the <tt>region</tt> column from the data frame:
+
+<pre>
+&#62;&nbsp;row.names(mns)&nbsp;=&nbsp;mns$region
+&#62;&nbsp;mns$region&nbsp;=&nbsp;NULL
+
+</pre>
+If we were to use the following statement to create the barplot:
+
+<pre>
+&#62;&nbsp;barplot(as.matrix(mns))
+
+</pre>
+ we'd find that the bars were representing the variables, not
+the regions.  To fix this, we simply pass the transpose of the matrix
+to <tt>barplot</tt>:
+
+<pre>
+&#62;&nbsp;barplot(t(as.matrix(mns)))
+
+</pre>
+ Here's what the plot looks like:
+
+<div class="p"><!----></div>
+<img src="bplot1.png">
+
+<div class="p"><!----></div>
+This is known as a stacked barplot, and while it's useful for some
+kinds of data, I don't find it appropriate for this type of data.  By
+passing the <tt>beside=TRUE</tt> argument to <tt>barplot</tt>, we can
+produce a side-by-side barchart, which I find more useful.  The 
+<tt>legend=TRUE</tt> argument helps to identify the bars:
+
+<pre>
+&#62;&nbsp;barplot(t(as.matrix(mns)),beside=TRUE,legend=TRUE)
+
+</pre>
+ Here's the result:
+
+<div class="p"><!----></div>
+<img src="bplot2.png">
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc2">
+2</a>&nbsp;&nbsp;Mapping</h2>
+We've looked at some data about different countries around the world,
+but so far we haven't taken advantage of the fact that the data has
+a geographic origin (other than trying to see if relationships were 
+different among different continents by using color to represent 
+continent in scatterplots.)   The R library <tt>maps</tt> gives us the 
+ability to use different colors to represent values of variables on 
+actual maps of the world or the United States.  A current concern in
+the United States has to do with the number of people without health
+insurance.  Since this continues to be of great concern, 
+it would be interesting to see if there are 
+geographic patterns to the rate of ininsured adults in the different
+states.
+
+<div class="p"><!----></div>
+The data for this example comes from the <a href="http://www.stat.berkeley.edu/users/spector/s133/swivel.com">swivel.com</a> 
+website, and can be downloaded from the class website from
+<a href="http://www.stat.berkeley.edu/classes/s133/data/insurance.csv">http://www.stat.berkeley.edu/classes/s133/data/insurance.csv</a>.
+
+<pre>
+&#62;&nbsp;library(maps)
+&#62;&nbsp;ins&nbsp;=&nbsp;read.csv('http://www.stat.berkeley.edu/classes/s133/data/insurance.csv',stringsAsFactors=FALSE)
+&#62;&nbsp;head(ins)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;State&nbsp;Employer&nbsp;Individual&nbsp;Medicaid&nbsp;Medicare&nbsp;Other.Public&nbsp;Uninsured
+1&nbsp;&nbsp;&nbsp;&nbsp;Alabama&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.54&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.03&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.15&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.13&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.01&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.14
+2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Alaska&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.52&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.04&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.16&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.06&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.05&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.17
+3&nbsp;&nbsp;&nbsp;&nbsp;Arizona&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.47&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.05&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.16&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.13&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.01&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.18
+4&nbsp;&nbsp;&nbsp;Arkansas&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.47&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.06&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.15&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.14&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.02&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.17
+5&nbsp;California&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.48&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.07&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.16&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.09&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.01&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.18
+6&nbsp;&nbsp;&nbsp;Colorado&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.59&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.07&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.07&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.08&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.02&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.16
+
+
+</pre>
+The first step in preparing a map (after loading the <tt>maps</tt> library)
+is determining a variable to use to provide color to the different regions.
+In this case we'll use the <tt>Uninsured</tt> variable.  Our goal will
+be to break the data up into four groups, based on the value of the
+<tt>Uninsured</tt> variable, and then to color in each state in the 
+map using a color based on the groups.
+
+<div class="p"><!----></div>
+To create the four groups based on values of <tt>Uninsured</tt>, we can
+use the <tt>cut</tt> function.  If we pass <tt>cut</tt> a variable and
+a number of groups, it will divide the range of the variable by that
+number, and assign each variable to one of the groups.  Depending on 
+how the variable is distributed, there may be more observations in one
+group than the other.  Alternatively, we can provide <tt>cut</tt> with
+a <tt>breaks=</tt> argument, giving one more value than the number of groups 
+we want, and it 
+will assign the values to groups based on the ranges that the breaks 
+define.   Thus, if different values of the variable being used to determine
+the ranges have special meanings, the grouping can be customized using
+this argument.  A final alternative is to guarantee nearly equal-sized
+groups by using quantiles of the variable in question as the breaks.  The
+<tt>include.lowest=TRUE</tt> argument should be included to make sure that
+the smallest value gets properly classified.  To create four equal-sized
+groups for the <tt>Uninsured</tt> variable, we could use the following 
+call to <tt>cut</tt>:
+
+<pre>
+&#62;&nbsp;ugroups&nbsp;=&nbsp;cut(ins$Uninsured,quantile(ins$Uninsured,(0:4)/4),include.lowest=TRUE)
+&#62;&nbsp;head(ugroups)
+[1]&nbsp;(0.13,0.17]&nbsp;(0.13,0.17]&nbsp;(0.17,0.24]&nbsp;(0.13,0.17]&nbsp;(0.17,0.24]&nbsp;(0.13,0.17]
+Levels:&nbsp;[0.08,0.11]&nbsp;(0.11,0.13]&nbsp;(0.13,0.17]&nbsp;(0.17,0.24]
+
+</pre>
+ Notice that <tt>cut</tt> produces a factor by default; to suppress
+this, use the <tt>labels=FALSE</tt> argument.  The factor, since it contains
+information about the actual values, will turn out to be quite useful.
+
+<div class="p"><!----></div>
+The <tt>maps</tt> library provides three databases: <tt>"world"</tt>, 
+<tt>"state"</tt>, and <tt>"county"</tt>.  For each identifier in the database,
+there is information on what polygons need to be drawn to create an outline
+of the area in question.  For example, the entry identified by 
+<tt>california</tt> in the <tt>state</tt> database would contain the 
+information about California's borders in the form of polygon coordinates which
+the <tt>polygon</tt> function will draw when we ask for a map of California.
+While the help page for the <tt>map</tt> function implies that we can pass
+a vector of region names and colors directly to map, things are complicated
+by the fact that some states can't be plotted by a single polygon, and 
+<tt>map</tt> gets confused about the proper colors to use when it needs to draw
+more than one polygon for a state.
+
+<div class="p"><!----></div>
+One way around the problem is to create multiple entries in a vector of colors
+for those states that have more than one polygon.  To do this, we need to look
+at the region names stored inside the database.  We can get a vector of region
+names by calling <tt>map</tt> with the <tt>names=TRUE</tt> and 
+<tt>plot=FALSE</tt> arguments:
+
+<pre>
+&#62;&nbsp;map.names&nbsp;=&nbsp;map('state',names=TRUE,plot=FALSE)
+
+</pre>
+The regions which represent multiple polygons for a single state will always
+contain semicolons:
+
+<pre>
+&#62;&nbsp;grep(':',map.names,value=TRUE)
+&nbsp;[1]&nbsp;"massachusetts:martha's&nbsp;vineyard"&nbsp;"massachusetts:main"
+&nbsp;[3]&nbsp;"massachusetts:nantucket"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"michigan:north"
+&nbsp;[5]&nbsp;"michigan:south"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"new&nbsp;york:manhattan"
+&nbsp;[7]&nbsp;"new&nbsp;york:main"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"new&nbsp;york:staten&nbsp;island"
+&nbsp;[9]&nbsp;"new&nbsp;york:long&nbsp;island"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"north&nbsp;carolina:knotts"
+[11]&nbsp;"north&nbsp;carolina:main"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"north&nbsp;carolina:spit"
+[13]&nbsp;"virginia:chesapeake"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"virginia:chincoteague"
+[15]&nbsp;"virginia:main"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"washington:san&nbsp;juan&nbsp;island"
+[17]&nbsp;"washington:lopez&nbsp;island"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"washington:orcas&nbsp;island"
+[19]&nbsp;"washington:whidbey&nbsp;island"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"washington:main"
+
+</pre>
+To properly connect our data with these region names, we first create a 
+vector of state names corresponding to the regions in the data base:
+
+<pre>
+&#62;&nbsp;map.states&nbsp;=&nbsp;sub('^([^:]*):.*','\\1',map.names)
+
+</pre>
+Now we can use the <tt>match</tt> function to see which observations in the 
+<tt>ins</tt> dataframe correspond to the regions in the database.  Since
+the database uses all lower case, I'll use the <tt>tolower</tt> function 
+to convert the state names in the <tt>ins</tt> data frame to lower case:
+
+<pre>
+&#62;&nbsp;which.state&nbsp;=&nbsp;match(map.states,tolower(ins$State))
+
+</pre>
+Now that we know how the state names line up with the region names, we 
+can create a vector of colors to properly create our map:
+
+<pre>
+&#62;&nbsp;mycolors&nbsp;=&nbsp;c('gray','white','pink','red')
+&#62;&nbsp;thecolors&nbsp;=&nbsp;mycolors[ugroups[which.state]]
+
+</pre>
+This process is complicated enough that it might be worth making a function
+to give us the proper vector of groupings.  Here's such a function, created
+by putting together the steps we just followed:
+
+<pre>
+mapgroups&nbsp;=&nbsp;function(db,myregions,mygroups,tolower=TRUE){
+&nbsp;&nbsp;&nbsp;&nbsp;map.names&nbsp;=&nbsp;map(db,names=TRUE,plot=FALSE)
+&nbsp;&nbsp;&nbsp;&nbsp;map.regions&nbsp;=&nbsp;gsub('^([^:]*):.*$','\\1',map.names)
+&nbsp;&nbsp;&nbsp;&nbsp;if(tolower)myregions&nbsp;=&nbsp;tolower(myregions)
+&nbsp;&nbsp;&nbsp;&nbsp;which.region&nbsp;=&nbsp;match(map.regions,myregions)
+&nbsp;&nbsp;&nbsp;&nbsp;mygroups[which.region]
+}
+
+</pre>
+(I've included the <tt>tolower=</tt> argument because not all the map
+databases use lower case.)
+Using this function (or the step-by-step approach that led to it), we 
+can now make our plot:
+
+<pre>
+&#62;&nbsp;mycolors&nbsp;=&nbsp;c('gray','white','pink','red')
+&#62;&nbsp;thecolors&nbsp;=&nbsp;mycolors[mapgroups('state',ins$State,ugroups)]
+&#62;&nbsp;map('state',col=thecolors,fill=TRUE)
+
+</pre>
+ Plots like this should always have a legend:
+
+<pre>
+&#62;&nbsp;title('Uninsured&nbsp;Rates&nbsp;by&nbsp;State')
+&#62;&nbsp;legend('bottomleft',legend=levels(ugroups),fill=mycolors,cex=.8)
+
+</pre>
+The map is pictured below.
+
+<div class="p"><!----></div>
+<img src="ins.png">
+
+<div class="p"><!----></div>
+There are a variety of functions in R which will help us choose colors that
+will be useful for plotting.  Some of the functions you might want to 
+investigate include <tt>rainbow</tt>, <tt>heat.colors</tt>, 
+<tt>topo.colors</tt>, as well as 
+the <tt>color.gradient</tt> function in the 
+<tt>plotrix</tt> library, the  <tt>colorpanel</tt> function in the 
+<tt>gplots</tt> library.
+and the functions in the <tt>RColorBrewer</tt> library.  Let's look at
+another example, also from swivel.com, concerning rates of childhood 
+obesity.  A copy of the dataset is available on the class website.
+
+<pre>
+&#62;&nbsp;obesity&nbsp;=&nbsp;read.csv('http://www.stat.berkeley.edu/classes/s133/data/obesity.csv')
+
+</pre>
+Before preceding, it turns out that the state names in this data set 
+have some embedded blanks:
+
+<pre>
+&#62;&nbsp;head(as.character(obesity$State))
+[1]&nbsp;"&nbsp;Alabama&nbsp;"&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Alaska&nbsp;"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Arizona&nbsp;"&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Arkansas&nbsp;"&nbsp;&nbsp;&nbsp;"&nbsp;California&nbsp;"
+[6]&nbsp;"&nbsp;Colorado&nbsp;"
+
+</pre>
+ Left uncorrected, this would make our <tt>mapgroups</tt> function
+fail to find any matching states in the map data base, and when we plot the
+map, there would be no colors.  If you think you're doing everything right,
+but there are no colors on the map, check to make sure that the state
+names are correct.  
+
+<div class="p"><!----></div>
+Naturally fixing something like this is not a problem:
+
+<pre>
+&#62;&nbsp;obesity$State&nbsp;=&nbsp;gsub('^&nbsp;+','',obesity$State)
+&#62;&nbsp;obesity$State&nbsp;=&nbsp;gsub('&nbsp;+$','',obesity$State)
+
+</pre>
+
+Now we can proceed with producing the map.
+We'll use the <tt>Childhood.Obesity.Rate</tt> variable for the 
+example, and a color scheme generated by the <tt>heat.colors</tt> function:
+
+<pre>
+&#62;&nbsp;mycolors&nbsp;=&nbsp;rev(heat.colors(4))
+&#62;&nbsp;ogroups&nbsp;=&nbsp;cut(obesity$Childhood.Obesity.Rate,
++&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;quantile(obesity$Childhood.Obesity.Rate,(0:4)/4),include.lowest=TRUE)
+&#62;&nbsp;thecolors&nbsp;=&nbsp;mycolors[mapgroups('state',obesity$State,ogroups)]
+&#62;&nbsp;map('state',col=thecolors,fill=TRUE)
+&#62;&nbsp;title('Childhood&nbsp;Obesity&nbsp;Rates&nbsp;by&nbsp;State')
+&#62;&nbsp;legend('bottomleft',legend=levels(ogroups),fill=mycolors,cex=.8)
+
+</pre>
+The map appears below:
+
+<div class="p"><!----></div>
+<img src="obes.png">
+
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On 27 Feb 2011, 08:31.</small>
+</html>

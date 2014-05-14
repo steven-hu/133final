@@ -1,0 +1,356 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> Regular Expressions</title>
+ 
+<h1 align="center">Regular Expressions </h1>
+
+
+
+ <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;Regular Expressions</h2>
+The period (<tt>.</tt>) represents the wildcard character.  Any character
+(except for the newline character) will be matched by a period in a 
+regular expression; when you literally want a period in a regular expression
+you need to precede it with a backslash.
+
+<div class="p"><!----></div>
+Many times you'll need to express the idea of the beginning or end of a line
+or word
+in a regular expression.  For example, you may be looking for a line number
+at the beginning of a line, or only be interested in searching  for a 
+string  if it's at the end of a line.  The carat (<tt>^</tt>) represents
+the beginning of a line in a regular expression, and the dollar sign 
+(<tt>$</tt>) represents the end of a line.  To specify that the regular
+expression you're looking for is a word (i.e. it's surrounded by white 
+space, punctuation  or line beginnings and endings), surround the regular expression
+with escaped angle brackets (<tt>\&lt;</tt> and <tt>\&gt;</tt>).
+
+<div class="p"><!----></div>
+One of the most powerful features in regular expressions is being able to
+specify that you're interested in patterns which may be variable.  
+In the previous example regarding extracting links through the <tt>href=</tt>
+argument, we'd like to be able to find a reference no matter how many spaces
+there are between the <tt>href</tt> and the <tt>=</tt>.  We also might want
+to account for the fact that quotes around the url are sometimes omitted.
+There are a few characters that act as modifiers to the part of the regular
+expression that precedes them, summarized in the table below.
+
+<div class="p"><!----></div>
+
+<div class="p"><!----></div>
+<a name="tth_tAb1">
+</a> 
+<table border="1">
+<tr><td>Modifier</td><td>Meaning</td></tr>
+<tr><td><tt>*</tt></td><td>zero or more</td></tr>
+<tr><td><tt>?</tt></td><td>zero or one</td></tr>
+<tr><td><tt>+</tt></td><td>one or more</td></tr>
+<tr><td><tt>{n}</tt></td><td>exactly n occurences</td></tr>
+<tr><td><tt>{n,}</tt></td><td>at least n occurences</td></tr>
+<tr><td><tt>{n,m}</tt></td><td>between n and m occurences</td></tr></table>
+
+
+<div class="p"><!----></div>
+The first three modifiers in the above table are the most important ones;
+the others are used much less often.   Let's return to the idea of looking
+for email addresses.  Here's a regular expression that will match most
+email addresses:  <tt>[-A-Za-z0-9_.%]+@[-A-Za-z0-9_.%]+\.[A-Za-z]+</tt> .
+In words we could read the regular expression as "one or more occurences
+of the characters between the brackets literally followed by an <tt>@</tt>-sign,
+followed by one or more characters between the brackets, literally followed by
+a period, and completed by one or more letters from among A-Z and a-z.  You
+can simplify things by specifying <tt>ignore.case=TRUE</tt> to most R 
+functions that deal with regular expressions; in that case you would only
+have to put either <tt>A-Z</tt> or <tt>a-z</tt> in the character class, and
+it would still match both upper or lower case letters.
+
+<div class="p"><!----></div>
+If we use the regular expression in a call to grep, it will find all of 
+the elements in a character vector that contain an email address:
+
+<pre>
+&#62;&nbsp;chk&nbsp;=&nbsp;c('abc&nbsp;noboby@stat.berkeley.edu','text&nbsp;with&nbsp;no&nbsp;email',
++&nbsp;'first&nbsp;me@mything.com&nbsp;also&nbsp;you@yourspace.com')
+&#62;&nbsp;grep('[-A-Za-z0-9_.%]+@[-A-Za-z0-9_.%]+\\.[A-Za-z]+',chk)
+[1]&nbsp;1&nbsp;3
+
+</pre>
+  Since regular expressions in R are simply character strings,
+we can save typing by storing regular expressions in variables.  For
+example, if we say:
+
+<pre>
+&#62;&nbsp;emailpat&nbsp;=&nbsp;'[-A-Za-z0-9_.%]+@[-A-Za-z0-9_.%]+\\.[A-Za-z]+'
+
+</pre>
+ then we can use the R variable <tt>emailpat</tt> in place of the 
+full regular expression.  (If you use this technique, be sure to modify your
+stored variable when you change your regular expression.)
+
+<div class="p"><!----></div>
+To actually get to the regular expressions, we can use the 
+<tt>gregexpr</tt> function, which provides more information about regular
+expression matches.  First, let's see what the output from <tt>gregexpr</tt>
+looks like:
+
+<pre>
+&#62;&nbsp;gregout&nbsp;=&nbsp;gregexpr(emailpat,chk)
+&#62;&nbsp;gregout
+[[1]]
+[1]&nbsp;5
+attr(,"match.length")
+[1]&nbsp;24
+
+[[2]]
+[1]&nbsp;-1
+attr(,"match.length")
+[1]&nbsp;-1
+
+[[3]]
+[1]&nbsp;&nbsp;7&nbsp;27
+attr(,"match.length")
+[1]&nbsp;14&nbsp;17
+
+</pre>
+  First, notice that, since there may be a different number of 
+regular expressions found in different lines, <tt>gregexpr</tt> returns 
+a list.  In each list element is a vector of starting points where 
+regular expressions were found in the corresponding input string.  In addition,
+there is additional information stored as an attribute, which is part of 
+the value, but which doesn't interfere if we try to treat the value 
+as if it was simply a vector.  The <tt>match.length</tt> attribute is another
+vector, of the same length as the vector of starting points, telling us 
+how long each match was.  Concentrating on the first element, we can use
+the <tt>substring</tt> function to extract the actual address as follows:
+
+<pre>
+&#62;&nbsp;substring(chk[1],gregout[[1]],gregout[[1]]&nbsp;+&nbsp;attr(gregout[[1]],'match.length')&nbsp;-&nbsp;1)
+[1]&nbsp;"noboby@stat.berkeley.edu"
+
+</pre>
+ To make it a little easier to use, let's make a function that 
+will do the extraction for us:
+
+<pre>
+getexpr&nbsp;=&nbsp;function(s,g)substring(s,g,g&nbsp;+&nbsp;attr(g,'match.length')&nbsp;-&nbsp;1)
+
+</pre>
+  Now it's a little easier to get what we're looking for:
+
+<pre>
+&#62;&nbsp;getexpr(chk[2],gregout[[2]])
+[1]&nbsp;""
+&#62;&nbsp;getexpr(chk[3],gregout[[3]])
+[1]&nbsp;"me@mything.com"&nbsp;"you@yourspace.com"
+
+</pre>
+ To use the same idea on an entire vector of character strings, we
+could either write a loop, or use the <tt>mapply</tt> function.  The 
+<tt>mapply</tt> function will repeatedly call a function of your choice,
+cycling through the elements in as many vectors as you provide to the 
+function.  To use our <tt>getexpr</tt> function with <tt>mapply</tt> to 
+extract all of the email addresses in the <tt>chk</tt> vector, we could 
+write:
+
+<pre>
+&#62;&nbsp;emails&nbsp;=&nbsp;mapply(getexpr,chk,gregout)
+&#62;&nbsp;emails
+$"abc&nbsp;noboby@stat.berkeley.edu"
+[1]&nbsp;"noboby@stat.berkeley.edu"
+
+$"text&nbsp;with&nbsp;no&nbsp;email"
+[1]&nbsp;""
+
+$"first&nbsp;me@mything.com&nbsp;also&nbsp;you@yourspace.com"
+[1]&nbsp;"me@mything.com"&nbsp;"you@yourspace.com"
+
+</pre>
+ Notice that <tt>mapply</tt> uses the text of the original 
+character strings as names for the list it returns; this may or may
+not be useful.  To remove the names, use the assignment form of the 
+<tt>names</tt> function to set the names to <tt>NULL</tt>
+
+<pre>
+&#62;&nbsp;names(emails)&nbsp;=&nbsp;NULL
+&#62;&nbsp;emails
+[[1]]
+[1]&nbsp;"noboby@stat.berkeley.edu"
+
+[[2]]
+[1]&nbsp;""
+
+[[3]]
+[1]&nbsp;"me@mything.com"&nbsp;"you@yourspace.com"
+
+</pre>
+ The value that <tt>mapply</tt> returns is a list, the same length
+as the vector of input strings (<tt>chk</tt> in this example), with an
+empty string where there were no matches.  If all you wanted was a vector
+of all the email addresses, you could use the <tt>unlist</tt> function:
+
+<pre>
+&#62;&nbsp;unlist(emails)
+[1]&nbsp;"noboby@stat.berkeley.edu"&nbsp;""
+[3]&nbsp;"me@mything.com"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"you@yourspace.com"
+
+</pre>
+ The empty strings can be removed in the usual way:
+
+<pre>
+emails&nbsp;=&nbsp;emails[emails&nbsp;!=&nbsp;'']
+
+</pre>
+ or
+
+<pre>
+emails&nbsp;=&nbsp;subset(emails,emails&nbsp;!=&nbsp;'')
+
+</pre>
+
+<div class="p"><!----></div>
+Suppose we wanted to know how many emails there were in each line of the 
+input text (<tt>chk</tt>).  One idea that might make sense is to find the
+length of each element of the list that the <tt>getexpr</tt> function 
+returned:
+
+<pre>
+&#62;&nbsp;emails&nbsp;=&nbsp;mapply(getexpr,chk,gregout)
+&#62;&nbsp;names(emails)&nbsp;=&nbsp;NULL
+&#62;&nbsp;sapply(emails,length)
+
+</pre>
+ The problem is that, in order to maintain the structure of
+the output list, <tt>mapply</tt> put an empty (length 0) string in the 
+second position of the list, so that <tt>length</tt> sees at least one
+string in each element of the list.  The solution is to write a function
+that modifies the <tt>length</tt> function so that it only returns the 
+length if there are some characters in the strings for a particular list
+element.  (We can safely do this since we've already seen that there will
+always be at least one element in the list.  We can use the <tt>if</tt>
+statement to do this:
+
+<pre>
+&#62;&nbsp;sapply(emails,function(e)if(nchar(e[1])&nbsp;&#62;&nbsp;0)length(e)&nbsp;else&nbsp;0)
+[1]&nbsp;1&nbsp;0&nbsp;2
+
+</pre>
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc2">
+2</a>&nbsp;&nbsp;How matches are found</h2>
+Regular expressions are matched by starting at the beginning of a string and
+seeing if a possible match might begin there.  If not, the next character in
+the string is examined, and so on;  if the end of the string is reached, then
+no match is reported.
+
+<div class="p"><!----></div>
+Let's consider the case where there is a potential match.  The regular 
+expression program remembers where the beginning of the match was and starts
+checking the characters to the right of that location.  As long as the 
+expression continues to be matched, it will continue, adding more characters
+to the matched pattern until it reaches a point in the string where the 
+regular expression is no longer matched.  At that point, it backs up until
+things match again, and it checks to see if the entire regular expression
+has been matched.  If it has, it reports a match; otherwise it reports 
+no match.
+
+<div class="p"><!----></div>
+While the specifics of this mechanism will rarely concern you when you're
+doing regular expression matches, there is one important point that you 
+should be aware of.  The regular expression program is always going to try
+to find the longest match possible.  This means if you use the wildcard
+character, <tt>.</tt>, with the "one or more" modifier, <tt>*</tt>, you may
+get more than you expected.
+
+<div class="p"><!----></div>
+Suppose we wish to remove HTML markup from a web page, in order to extract
+the information that's on the page.  All HTML markup begins with a
+left angle bracket (<tt>&lt;</tt>) and ends with a right angle bracket (<tt>&gt;</tt>),
+and has markup information in between.
+Before diving in and trying to remove the markup, let's make sure we can 
+find it correctly.  
+An obvious (but ill-advised) choice for the regular expression is 
+<tt>&lt;.*&gt;</tt>.  In words it means "a literal left angle bracket, followed by
+one or more of any character, followed by a literal right angle bracket".
+Let's see how effective it is:
+
+<pre>
+&#62;&nbsp;htmls&nbsp;=&nbsp;c('This&nbsp;is&nbsp;an&nbsp;image:&nbsp;&lt;IMG&nbsp;SRC="img/rxb.gif"&#62;',
++&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&lt;a&nbsp;href="somepage.html"&#62;click&nbsp;here&lt;/a&#62;')
+&#62;&nbsp;grep('&lt;.*&#62;',htmls)
+[1]&nbsp;1&nbsp;2
+
+</pre>
+We've matched both pieces, but what have we really got?  We can apply our
+<tt>mapply</tt>-based solution to see the actual strings that were matched:
+
+<pre>
+&#62;&nbsp;getexpr&nbsp;=&nbsp;function(s,g)substring(s,g,g&nbsp;+&nbsp;attr(g,'match.length')&nbsp;-&nbsp;1)
+&#62;&nbsp;matches&nbsp;=&nbsp;mapply(getexpr,htmls,gregexpr('&lt;.*&#62;',htmls))
+&#62;&nbsp;names(matches)&nbsp;=&nbsp;NULL
+&#62;&nbsp;matches
+[1]&nbsp;"&lt;IMG&nbsp;SRC=\"img/rxb.gif\"&#62;"
+[2]&nbsp;"&lt;a&nbsp;href=\"somepage.html\"&#62;click&nbsp;here&lt;/a&#62;"
+
+</pre>
+ The first match worked fine, but the second match went right past
+the end of the first piece of markup, and included the second piece in it.
+For this reason, regular expressions are said to be greedy - they will always
+try to find the longest pattern that satisfies the match.  Fixing problems 
+like this is pretty easy - we just have to think about what we really want to
+match.  In this case, we don't want zero or more occurences of anything; what
+we want is zero or more occurences of anything <em>except</em> a right angle
+bracket.  As soon as we see the first right angle bracket after the left 
+angle bracket we want to stop.  Fortunately, it's very easy to express ideas
+like this with negated character classes.  In this case, we simply replace
+the period with <tt>[^&gt;]</tt>:
+
+<pre>
+&#62;&nbsp;matches&nbsp;=&nbsp;mapply(getexpr,htmls,gregexpr('&lt;[^&#62;]*&#62;',htmls))
+&#62;&nbsp;names(matches)&nbsp;=&nbsp;NULL
+&#62;&nbsp;matches
+[[1]]
+[1]&nbsp;"&lt;IMG&nbsp;SRC=\"img/rxb.gif\"&#62;"
+
+[[2]]
+[1]&nbsp;"&lt;a&nbsp;href=\"somepage.html\"&#62;"&nbsp;"&lt;/a&#62;"
+
+</pre>
+The two pieces of markup in the second element of <tt>htmls</tt> are now 
+correctly found.
+
+<div class="p"><!----></div>
+Another way to solve the problem of greedy regular expressions is to use 
+a feature of regular expressions invented by Larry Wall, the creator of perl.
+His idea was to use the question mark (<tt>?</tt>) after an asterisk (<tt>*</tt>)
+or plus sign (<tt>+</tt>) to indicate that you want a <em>non-greedy</em> match,
+that is, to search for the smallest string which will match the pattern.  
+Recent versions of R have incorporated these features into their regular
+expression support.  So
+an alternative to the solution shown above is:
+
+<pre>
+&#62;&nbsp;matches&nbsp;=&nbsp;mapply(getexpr,htmls,gregexpr('&lt;.*?&#62;',htmls))
+
+</pre>
+
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On 25 Feb 2011, 08:58.</small>
+</html>

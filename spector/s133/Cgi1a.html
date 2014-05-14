@@ -1,0 +1,541 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 3.67">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+
+
+<title> CGI Programming</title>
+ 
+<h1 align="center">CGI Programming </h1>
+
+
+
+     <h2><a name="tth_sEc1">
+1</a>&nbsp;&nbsp;Data</h2>
+The <tt>R.cgi</tt> script calls your R program in such a way that it doesn't
+automatically load any data into the R environment.  So if you want to have
+data available to your CGI program, you'll need to explicitly get the data
+into R's environment.
+For reasons of efficiency, your program should always use the <tt>load</tt>
+function to load a previously saved binary version of the data you need. 
+The most convenient place to store these objects is right in the <tt>cgi-bin</tt>
+directory from which your program will execute.
+
+<div class="p"><!----></div>
+Suppose we wish to create a CGI program that will accept the name of one of the 
+variables from the <tt>wine</tt> data frame, and then display a summary of the 
+data.  Before you plan to run the script, the <tt>wine</tt> data should be 
+saved in a simple R session that's started after you've changed your working 
+directory to be your cgi-bin directory.  The command to do this is
+
+<pre>
+save(wine,file='wine.rda')
+
+</pre>
+Next, we can create a form, which would be saved in the <tt>public_html</tt> 
+directory.  Here's a simple example, which we'll save in the file 
+<tt>wine.html</tt>:
+
+<pre>
+&lt;html&#62;&lt;body&#62;
+&lt;h1&#62;Summary&nbsp;for&nbsp;Wine&nbsp;Variables&lt;/h1&#62;
+&lt;form&nbsp;action='cgi-bin/R.cgi/dowine.cgi'&#62;
+Enter&nbsp;the&nbsp;name&nbsp;of&nbsp;the&nbsp;variable:&nbsp;&nbsp;
+&lt;input&nbsp;type=text&nbsp;name=winevar&#62;&lt;br&#62;
+&lt;center&#62;
+&lt;input&nbsp;type=submit&nbsp;value='Run'&#62;
+&lt;/center&#62;
+&lt;/form&#62;
+&lt;/body&#62;&lt;/html&#62;
+
+</pre>
+
+<div class="p"><!----></div>
+The <tt>dowine.cgi</tt> program would look like this:
+
+<pre>
+load('wine.rda')
+
+HTMLheader()
+
+winevar&nbsp;=&nbsp;formData$winevar
+tag(h1)
+cat('Summary&nbsp;for&nbsp;wine$',winevar,sep='')
+untag(h1)
+tag(h2)
+tag(pre)
+print(summary(wine[[winevar]]))
+untag(pre)
+untag(h2)
+cat('&lt;/body&#62;&lt;/html&#62;')
+
+</pre>
+Here's the form:
+
+<div class="p"><!----></div>
+<img src="wine1.png">
+
+<div class="p"><!----></div>
+Here's the result of submitting the form:
+
+<div class="p"><!----></div>
+<img src="wine2.png">
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc2">
+2</a>&nbsp;&nbsp;Combo Forms</h2>
+Of course, having the user remember the name of the variable they're interested
+in isn't a very user-friendly strategy, but the thought of manually preparing
+a form that lists all the variables isn't very appealing either.  The problem
+can be solved by having the CGI program generate the form the first time it's
+called, and then processing the form when it's submitted back to the web 
+server.   If we call the CGI program directly (not through a form submission),
+the <tt>formData</tt> list will be empty, and we can use that condition to 
+tell whether we need to generate the form or respond to it.  Since R will be
+generating the form, it's very easy to have it provide a choice for each variable.
+For this example, let's use a drop down menu that will display the names of 
+each variable.  Here's a program that will both generate the form and respond
+to it:
+
+<pre>
+if(length(formData)&nbsp;==&nbsp;0){
+&nbsp;&nbsp;&nbsp;&nbsp;HTMLheader()
+&nbsp;&nbsp;&nbsp;&nbsp;tag(h1)
+&nbsp;&nbsp;&nbsp;&nbsp;cat('Summary&nbsp;for&nbsp;Wine&nbsp;Variables')
+&nbsp;&nbsp;&nbsp;&nbsp;untag(h1)
+&nbsp;&nbsp;&nbsp;&nbsp;cat("&lt;form&nbsp;action='dowine1.cgi'&#62;")
+&nbsp;&nbsp;&nbsp;&nbsp;cat("Choose&nbsp;the&nbsp;variable:")
+&nbsp;&nbsp;&nbsp;&nbsp;cat("&lt;select&nbsp;name='winevar'&#62;")
+&nbsp;&nbsp;&nbsp;&nbsp;load("wine.rda")
+&nbsp;&nbsp;&nbsp;&nbsp;sapply(names(wine),function(x)cat("&lt;option&nbsp;value='",x,"'&#62;",x,"&lt;br&#62;\n",sep=''))
+&nbsp;&nbsp;&nbsp;&nbsp;cat("&lt;/select&#62;")
+&nbsp;&nbsp;&nbsp;&nbsp;cat('&lt;input&nbsp;type="submit"&nbsp;value="Run"&#62;')
+&nbsp;&nbsp;&nbsp;&nbsp;cat("&lt;/form&#62;&lt;/body&#62;&lt;/html&#62;")
+}&nbsp;else&nbsp;{
+&nbsp;&nbsp;&nbsp;load('wine.rda')
+&nbsp;&nbsp;&nbsp;HTMLheader()
+&nbsp;&nbsp;&nbsp;winevar&nbsp;=&nbsp;formData$winevar
+&nbsp;&nbsp;&nbsp;tag(h1)
+&nbsp;&nbsp;&nbsp;cat('Summary&nbsp;for&nbsp;wine$',winevar,sep='')
+&nbsp;&nbsp;&nbsp;untag(h1)
+&nbsp;&nbsp;&nbsp;tag(h2)
+&nbsp;&nbsp;&nbsp;tag(pre)
+&nbsp;&nbsp;&nbsp;print(summary(wine[[winevar]]))
+&nbsp;&nbsp;&nbsp;untag(pre)
+&nbsp;&nbsp;&nbsp;untag(h2)
+&nbsp;&nbsp;&nbsp;untag(h2)
+&nbsp;&nbsp;&nbsp;cat('&lt;/body&#62;&lt;/html&#62;')
+}
+
+</pre>
+One very important thing to notice if you use this approach - the 
+<tt>action=</tt> argument should specify only the name of the program, 
+without the usual <tt>R.cgi/</tt>; since R is already calling your program,
+it thinks it's in the <tt>R.cgi</tt> "directory".
+
+<div class="p"><!----></div>
+Here's the result of calling the program directly:
+
+<div class="p"><!----></div>
+<img src="wine4.png">
+
+<div class="p"><!----></div>
+and here's the result after making a choice:
+
+<div class="p"><!----></div>
+<img src="wine5.png">
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc3">
+3</a>&nbsp;&nbsp;Graphs</h2>
+Certainly one of the most useful functions of CGI scripting with R 
+is to display graphics generated by R, based on a user's choices as
+specified on a web form.  This would provide a simple way to allow
+people unfamiliar with R to produce attractive graphs; if a means
+is provided for data input, and enough options are provided through
+checkboxes, drop-down menus, radiobuttons, etc, a complete web-based
+graphing solution could be developed.
+
+<div class="p"><!----></div>
+To properly create and display graphics with a CGI program, it's 
+necessary to understand the difference between the internal paths 
+(which your R program will see) and the external paths (which are the
+addresses typed into the browser's address field.)  For example, 
+the way the class webserver is configured, the directory into which you
+would put HTML pages is (once again assuming your SCF id is s133xx):
+
+<pre>
+/class/u/s133/s133xx/public_html/
+
+</pre>
+This directory provides a convenient place to place graphics generated
+by your scripts.  To the outside world, this directory would be indicated
+as:
+
+<pre>
+http://springer/~s133xx/
+
+</pre>
+or
+
+<pre>
+http://localhost:8080/~s133xx/
+
+</pre>
+So as far as the webserver is concerned (i.e. the way the outside world
+would find your files through a URL), the directory is known as
+
+<pre>
+/~s133xx/
+
+</pre>
+
+<div class="p"><!----></div>
+To create graphics from your CGI script, you first create a variable
+called <tt>graphDir</tt> and set it equal to the full internal name 
+of the directory into which you'll write your graphs.  In our example
+it would be <tt>/class/u/s133/s133xx/public_html/</tt>.  
+Then use the <tt>webPNG</tt> function, specifying the name (without any
+leading directories) that you want to use for your graph.
+In order to
+generate the appropriate HTML so that your image will be displayed, you
+can use the <tt>img</tt> function of the <tt>CGIwithR</tt> library.  This
+function takes two arguments.  The first is the name of the graphic you produced
+via <tt>webPNG</tt>, and the second is called <tt>graphURLroot</tt>, and should
+be set to the "outside" view of your <tt>public_html</tt> directory, 
+namely <tt>/~s133xx/</tt>.  (Note the trailing slashes in both the 
+<tt>graphDir</tt> and <tt>graphURLroot</tt>; they are required.)
+
+<div class="p"><!----></div>
+To illustrate, let's create a simple CGI program that will generate some 
+random data and  create a conditioning plot containing histograms.  
+
+<div class="p"><!----></div>
+
+<pre>
+library(lattice)
+HTMLheader()
+x&nbsp;=&nbsp;data.frame(z&nbsp;=&nbsp;rnorm(1000),&nbsp;g&nbsp;=&nbsp;factor(sample(1:5,size=1000,replace=TRUE)))
+graphDir='/class/u/s133/s133xx/public_html/'
+cat("Now&nbsp;I'm&nbsp;going&nbsp;to&nbsp;plot&nbsp;some&nbsp;histograms:&lt;br&#62;")
+webPNG(file='hist.png')
+histogram(~z|g,data=x)
+invisible(dev.off())
+img(src='hist.png',graphURLroot='/~s133xx/')
+cat("&lt;/body&#62;&lt;/html&#62;")
+
+</pre>
+
+<div class="p"><!----></div>
+The size of the plot can be controlled by passing <tt>width=</tt> and 
+<tt>height=</tt> arguments to <tt>webPNG</tt>; the units for these
+arguments are pixels.
+
+<div class="p"><!----></div>
+If you are using lattice graphics and your plot does not appear,
+try passing the call to the lattice function to the <tt>print</tt> function.
+
+<div class="p"><!----></div>
+Notice the call to <tt>dev.off</tt>; without it, your graph may not be
+properly terminated, and only some (or possibly none) of the graph will
+be displayed.
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc4">
+4</a>&nbsp;&nbsp;Hidden Variables</h2>
+Suppose we have a web page that displays a choice of data frames for possible
+further analysis.  Once a data frame is chosen, another page could display
+the variables that are available from that data frame, and a choice of plots
+could be provided.  Remember that each time our CGI program is called, a new
+R process begins.  So how can we "remember" the data set name in between
+invocations of our program?  The answer is to use hidden variables.  Any time
+you create an HTML form, you can create as many hidden variables as you need
+to store information that needs to be available in the next step of processing.
+These hidden variables are exactly like any other CGI variable, but there is 
+no visible sign of the variable on the form that is displayed in the user's
+browser.  To create a hidden variable, use code like the following:
+
+<pre>
+&lt;input&nbsp;type="hidden"&nbsp;name="varname"&nbsp;value="the&nbsp;value"&#62;
+
+</pre>
+
+<div class="p"><!----></div>
+Here's an implementation of a program that looks in the current directory
+for any files with an extension of <tt>.rda</tt>, provides a  drop down 
+menu of data set 
+names,
+then allows a choice of variables, and finally produces the requested plot:
+
+<pre>
+HTMLheader()
+if(length(formData)&nbsp;==&nbsp;0){
+&nbsp;&nbsp;&nbsp;&nbsp;datasources&nbsp;=&nbsp;list.files('.',pattern='\\.rda$')
+&nbsp;&nbsp;&nbsp;&nbsp;datasources&nbsp;=&nbsp;sub('\\.rda$','',datasources)
+&nbsp;&nbsp;&nbsp;&nbsp;cat('&lt;form&nbsp;action="doplot.cgi"&#62;')
+&nbsp;&nbsp;&nbsp;&nbsp;cat('&lt;select&nbsp;name=dataset&#62;\n')
+&nbsp;&nbsp;&nbsp;&nbsp;sapply(datasources,function(x)cat('&lt;option&nbsp;value="',x,'"&#62;',x,'&lt;/option&#62;\n'))
+&nbsp;&nbsp;&nbsp;&nbsp;cat('&lt;/select&#62;\n')
+&nbsp;&nbsp;&nbsp;&nbsp;cat('&lt;center&#62;&lt;button&nbsp;type="submit"&#62;Run&lt;/button&#62;&lt;/center&#62;&lt;/form&#62;')
+}&nbsp;else&nbsp;if('dataset'&nbsp;%in%&nbsp;names(formData)){
+&nbsp;&nbsp;&nbsp;&nbsp;dataset&nbsp;=&nbsp;formData$dataset
+&nbsp;&nbsp;&nbsp;&nbsp;dataset&nbsp;=&nbsp;gsub('&nbsp;','',dataset)
+&nbsp;&nbsp;&nbsp;&nbsp;load(paste(dataset,'.rda',sep=''))
+&nbsp;&nbsp;&nbsp;&nbsp;cat('&lt;form&nbsp;action="doplot.cgi"&#62;\n')
+&nbsp;&nbsp;&nbsp;&nbsp;cat('&lt;p&#62;X-variable:&lt;br&#62;\n')
+&nbsp;&nbsp;&nbsp;&nbsp;sapply(names(get(dataset)),function(i)cat('&lt;input&nbsp;type="radio"&nbsp;name="xvar"&nbsp;value="',i,'"&#62;',i,'&lt;br&#62;\n'))
+&nbsp;&nbsp;&nbsp;&nbsp;cat('&lt;p&#62;Y-variable:&lt;br&#62;\n')
+&nbsp;&nbsp;&nbsp;&nbsp;sapply(names(get(dataset)),function(i)cat('&lt;input&nbsp;type="radio"&nbsp;name="yvar"&nbsp;value="',i,'"&#62;',i&nbsp;,'&lt;br&#62;\n'))
+&nbsp;&nbsp;&nbsp;&nbsp;cat('&lt;input&nbsp;type="hidden"&nbsp;name="set"&nbsp;value="',dataset,'"&#62;\n')
+&nbsp;&nbsp;&nbsp;&nbsp;cat('&lt;center&#62;&lt;button&nbsp;type="submit"&#62;Run&lt;/button&#62;&lt;/center&#62;&lt;/form&#62;')
+&nbsp;&nbsp;&nbsp;&nbsp;cat('&lt;/form&#62;')
+}&nbsp;else{
+&nbsp;&nbsp;&nbsp;&nbsp;dataset&nbsp;=&nbsp;gsub('&nbsp;','',formData$set)
+&nbsp;&nbsp;&nbsp;&nbsp;load(paste(dataset,'.rda',sep=''))
+&nbsp;&nbsp;&nbsp;&nbsp;xvar=gsub('&nbsp;','',formData$xvar)
+&nbsp;&nbsp;&nbsp;&nbsp;yvar=gsub('&nbsp;','',formData$yvar)
+&nbsp;&nbsp;&nbsp;&nbsp;graphDir&nbsp;=&nbsp;'/home/spector/public_html/'
+&nbsp;&nbsp;&nbsp;&nbsp;webPNG(file='theplot.png',graphDir=graphDir)
+&nbsp;&nbsp;&nbsp;&nbsp;thedata&nbsp;=&nbsp;get(dataset)
+&nbsp;&nbsp;&nbsp;&nbsp;plot(thedata[[xvar]],thedata[[yvar]],xlab=xvar,ylab=yvar)
+&nbsp;&nbsp;&nbsp;&nbsp;img(src='theplot.png',graphURLroot='/~spector/')
+&nbsp;&nbsp;&nbsp;&nbsp;invisible(dev.off())
+&nbsp;&nbsp;&nbsp;&nbsp;}
+cat('&lt;/body&#62;&lt;/html&#62;')
+
+</pre>
+This program has three sections: the first displays the initial form 
+showing the data frame names (invoked when no <tt>formData</tt> is available);
+the second displays the variable choices (invoked when a <tt>dataframe</tt>
+variable is specified), and the third, which is invoked when <tt>formData</tt>
+is available, but the <tt>dataset</tt> variable is not defined.
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc5">
+5</a>&nbsp;&nbsp;Outgoing HTTP Headers</h2>
+We've already seen that when a web browser makes a request to a web server,
+it sends a series of headers before the actual content (if any).  The web
+server also sends headers to the browser, but up until now we've let the 
+<tt>R.cgi</tt> wrapper script take care of that detail for us.  In most 
+cases, the only header that needs to be sent to a browser is one that informs
+the browser that we're sending it HTML (as opposed to, say an image or other
+binary file).  That header looks like this:
+
+<pre>
+Content-type:&nbsp;text/html
+
+</pre>
+and it would be followed by a completely blank line to signal the end of the 
+headers.   The <tt>R.cgi</tt> script examines what you're about to send to 
+the web browser, and, if it doesn't find the "Content-type" line, it inserts
+it before it sends your output to the browser.  Thus, if you do insert that 
+line, you are taking responsibility for the outgoing headers, and, if desired,
+you can add additional ones.
+
+<div class="p"><!----></div>
+Just about the only header line that you might consider adding is one that 
+specifies the value of a cookie to the browser.  Cookies are small pieces of 
+text, associated with a particular website, that are stored by a browser, and
+sent to web servers if they match the domain and possibly the path of the URL
+that initially set them.   
+There are two types of cookies: session cookies, which expire when a particular
+browser session is ended and the browser is shut down, and persistent cookies, 
+that are stored in a text file on the computer on which the browser is running,
+and will expire at a date specified in the header that defined the cookie.  For
+this example, we'll create a session cookie, and then access it through a 
+different script.
+If every web transaction had a form associated with
+it, we could use hidden CGI variables to do much of the work that cookies 
+do, but, since they're stored on the user's computer, they 
+are more reliable, and don't require any special programming.  
+Here's an example of a script that sets a cookie:
+
+<pre>
+if(length(formData)&nbsp;==&nbsp;0){
+&nbsp;&nbsp;&nbsp;HTMLheader()
+&nbsp;&nbsp;&nbsp;cat("What&nbsp;is&nbsp;your&nbsp;name?")
+&nbsp;&nbsp;&nbsp;cat('&lt;form&nbsp;action="setcookie.cgi"&#62;\n')
+&nbsp;&nbsp;&nbsp;cat('&lt;input&nbsp;type="entry"&nbsp;name="name"&#62;&lt;br&#62;\n')
+&nbsp;&nbsp;&nbsp;cat('&lt;button&nbsp;type="submit"&#62;Run&lt;/button&#62;\n')
+
+}&nbsp;else&nbsp;if('name'&nbsp;%in%&nbsp;names(formData)){
+&nbsp;&nbsp;&nbsp;&nbsp;name&nbsp;=&nbsp;formData$name
+&nbsp;&nbsp;&nbsp;&nbsp;cat("Content-type:&nbsp;text/html\nSet-Cookie:&nbsp;thename=",name,";&nbsp;path=/~s133xx/\n\n",sep='')
+&nbsp;&nbsp;&nbsp;&nbsp;cat("Hello&nbsp;there,&nbsp;",name)
+}
+
+cat('&lt;/body&#62;&lt;/html&#62;')
+
+</pre>
+Since everyone in class is sharing the same webserver, I've added a <tt>path=</tt>
+specification to the cookie header.  For this class, it probably is a good idea
+to prevent people from getting cookies set by other programs.   Note the two
+newlines at the end of the header line - these are essentially to make sure that
+the browser understands that the headers are done and the content is following.
+If you want to create persistent headers, you need to add an <tt>expires=</tt> 
+specification to the <tt>Set-cookie</tt> header.  The format of the expiration time
+must be followed precisely; in particular, the parts of the date much be separated 
+by dashes, and the only allowable time zone is <tt>GMT</tt>.  Here's an example 
+of a header containing a variable, path and expiration date:
+
+<pre>
+Set-Cookie:&nbsp;thename=Somebody;&nbsp;path=/~s133xx/;&nbsp;expires=Monday,&nbsp;09-May-10&nbsp;00:00:00&nbsp;GMT
+
+</pre>
+
+<div class="p"><!----></div>
+Now let's look at a program that will retrieve an already set cookie.  When a 
+browser recognizes a domain/path/time combination for which it has an 
+active cookie, it sends it back to the webserver in a <tt>Cookie:</tt> header,
+not as a CGI variable.  
+The format of the cookie is <tt>name=value</tt>, similar to the format in
+which CGI variables are transmitted.
+This means that we'll need to 
+use <tt>Sys.getenv</tt> to 
+access the environmental variable called <tt>HTTP_COOKIE</tt>.   
+
+<pre>
+HTMLheader()
+cookie&nbsp;=&nbsp;Sys.getenv('HTTP_COOKIE')
+name&nbsp;=&nbsp;gsub('^&nbsp;*thename=(.*)$','\\1',cookie)
+cat('Welcome&nbsp;back,&nbsp;',name)
+cat('&lt;/body&#62;&lt;/html&#62;')
+
+</pre>
+
+<div class="p"><!----></div>
+Notice that you can only access the cookies in a CGI program, not in ordinary
+HTML, but you don't need any form elements to get the cookie.
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc6">
+6</a>&nbsp;&nbsp;Creating Pretty Output</h2>
+Since the output created by CGI programs is interpreted by the browser as HTML,
+we can use any HTML commands by simply having our program generate the necessary
+HTML statements.  One simple way of organizing output in HTML is the HTML table.
+A table begins with the string <tt>&lt;table&#62;</tt>, and ends with <tt>&lt;/table&#62;</tt>.
+Each row of the table begins with <tt>&lt;tr&#62;</tt>, and ends with <tt>&lt;/tr&#62;</tt>;
+each element within a row begins with <tt>&lt;td&#62;</tt> and ends with <tt>&lt;/td&#62;</tt>.
+To specify headings, the <tt>th</tt> tag can be used in place of <tt>td</tt>.
+This suggests the following function to produce one row of an HTML table:
+
+<pre>
+makerow&nbsp;=&nbsp;function(x,tag='td'){
+&nbsp;&nbsp;&nbsp;st&nbsp;=&nbsp;paste('&lt;',tag,'&#62;',sep='')
+&nbsp;&nbsp;&nbsp;end=&nbsp;paste('&lt;/',tag,'&#62;',sep='')
+&nbsp;&nbsp;&nbsp;cat(paste(paste('&lt;tr&#62;',st,sep=''),
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;paste(x,collapse=paste(end,st,sep='')),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;paste(end,'&lt;/tr&#62;',sep='')),"\n")
+}
+
+</pre>
+To print an entire data frame, we can first print the names as a header line,
+then use apply to print the body of the data frame:
+
+<pre>
+dftable&nbsp;=&nbsp;function(df){
+&nbsp;&nbsp;&nbsp;cat('&lt;table&nbsp;border=1&#62;')
+&nbsp;&nbsp;&nbsp;makerow(names(df),tag='th')&nbsp;
+&nbsp;&nbsp;&nbsp;apply(df,1,makerow)
+&nbsp;&nbsp;&nbsp;cat('&lt;/table&#62;')
+}
+
+</pre>
+An example of using these functions will be presented in the next section.
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc7">
+7</a>&nbsp;&nbsp;File Upload</h2>
+We've already seen that that an <tt>input</tt> element with <tt>type=file</tt> will
+create an entry field and browse button to allow a user to specify a file for upload.
+In the following program, we'll create such a field to allow a user to specify a 
+local comma-separated file which will then be read into R, and displayed as a table.
+File upload using the <tt>CGIwithR</tt> library simply places the content of the uploaded
+file into a character string in the <tt>formData</tt> list corresponding to the 
+name of the CGI variable specified in the HTML form.  To treat this character string
+as a file, we can use the <tt>textConnection</tt> function.  
+
+<div class="p"><!----></div>
+The following program will upload a comma-separated 
+file, which will then be read by <tt>read.csv</tt>, and displayed using the 
+<tt>dftable</tt> function from the previous section:
+
+<pre>
+HTMLheader()
+if(length(formData)&nbsp;==&nbsp;0){
+&nbsp;&nbsp;&nbsp;cat('&lt;form&nbsp;action="readcsv.cgi"&nbsp;method=post&nbsp;enctype="multipart/form-data"&#62;\n')
+&nbsp;&nbsp;&nbsp;cat('&lt;input&nbsp;type=file&nbsp;name=thefile&#62;&lt;br&#62;')
+&nbsp;&nbsp;&nbsp;cat('&lt;input&nbsp;type=submit&nbsp;value="Upload"&#62;')
+&nbsp;&nbsp;&nbsp;cat('&lt;/form&#62;')
+}&nbsp;else{
+&nbsp;&nbsp;&nbsp;makerow&nbsp;=&nbsp;function(x,tag='td'){
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;st&nbsp;=&nbsp;paste('&lt;',tag,'&#62;',sep='')
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end=&nbsp;paste('&lt;/',tag,'&#62;',sep='')
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cat(paste(paste('&lt;tr&#62;',st,sep=''),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;paste(x,collapse=paste(end,st,sep='')),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;paste(end,'&lt;/tr&#62;',sep='')),"\n")
+&nbsp;&nbsp;&nbsp;}
+&nbsp;&nbsp;&nbsp;dftable&nbsp;=&nbsp;function(df){
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cat('&lt;table&nbsp;border=1&#62;')
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;makerow(names(df),tag='th')
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;apply(df,1,makerow)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cat('&lt;/table&#62;')
+&nbsp;&nbsp;&nbsp;}
+&nbsp;&nbsp;txtcon&nbsp;=&nbsp;textConnection(formData$thefile)
+&nbsp;&nbsp;df&nbsp;=&nbsp;read.csv(txtcon)
+&nbsp;&nbsp;dftable(df)
+}
+cat('&lt;/body&#62;&lt;/html&#62;')
+
+</pre>
+
+<div class="p"><!----></div>
+ <h2><a name="tth_sEc8">
+8</a>&nbsp;&nbsp;Debugging CGI Programs</h2>
+The first step in debugging an R program is to make sure that there are no 
+obvious syntax errors.  This can be done easily by changing directories to 
+the location of your CGI programs, running R and using the <tt>source</tt>
+command to execute your program.  If you see any syntax errors, they should
+be corrected before attempting to run your program through the web server.
+You can simulate input from a form by creating a list called <tt>formData</tt>
+and loading appropriate elements into named values in that list.
+
+<div class="p"><!----></div>
+When a program is run as a CGI program through a webserver, the program's standard
+error, which contains error messages, is normally routed to the webserver's error
+logs.  Unless you are the owner of the webserver, these logs are usually not 
+readable.  To redirect error messages to your browser (which represents the 
+standard output stream of a CGI program), you can use the following
+command inside your CGI program:
+
+<pre>
+sink(file=stdout(),type='message')
+
+</pre>
+Remember that the error messages will not be displayed using HTML, so they may be
+difficult to read.
+
+<div class="p"><!----></div>
+If simulating your web data through an artificially constructed <tt>formData</tt> 
+list is not sufficient to resolve problems in getting your program to run properly
+through the webserver, you can have a form generate the formData list, and save it
+to a file; then when you are testing the program offline, you can load that copy of
+<tt>formData</tt>, giving you an interactive session with the same data as would be
+generated by the web page.  
+
+
+<br /><br /><hr /><small>File translated from
+T<sub><font size="-1">E</font></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><font size="-1">T</font></sub>H</a>,
+version 3.67.<br />On 15 Apr 2011, 16:35.</small>
+</html>
